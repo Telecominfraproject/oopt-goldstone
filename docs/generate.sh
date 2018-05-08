@@ -14,7 +14,7 @@ sm/ONL/tools/onl-nos-create.py \
     --name "SuperSONiC Network OS" \
     --prefix x1 \
     --arches amd64 \
-    --debian stretch \
+    --debian jessie stretch \
     --copyright "Copyright 2018 Big Switch Networks" \
     --maintainer "support@bigswitch.com" \
     --version 1.0.0 \
