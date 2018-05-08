@@ -1,0 +1,25 @@
+# Everything in the REPO directory is ignored by default.
+
+# Build products
+BUILD/
+dependmodules.x
+*.deb
+*.cpio.gz
+*.sqsh
+*.pyc
+*.pyo
+
+# Package cache and lock files
+.lock
+.PKGs.cache*
+
+# Local module manifest.
+.manifest.mk
+RELEASE/
+
+.bash_history
+.buildroot-ccache
+
+# temporary files
+*~
+.#*

@@ -1,0 +1,26 @@
+variables:
+  !include $X1/make/versions/version-x1.yml
+
+prerequisites:
+  broken: true
+  packages: [ "x1-rootfs:$ARCH" ]
+
+packages:
+  - name: x1-swi
+    summary: SuperSONiC Network OS Switch Image (All $ARCH) Platforms)
+    arch: $ARCH
+    version: 0.$FNAME_RELEASE_ID
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+
+    files:
+      builds/*.swi          : $$PKG_INSTALL/
+      builds/*.md5sum       : $$PKG_INSTALL/
+      builds/manifest.json  : $$PKG_INSTALL/
+
+release:
+  - builds/*.swi : $ARCH/
+  - builds/*.md5sum : $ARCH/
+

@@ -1,0 +1,24 @@
+############################################################
+#
+# X1 Loader Package Template
+#
+# Requires: ARCH
+#
+############################################################
+prerequisites:
+  packages: [ "onl-loader-initrd:$ARCH" ]
+
+packages:
+  - name: x1-loader-initrd
+    arch: $ARCH
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Loader Initrd CPIO ($ARCH)
+
+    files:
+      builds/x1-loader-initrd-$ARCH.cpio.gz : $$PKG_INSTALL/
+      builds/manifest.json :                    $$PKG_INSTALL/
+

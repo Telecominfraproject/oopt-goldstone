@@ -1,0 +1,59 @@
+############################################################
+#
+# X1 System Configuration
+#
+############################################################
+installer:
+  menu_name: X1
+  os_name: SuperSONiC Network OS
+  grub:
+    - $PLATFORM.cpio.gz
+    - x1-loader-initrd-$PARCH.cpio.gz
+  fit:
+    - $PLATFORM.itb
+    - x1-loader-fit.itb
+
+upgrade:
+
+  system:
+    auto: force
+
+  onie:
+    auto: advisory
+    package:
+      dir: /lib/platform-config/current/x1/upgrade/onie
+
+  firmware:
+    auto: advisory
+    package:
+      dir: /lib/platform-config/current/x1/upgrade/firmware
+
+  loader:
+    auto: force
+    versions: /etc/x1/loader/versions.json
+    package:
+      dir: /etc/x1/upgrade/$PARCH
+      grub:
+        - $PLATFORM.cpio.gz
+        - x1-loader-initrd-$PARCH.cpio.gz
+      fit:
+        - $PLATFORM.itb
+        - x1-loader-fit.itb
+
+pki:
+  key:
+    name: key.pem
+    len:  2048
+  cert:
+    name: certificate
+    csr:
+      fields:
+        C: US
+        ST: CA
+        O: Open Compute Project
+        localityName: Santa Clara
+        commonName: Networking
+        organizationalUnitName: Open Network Linux
+        emailAddress: support@bigswitch.com
+      cdays: 3600
+

@@ -1,0 +1,1 @@
+!include $X1/builds/any/rootfs/APKG.yml ARCH=amd64

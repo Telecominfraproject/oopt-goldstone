@@ -1,0 +1,11 @@
+packages:
+  - name: x1-hw
+    arch: $ARCH
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Hello World
+    files:
+      builds/x1-hw : /usr/bin/

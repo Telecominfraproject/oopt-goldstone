@@ -1,0 +1,19 @@
+prerequisites:
+    packages:
+      - onl-kernel-3.16-lts-x86-64-all:amd64
+      - onl-kernel-4.9-lts-x86-64-all:amd64
+      - onl-kernel-4.14-lts-x86-64-all:amd64
+      - x1-loader-initrd:amd64
+
+packages:
+  - name: x1-upgrade
+    arch: amd64
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Upgrade Package
+
+    files:
+      builds/files : /etc/x1/upgrade/amd64

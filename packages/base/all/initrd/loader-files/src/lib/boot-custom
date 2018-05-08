@@ -1,0 +1,11 @@
+############################################################
+#
+# Included by the ONL boot1 script to perform
+# custom preparation prior to switching root.
+#
+############################################################
+cp -R /etc/x1 /newroot/etc
+
+if [ -d /var/run/udhcpc ]; then
+   cp -R /var/run/udhcpc /newroot/etc/x1/loader
+fi

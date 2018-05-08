@@ -1,0 +1,13 @@
+packages:
+  - name: x1-loader-files
+    arch: all
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Loader Files
+
+    files:
+      - src/lib : /lib
+

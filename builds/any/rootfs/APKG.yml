@@ -1,0 +1,20 @@
+variables:
+  !include $X1/make/versions/version-x1.yml
+
+prerequisites:
+  broken: true
+
+packages:
+  - name: x1-rootfs
+    summary: SuperSONiC Network OS Root Filesystem
+    arch: $ARCH
+    version: 0.$FNAME_RELEASE_ID
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+
+    files:
+      builds/rootfs-$ARCH.cpio.gz : $$PKG_INSTALL/
+      builds/rootfs-$ARCH.sqsh : $$PKG_INSTALL/
+      builds/manifest.json : $$PKG_INSTALL/

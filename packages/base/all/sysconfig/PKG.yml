@@ -1,0 +1,13 @@
+packages:
+  - name: x1-sysconfig
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    arch: all
+    summary: X1 Sysconfig Package
+
+    files:
+      src/x1.yml :   /etc/onl/sysconfig/01-x1.yml
+
