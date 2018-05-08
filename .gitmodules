@@ -1,0 +1,3 @@
+[submodule "sm/ONL"]
+	path = sm/ONL
+	url = http://github.com/opencomputeproject/OpenNetworkLinux
