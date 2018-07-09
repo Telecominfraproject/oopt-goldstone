@@ -14,5 +14,8 @@ docker_check:
 docker-debug: docker_check
 	@sm/ONL/docker/tools/onlbuilder --image $(X1_BUILDER_IMAGE) --isolate --hostname x1builder$(VERSION) -c bash
 
-build:
+docker: docker_check
+	@sm/ONL/docker/tools/onlbuilder --image $(X1_BUILDER_IMAGE) --isolate --hostname x1builder$(VERSION) -c tools/autobuild/build.sh -b HEAD
+
+build: docker_check
 	$(MAKE) -C docker/images/builder/builder8/1.0 $@
