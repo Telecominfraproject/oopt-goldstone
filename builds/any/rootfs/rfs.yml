@@ -16,7 +16,7 @@ Multistrap:
     noauth: true
     explicitsuite: false
     unpack: true
-    debootstrap: Debian-Local Local-All Local-Arch ONL-Local
+    debootstrap: Debian-Local Local-All Local-Arch ONL-Local Docker
     aptsources: Debian ONL
 
   Debian:
@@ -51,6 +51,13 @@ Multistrap:
 
   Local-Arch:
     source: ${ONLPM_OPTION_REPO}/${ONL_DEBIAN_SUITE}/packages/binary-${ARCH}
+    omitdebsrc: true
+
+  Docker:
+    packages: docker-engine
+    source: https://apt.dockerproject.org/repo
+    suite: debian-${ONL_DEBIAN_SUITE}
+    keyring: debian-archive-keyring
     omitdebsrc: true
 
 Configure:

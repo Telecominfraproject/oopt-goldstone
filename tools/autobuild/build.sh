@@ -43,7 +43,7 @@ cd $X1 && git checkout $BUILD_BRANCH
 #
 # Restart under correct builder environment.
 #
-ONLB_OPTIONS=-8
+ONLB_OPTIONS='--image opennetworklinux/x1-builder8'
 if [ -z "$DOCKER_IMAGE" ]; then
     # Execute ourselves under the builder
     ONLB=$ONL/docker/tools/onlbuilder
