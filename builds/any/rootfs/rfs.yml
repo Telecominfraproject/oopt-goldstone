@@ -16,7 +16,7 @@ Multistrap:
     noauth: true
     explicitsuite: false
     unpack: true
-    debootstrap: Debian-Local Local-All Local-Arch ONL-Local
+    debootstrap: Debian-Local Local-All Local-Arch ONL-Local Docker
     aptsources: Debian ONL
 
   Debian:
@@ -53,9 +53,17 @@ Multistrap:
     source: ${ONLPM_OPTION_REPO}/${ONL_DEBIAN_SUITE}/packages/binary-${ARCH}
     omitdebsrc: true
 
+  Docker:
+    packages: docker-engine
+    source: https://apt.dockerproject.org/repo
+    suite: debian-${ONL_DEBIAN_SUITE}
+    keyring: debian-archive-keyring
+    omitdebsrc: true
+
 Configure:
   overlays:
     - $ONL/builds/any/rootfs/${ONL_DEBIAN_SUITE}/common/overlay
+    - $X1/builds/any/rootfs/overlay
 
   update-rc.d:
     - 'faultd defaults'
@@ -109,3 +117,7 @@ Configure:
   files:
     remove:
       - /etc/motd
+      - /etc/inittab
+
+  commands:
+    - 'sudo chroot %(__rfs__)s systemctl enable onlboot.service'
