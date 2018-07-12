@@ -118,6 +118,3 @@ Configure:
     remove:
       - /etc/motd
       - /etc/inittab
-
-  commands:
-    - 'sudo chroot %(__rfs__)s systemctl enable onlboot.service'
