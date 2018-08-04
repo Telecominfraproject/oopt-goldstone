@@ -1,0 +1,11 @@
+packages:
+  - name: x1-sai-sanity
+    arch: $ARCH
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 SAI Sanity Test Program
+    files:
+      builds/sai-sanity : /usr/bin/
