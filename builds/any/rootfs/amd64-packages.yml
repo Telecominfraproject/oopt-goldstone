@@ -1,4 +1,5 @@
 - x1-upgrade
-- x1-libbroadcom-6.5-kernel-3.16-lts-x86-64-all
+- x1-libbroadcom-6.5.10-kernel-3.16-lts-x86-64-all
 - libsaibcm
 - libsaibcm-dev
+- x1-sai-sanity
