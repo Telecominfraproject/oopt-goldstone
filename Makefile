@@ -8,7 +8,7 @@ docker_check:
 
 # create an interative docker shell, for debugging builds
 docker-debug: docker_check
-	@sm/ONL/docker/tools/onlbuilder -8 --isolate --hostname x1builder$(VERSION) -c bash
+	@sm/ONL/docker/tools/onlbuilder -8 --isolate `pwd` /var/run/docker.sock --hostname x1builder$(VERSION) -c bash
 
 docker: docker_check
-	@sm/ONL/docker/tools/onlbuilder -8 --isolate --hostname x1builder$(VERSION) -c tools/autobuild/build.sh -b HEAD
+	@sm/ONL/docker/tools/onlbuilder -8 --isolate `pwd` /var/run/docker.sock --hostname x1builder$(VERSION) -c tools/autobuild/build.sh -b HEAD
