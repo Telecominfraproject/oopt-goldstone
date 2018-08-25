@@ -1,3 +1,9 @@
 - x1-sysconfig
 - x1-hw
 - sonic
+- python-pip
+- python-dev
+- python-lxml
+- python-yaml
+- python-bitarray
+- python-click
