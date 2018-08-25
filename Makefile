@@ -12,3 +12,8 @@ docker-debug: docker_check
 
 docker: docker_check
 	@sm/ONL/docker/tools/onlbuilder -8 --isolate `pwd` /var/run/docker.sock --hostname x1builder$(VERSION) -c tools/autobuild/build.sh -b HEAD
+
+sonic:
+	$(MAKE) -C sm/sonic-buildimage init
+	$(MAKE) -C sm/sonic-buildimage configure PLATFORM=broadcom
+	$(MAKE) -C sm/sonic-buildimage
