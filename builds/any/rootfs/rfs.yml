@@ -54,10 +54,10 @@ Multistrap:
     omitdebsrc: true
 
   Docker:
-    packages: docker-engine
-    source: https://apt.dockerproject.org/repo
-    suite: debian-${ONL_DEBIAN_SUITE}
-    keyring: debian-archive-keyring
+    packages: docker-ce=18.03.1~ce-0~debian
+    source: https://download.docker.com/linux/debian
+    suite: ${ONL_DEBIAN_SUITE}
+    components: stable
     omitdebsrc: true
 
 Configure:
