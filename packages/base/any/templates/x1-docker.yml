@@ -1,0 +1,17 @@
+packages:
+  - name: x1-docker-${SERVICE}
+    arch: ${ARCH}
+    version: ${VERSION}
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Docker Service for ${SERVICE}
+    after-install: $__DIR__/after-install.sh
+    after-remove: $__DIR__/after-remove.sh
+    depends:
+    - docker-ce
+    build-depends:
+    - docker-ce
+    files:
+        $__DIR__/builds/docker-${SERVICE}.gz: /var/cache/apt/

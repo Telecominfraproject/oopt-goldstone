@@ -1,0 +1,5 @@
+*
+!.gitignore
+!Makefile
+!swss.mk
+!syncd.mk

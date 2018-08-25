@@ -1,0 +1,1 @@
+!include $X1_TEMPLATES/x1-docker.yml SERVICE=orchagent ARCH=amd64 VERSION=1.0.0
