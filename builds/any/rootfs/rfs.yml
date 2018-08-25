@@ -118,3 +118,6 @@ Configure:
     remove:
       - /etc/motd
       - /etc/inittab
+
+  scripts:
+    - $__DIR__/sonic-setup.sh
