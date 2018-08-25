@@ -16,3 +16,4 @@ swss.service:
 	j2 $(SONIC)/files/build_templates/$@.j2 > $@
 	sed -i -e '/opennsl/d' $@
 	sed -i -e '/interfaces/d' $@
+	sed -i -e '19i ExecStartPre=-bcm-kmods' $@
