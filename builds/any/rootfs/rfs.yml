@@ -122,3 +122,4 @@ Configure:
   scripts:
     - $__DIR__/sonic-setup.sh
     - $__DIR__/python-setup.sh
+    - $__DIR__/docker-setup.sh
