@@ -1,6 +1,8 @@
 include $(X1)/make/config.amd64.mk
 
-export PLATFORM_LIST=$(shell onlpm --list-platforms --arch amd64 --csv )
+ifndef PLATFORM_LIST
+    export PLATFORM_LIST=$(shell onlpm --list-platforms --arch amd64 --csv )
+endif
 
 RFS_CONFIG := $(X1)/builds/any/rootfs/rfs.yml
 RFS_DIR := rootfs-amd64.d

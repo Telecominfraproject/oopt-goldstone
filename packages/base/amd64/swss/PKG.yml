@@ -1,0 +1,18 @@
+packages:
+  - name: x1-swss
+    arch: amd64
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Switch State Service
+    after-install: $__DIR__/after-install.sh
+    after-remove: $__DIR__/after-remove.sh
+    depends:
+    - x1-docker-syncd
+    - x1-docker-orchagent
+    files:
+        $__DIR__/builds/syncd.sh: /usr/bin/
+        $__DIR__/builds/swss.sh: /usr/bin/
+        $__DIR__/builds/swss.service: /etc/systemd/system/

@@ -22,5 +22,6 @@ else
 endif
 
 __installer:
+	-rm -f *md5sum *_INSTALLER
 	$(ONL)/tools/mkinstaller.py $(MKINSTALLER_OPTS) --out $(INSTALLER_NAME)
 	md5sum "$(INSTALLER_NAME)" | awk '{ print $$1 }' > "$(INSTALLER_NAME).md5sum"
