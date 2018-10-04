@@ -17,7 +17,7 @@ for pkg in $DOCKER_PKGS; do
     dpkg --root $TARGET --unpack `$ONL/tools/onlpm.py --lookup $pkg`
 done
 
-mkdir /newroot
+test -d /newroot || mkdir /newroot
 rm -r $TARGET/oldroot 2> /dev/null || true
 mkdir $TARGET/oldroot
 mount --bind $TARGET /newroot
