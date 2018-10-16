@@ -12,7 +12,11 @@ ONL			= $(X1)/sm/ONL
 export ONL
 endif
 
+ifdef DOCKER_IMAGE
 include $(ONL)/make/config.mk
+else
+$(warning detected host (non-docker) environment; some targets will not work)
+endif
 
 ifdef SSH_AUTH_SOCK
 
