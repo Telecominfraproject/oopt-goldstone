@@ -46,9 +46,11 @@ main(int argc, char* argv)
 {
     g_profile_index = 0;
     // sai init ports
-    sai_hostif_api_t *hostif_api = NULL;
-    sai_switch_api_t *switch_api = NULL;
-    sai_port_api_t   *port_api   = NULL;
+    sai_hostif_api_t           *hostif_api  = NULL;
+    sai_switch_api_t           *switch_api  = NULL;
+    sai_port_api_t             *port_api    = NULL;
+    sai_router_interface_api_t *rif_api     = NULL;
+    sai_virtual_router_api_t   *vrouter_api = NULL;
 
 #define TRY(_expr)                              \
     do {                                        \
@@ -57,9 +59,11 @@ main(int argc, char* argv)
     } while(0)
 
     TRY(sai_api_initialize(0, &test_services));
-    TRY(sai_api_query(SAI_API_HOSTIF, (void **)&hostif_api));
-    TRY(sai_api_query(SAI_API_SWITCH, (void **)&switch_api));
-    TRY(sai_api_query(SAI_API_PORT,   (void **)&port_api));
+    TRY(sai_api_query(SAI_API_HOSTIF,           (void **)&hostif_api));
+    TRY(sai_api_query(SAI_API_SWITCH,           (void **)&switch_api));
+    TRY(sai_api_query(SAI_API_PORT,             (void **)&port_api));
+    TRY(sai_api_query(SAI_API_ROUTER_INTERFACE, (void **)&rif_api));
+    TRY(sai_api_query(SAI_API_VIRTUAL_ROUTER,   (void **)&vrouter_api));
 
     sai_log_set(SAI_API_HOSTIF, SAI_LOG_LEVEL_DEBUG);
 
@@ -70,7 +74,7 @@ main(int argc, char* argv)
         {
             {
                 .id = SAI_SWITCH_ATTR_INIT_SWITCH,
-                .value.booldata = 1,
+                .value.booldata = true,
             },
             {
                 .id = SAI_SWITCH_ATTR_SRC_MAC_ADDRESS,
@@ -101,9 +105,35 @@ main(int argc, char* argv)
 
     TRY(switch_api->get_switch_attribute(switch_id, 1, attrs));
 
-    for ( i = 0; i < num_port; i++ ) {
+    int i = 0;
+
+    for ( ; i < num_port; i++ ) {
         printf("%d: %lx\n", i, l[i]);
     }
+
+    attrs[0].id = SAI_VIRTUAL_ROUTER_ATTR_SRC_MAC_ADDRESS;
+    memcpy(&attrs[0].value.mac, &mac, sizeof(sai_mac_t));
+
+    sai_object_id_t vr_id;
+    TRY(vrouter_api->create_virtual_router(&vr_id, switch_id, 1, attrs));
+
+    sai_object_id_t rif_id;
+    sai_attribute_t rif_attrs[] =
+        {
+            {
+                .id = SAI_ROUTER_INTERFACE_ATTR_VIRTUAL_ROUTER_ID,
+                .value.oid = vr_id,
+            },
+            {
+                .id = SAI_ROUTER_INTERFACE_ATTR_TYPE,
+                .value.u32 = SAI_ROUTER_INTERFACE_TYPE_PORT,
+            },
+            {
+                .id = SAI_ROUTER_INTERFACE_ATTR_PORT_ID,
+                .value.oid = l[0],
+            }
+        };
+    TRY(rif_api->create_router_interface(&rif_id, switch_id, 3, rif_attrs));
 
     sai_object_id_t hostif_id;
     sai_attribute_t hostif_attrs[] =
@@ -123,5 +153,7 @@ main(int argc, char* argv)
         };
 
     TRY(hostif_api->create_hostif(&hostif_id, switch_id, 3, hostif_attrs));
+
+    sleep(100);
     return 0;
 }
