@@ -8,6 +8,7 @@ Packages: &Packages
   - !script  $ONL/tools/onl-platform-pkgs.py ${PLATFORM_LIST}
   - !include $X1/builds/any/rootfs/all-packages.yml
   - !include $X1/builds/any/rootfs/${ARCH}-packages.yml
+  - !include $X1/builds/any/rootfs/swl-packages.yml
 
 Multistrap:
   General:
@@ -69,6 +70,9 @@ Configure:
     - 'faultd defaults'
     - 'onlpd defaults'
     - 'snmpd defaults'
+    - 'snmpd-baseconf defaults'
+    - 'snmpd-helper defaults'
+    - 'x1-ofad-baseconf defaults'
     - 'onlp-snmpd defaults'
     - 'ssh defaults'
     - 'openbsd-inetd remove'
@@ -88,6 +92,7 @@ Configure:
     - 'netplug defaults'
     - 'watchdog defaults'
     - 'wd_keepalive remove'
+    - 'slrest remove'
 
   options:
     clean: True
@@ -124,3 +129,4 @@ Configure:
     - $__DIR__/python-setup.sh
     - $__DIR__/docker-setup.sh
     - $__DIR__/deb-setup.sh
+    - $__DIR__/swl-setup.sh
