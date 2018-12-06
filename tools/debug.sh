@@ -6,9 +6,10 @@ toolsdir=$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)
 set -x
 . setup.env
 
+make versions
+
 bash -e -x $ONL/tools/scripts/submodule-updated.sh
 
-make versions
 make modules
 
 if test $# -eq 0; then
