@@ -21,4 +21,5 @@ packages:
     files:
       builds/x1-loader-initrd-$ARCH.cpio.gz : $$PKG_INSTALL/
       builds/manifest.json :                    $$PKG_INSTALL/
+      builds/zerotouch.json : $$PKG_INSTALL/
 
