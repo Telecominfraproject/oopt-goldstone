@@ -1,0 +1,48 @@
+variables:
+  - !include $X1/make/versions/version-x1.yml
+  - INSTALL_DIR : /usr/share/floodlight/zerotouch
+
+prerequisites:
+  broken: true
+  packages: [ "x1-swi:amd64", "onl-mibs:all" ]
+
+packages:
+  - name: x1-bundle
+    summary: X1 Release Debian Package
+    arch: all
+    version: 0.$FNAME_VERSION_ID
+    copyright: Copyright 2016 Big Switch Networks
+    maintainer: support@bigswitch.com
+    desc: $FNAME_BUILD_ID
+
+    provides:
+    - swl-bcf-bundle-internal
+    - swl-bcf-bundle-release
+    - swl-bmf-bundle-internal
+    - swl-bmf-bundle-release
+
+    conflicts:
+    - swl-bcf-bundle-internal
+    - swl-bcf-bundle-release
+    - swl-bmf-bundle-internal
+    - swl-bmf-bundle-release
+
+    replaces:
+    - swl-bcf-bundle-internal
+    - swl-bcf-bundle-release
+    - swl-bmf-bundle-internal
+    - swl-bmf-bundle-release
+
+    # allow it to supercede the other bundles
+    # XXX fixup 'virtual' to auto-expand
+
+    files:
+      builds/*AMD64*INSTALLER      : $INSTALL_DIR/
+      builds/*AMD64*.swi           : $INSTALL_DIR/
+      builds/usr/share/snmp        : usr/share/snmp
+      builds/hcl-whitelist.json    : $INSTALL_DIR/
+
+    changelog:  Change changes changes.,
+
+release:
+  $__DIR__/*.deb: apt/binary-all/
