@@ -17,3 +17,4 @@ swss.service:
 	sed -i -e '/opennsl/d' $@
 	sed -i -e '/interfaces/d' $@
 	sed -i -e '19i ExecStartPre=-bcm-kmods' $@
+	sed -i -e 's|/usr/local/bin/|/usr/bin/|' $@
