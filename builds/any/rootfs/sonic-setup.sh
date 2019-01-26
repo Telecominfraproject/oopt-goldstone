@@ -17,3 +17,6 @@ cp $IMAGE_CONFIGS/apt/sources.list.d/packages_microsoft_com_repos_sonic_dev.list
 cat $IMAGE_CONFIGS/apt/sonic-dev.gpg.key | sudo LANG=C chroot $FILESYSTEM_ROOT apt-key add -
 
 DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get update
+
+DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install python-click-default-group python-tabulate python-natsort
+# get these packages once sonic-dev is enabled (after initial multistrap)
