@@ -9,3 +9,10 @@
 - python-click
 - updategraph
 - x1-rsyslog
+- bash-completion
+# get these from sonic-dev,
+# except that it tries to pull in other packages too
+# (and currently there is a checksum corruption with hw-management)
+##- python-tabulate
+##- python-click-default-group
+##- python-natsort
