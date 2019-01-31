@@ -6,7 +6,7 @@ prerequisites:
 
 packages:
   - name: x1-rootfs
-    summary: SuperSONiC Network OS Root Filesystem
+    summary: SONiC+ONL Network OS Root Filesystem
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
     copyright: Copyright 2018 Big Switch Networks

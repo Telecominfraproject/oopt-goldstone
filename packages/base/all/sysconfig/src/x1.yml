@@ -5,7 +5,7 @@
 ############################################################
 installer:
   menu_name: X1
-  os_name: SuperSONiC Network OS
+  os_name: SONiC+ONL Network OS
   grub:
     - $PLATFORM.cpio.gz
     - x1-loader-initrd-$PARCH.cpio.gz
