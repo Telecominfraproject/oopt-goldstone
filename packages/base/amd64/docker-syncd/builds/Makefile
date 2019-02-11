@@ -10,7 +10,7 @@ $(SONIC)/.platform:
 
 docker-syncd.gz: $(SONIC)/.platform
 	$(MAKE) -C $(SONIC) target/docker-syncd-brcm.gz
-	ln -s $(SONIC)/target/docker-syncd-brcm.gz $@
+	ln -sf $(SONIC)/target/docker-syncd-brcm.gz $@
 
 clean:
 	-rm docker-syncd.gz

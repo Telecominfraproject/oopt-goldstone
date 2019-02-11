@@ -17,7 +17,7 @@ $(SONIC)/.platform:
 
 docker-database.gz: $(SONIC)/.platform
 	$(MAKE) -C $(SONIC) target/docker-database.gz
-	ln -s $(SONIC)/target/docker-database.gz $@
+	ln -sf $(SONIC)/target/docker-database.gz $@
 
 database.sh:
 	j2 $(SONIC)/files/build_templates/docker_image_ctl.j2 > $@

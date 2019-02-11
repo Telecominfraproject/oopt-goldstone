@@ -10,7 +10,7 @@ $(SONIC)/.platform:
 
 docker-orchagent.gz: $(SONIC)/.platform
 	$(MAKE) -C $(SONIC) target/docker-orchagent-brcm.gz
-	ln -s $(SONIC)/target/docker-orchagent-brcm.gz $@
+	ln -sf $(SONIC)/target/docker-orchagent-brcm.gz $@
 
 clean:
 	-rm docker-orchagent.gz
