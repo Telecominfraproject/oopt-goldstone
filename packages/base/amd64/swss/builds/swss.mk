@@ -9,12 +9,18 @@ export docker_image_run_opt := $($(docker)_RUN_OPT)
 export sonic_asic_platform := broadcom
 
 swss.sh: docker_image_ctl.j2
-	j2 $^ > $@
+	j2 docker_image_ctl.j2 > $@
 	chmod +x $@
 
-swss.service:
-	j2 $(SONIC)/files/build_templates/$@.j2 > $@
+swss.service: $(SONIC)/files/build_templates/swss.service.j2 swss.mk
+	j2 $< > $@
 	sed -i -e '/opennsl/d' $@
 	sed -i -e '/interfaces/d' $@
-	sed -i -e '19i ExecStartPre=-bcm-kmods' $@
+	sed -i -e '14i ExecStartPre=-bcm-kmods' $@
+	sed -i -e 's|/usr/local/bin/|/usr/bin/|' $@
+
+syncd.service: $(SONIC)/files/build_templates/syncd.service.j2 swss.mk
+	j2 $< > $@
+	sed -i -e '/opennsl/d' $@
+	sed -i -e '/interfaces/d' $@
 	sed -i -e 's|/usr/local/bin/|/usr/bin/|' $@
