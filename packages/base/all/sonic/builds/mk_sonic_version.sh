@@ -22,7 +22,7 @@ echo "sonic debian version is $ver"
 # Hm, sonic has its own kernel version but that is not what ONL is running
 # it's difficult to predict the ONL kernel version since it is platform-specific
 grep = $SONIC/rules/linux-kernel.mk > linux-kernel.mk
-kver=$(make -f slave.mk showkernel)
+kver=$(make -f slave.mk showkernel) || exit 1
 echo "sonic kernel version is $kver"
 
 sudo tee sonic_version.yml > /dev/null <<EOF
