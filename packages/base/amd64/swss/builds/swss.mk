@@ -16,7 +16,7 @@ swss.service: $(SONIC)/files/build_templates/swss.service.j2 swss.mk
 	j2 $< > $@
 	sed -i -e '/opennsl/d' $@
 	sed -i -e '/interfaces/d' $@
-	sed -i -e '14i ExecStartPre=-bcm-kmods' $@
+	sed -i -e '14i ExecStartPre=-/usr/bin/bcm-kmods' $@
 	sed -i -e 's|/usr/local/bin/|/usr/bin/|' $@
 
 syncd.service: $(SONIC)/files/build_templates/syncd.service.j2 swss.mk
