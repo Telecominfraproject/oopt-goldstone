@@ -2,3 +2,4 @@
 !.gitignore
 !Makefile
 !mk_sonic_version.sh
+!edit-rc-local
