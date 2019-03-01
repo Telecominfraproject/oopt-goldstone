@@ -16,4 +16,4 @@ docker: docker_check
 sonic:
 	$(MAKE) -C sm/sonic-buildimage init
 	$(MAKE) -C sm/sonic-buildimage configure PLATFORM=broadcom
-	$(MAKE) -C sm/sonic-buildimage
+	$(MAKE) -C sm/sonic-buildimage target/sonic-broadcom.bin
