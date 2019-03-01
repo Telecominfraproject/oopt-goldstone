@@ -1,0 +1,32 @@
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+LINUX_KNET_CB_NAME ?= linux-knet-cb
+
+obj-m := $(LINUX_KNET_CB_NAME).o
+
+#
+# These are the sources that must be built into this module
+#
+SOURCES := \
+        $(SDK)/systems/linux/kernel/modules/knet-cb/knet-cb.c \
+        $(SDK)/systems/linux/kernel/modules/shared/gmodule.c \
+
+
+
+#
+# The kernel build system requires paths relative to the module build directory.
+#
+RELSOURCES := $(foreach source,$(SOURCES),$(shell realpath --relative-to=$(THIS_DIR) $(source)))
+
+$(LINUX_KNET_CB_NAME)-y := $(RELSOURCES:.c=.o)
+
+ccflags-y := -I$(SDK)/systems/linux/kernel/modules/include
+ccflags-y += -I$(SDK)/systems/bde/linux/include
+ccflags-y += -I$(SDK)/systems/bde/shared/include
+ccflags-y += -I$(SDK)/include
+
+ccflags-y += -DBCM_ESW_SUPPORT
+ccflags-$(IPROC_CMICD) += -DIPROC_CMICD
+ccflags-y += $(ccflags-extra)
+
+-include $(THIS_DIR)/../Kbuild.$(ARCH)

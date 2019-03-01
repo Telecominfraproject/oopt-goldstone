@@ -1,0 +1,23 @@
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+LINUX_USER_BDE_NAME ?= linux-user-bde
+
+obj-m := $(LINUX_USER_BDE_NAME).o
+
+SOURCES := $(SDK)/systems/bde/linux/user/kernel/linux-user-bde.o \
+        $(SDK)/systems/linux/kernel/modules/shared/gmodule.o \
+        $(SDK)/systems/linux/kernel/modules/shared/ksal.c
+
+RELSOURCES := $(foreach source,$(SOURCES),$(shell realpath --relative-to=$(THIS_DIR) $(source)))
+$(LINUX_USER_BDE_NAME)-y := $(RELSOURCES:.c=.o)
+
+ccflags-y := -I$(SDK)/systems/linux/kernel/modules/include
+ccflags-y += -I$(SDK)/systems/bde/linux/include
+ccflags-y += -I$(SDK)/systems/bde/shared/include
+ccflags-y += -I$(SDK)/include
+
+ccflags-y += -DBCM_ESW_SUPPORT
+ccflags-$(IPROC_CMICD) += -DIPROC_CMICD
+ccflags-y += $(ccflags-extra)
+
+-include $(THIS_DIR)/../Kbuild.$(ARCH)

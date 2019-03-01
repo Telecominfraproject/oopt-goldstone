@@ -1,0 +1,35 @@
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+LINUX_BCM_KNET_NAME ?= linux-bcm-knet
+
+obj-m := $(LINUX_BCM_KNET_NAME).o
+
+#
+# These are the sources that must be built into this module
+#
+SOURCES := \
+        $(SDK)/systems/linux/kernel/modules/bcm-knet/bcm-knet.c \
+        $(SDK)/systems/linux/kernel/modules/shared/gmodule.c \
+
+
+
+#
+# The kernel build system requires paths relative to the module build directory.
+#
+RELSOURCES := $(foreach source,$(SOURCES),$(shell realpath --relative-to=$(THIS_DIR) $(source)))
+
+$(LINUX_BCM_KNET_NAME)-y := $(RELSOURCES:.c=.o)
+
+ccflags-y := -I$(SDK)/systems/linux/kernel/modules/include
+ccflags-y += -I$(SDK)/systems/bde/linux/include
+ccflags-y += -I$(SDK)/systems/bde/shared/include
+ccflags-y += -I$(SDK)/include
+
+ccflags-y += -DBCM_ESW_SUPPORT
+ccflags-$(IPROC_CMICD) += -DIPROC_CMICD
+
+# Important -- the KCOM_FILTER_MAX must match the clags in sonic-buildimage/platform/broadcom/saibcm-modules/make/Make.config
+ccflags-y += -DKCOM_FILTER_MAX=256
+ccflags-y += $(ccflags-extra)
+
+-include $(THIS_DIR)/../Kbuild.$(ARCH)

@@ -1,0 +1,1 @@
+!include $X1/packages/base/any/sai/bcm/saibcm-kernel/APKG.yml KERNEL=kernel-4.14-lts-x86-64-all ARCH=amd64

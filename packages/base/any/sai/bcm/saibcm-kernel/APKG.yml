@@ -1,0 +1,14 @@
+prerequisites:
+  packages: [ 'onl-$KERNEL:$ARCH' ]
+
+packages:
+  - name: x1-saibcm-$KERNEL
+    summary: Broadcom SAI Kernel Modules for $KERNEL
+    arch: $ARCH
+    version: 6.5
+    copyright: Copyright 2013-2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: None
+
+    files:
+      builds/lib : lib
