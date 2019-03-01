@@ -1,0 +1,53 @@
+#!/bin/bash
+
+if [ ! -e /dev/linux-kernel-bde ]; then
+    mknod /dev/linux-kernel-bde c 127 0
+fi
+
+if [ ! -e /dev/linux-user-bde ]; then
+    mknod /dev/linux-user-bde c 126 0
+fi
+
+if [ ! -e /dev/linux-bcm-knet ]; then
+    mknod /dev/linux-bcm-knet c 122 0;
+fi
+
+if [ ! -e /dev/linux-knet-cb ]; then
+    mknod /dev/linux-knet-cb c 121 0
+fi
+
+function insert
+{
+    insmod /lib/modules/`uname -r`/$1.ko $2 $3 $4 $5 $6 $7
+}
+
+function insert_all
+{
+    insert linux-kernel-bde dmasize=64M maxpayload=128
+    insert linux-user-bde
+    insert linux-bcm-knet use_rx_skb=1 rx_buffer_size=9238
+    insert linux-knet-cb
+}
+
+function remove
+{
+    name=$(echo $1 | tr '-' '_')
+    if lsmod | grep -q $name; then
+        echo "Removing $1..."
+        rmmod $1
+    fi
+}
+
+function remove_all
+{
+    remove linux-knet-cb
+    remove linux-bcm-knet
+    remove linux-user-bde
+    remove linux-kernel-bde
+}
+
+if [ "$1" = "remove" ]; then
+    remove_all
+else
+    insert_all
+fi
