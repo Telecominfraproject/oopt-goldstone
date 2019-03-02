@@ -15,6 +15,7 @@ $(TARGET):
 	$(ONLPM) --copy-file onl-loader-initrd:$(ARCH) onl-loader-initrd-$(ARCH).cpio.gz .
 	$(ONLPM) --copy-file onl-loader-initrd:$(ARCH) manifest.json .
 	$(ONL)/tools/sjson.py --inout manifest.json --kj version $(X1)/make/versions/version-x1.json
+	$(X1)/tools/zerotouch.py --manifest-version 1 --operation installer --manifest manifest.json > zerotouch.json
 	sudo rm -rf $(ROOT) && mkdir $(ROOT)
 	sudo mkdir -p $(ROOT)/etc/x1/loader && sudo cp manifest.json $(ROOT)/etc/x1/loader
 	sudo cp $(X1)/make/versions/version-x1.json $(ROOT)/etc/x1/loader/versions.json

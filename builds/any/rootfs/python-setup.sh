@@ -8,7 +8,9 @@ PYTHON_PKGS=`cat $X1/builds/any/rootfs/python-packages.yml | python -c 'import s
 
 cd $X1
 
-chroot $TARGET pip install natsort
+##chroot $TARGET pip install natsort
+##chroot $TARGET pip install click-default-group
+##chroot $TARGET pip install tabulate
 
 for pkg in $PYTHON_PKGS; do
     WHEEL=target/python-wheels/$pkg

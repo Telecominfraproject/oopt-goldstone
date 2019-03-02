@@ -10,6 +10,11 @@ if [ -z "$DOCKER_PKGS" ]; then
     exit 0
 fi
 
+# emulate steps in $(installer_extra_files) (slave.mk, files/build_templates/sonic_debian_extension.j2)
+cp $SONIC/dockers/docker-database/base_image_files/redis-cli $TARGET/usr/bin/.
+cp $SONIC/dockers/docker-orchagent/base_image_files/swssloglevel $TARGET/usr/bin/.
+# XXX not sure which orchagent to use here
+
 cd $X1
 
 for pkg in $DOCKER_PKGS; do
@@ -17,7 +22,7 @@ for pkg in $DOCKER_PKGS; do
     dpkg --root $TARGET --unpack `$ONL/tools/onlpm.py --lookup $pkg`
 done
 
-mkdir /newroot
+test -d /newroot || mkdir /newroot
 rm -r $TARGET/oldroot 2> /dev/null || true
 mkdir $TARGET/oldroot
 mount --bind $TARGET /newroot

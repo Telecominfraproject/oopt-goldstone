@@ -7,7 +7,7 @@ prerequisites:
 
 packages:
   - name: x1-swi
-    summary: SuperSONiC Network OS Switch Image (All $ARCH) Platforms)
+    summary: SONiC+ONL Network OS Switch Image (All $ARCH) Platforms)
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
     copyright: Copyright 2018 Big Switch Networks

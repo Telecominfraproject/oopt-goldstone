@@ -10,8 +10,12 @@ endif
 include $(X1)/make/versions/version-x1.mk
 INSTALLER_NAME=$(FNAME_PRODUCT_VERSION)_ONL-OS_$(FNAME_BUILD_ID)_$(UARCH)_$(BOOTMODE)_INSTALLER
 
-MKINSTALLER_OPTS :=   --arch $(ARCH)   --boot-config boot-config   --swi x1-swi:$(ARCH)
-
+MKINSTALLER_OPTS := \
+  --arch $(ARCH) \
+  --boot-config boot-config \
+  --swi x1-swi:$(ARCH) \
+  --add-file zerotouch.json \
+  # THIS LINE INTENTIONALLY LEFT BLANK
 
 ifeq ($(ARCH_BOOT),uboot)
     MKINSTALLER_OPTS += --fit x1-loader-fit:$(ARCH) x1-loader-fit.itb
@@ -23,5 +27,6 @@ endif
 
 __installer:
 	-rm -f *md5sum *_INSTALLER
+	$(ONLPM) --copy-file x1-loader-initrd:$(ARCH) zerotouch.json .
 	$(ONL)/tools/mkinstaller.py $(MKINSTALLER_OPTS) --out $(INSTALLER_NAME)
 	md5sum "$(INSTALLER_NAME)" | awk '{ print $$1 }' > "$(INSTALLER_NAME).md5sum"

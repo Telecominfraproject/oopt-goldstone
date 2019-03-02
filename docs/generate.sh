@@ -11,7 +11,7 @@ fi
 
 sm/ONL/tools/onl-nos-create.py \
     --root . \
-    --name "SuperSONiC Network OS" \
+    --name "SONiC+ONL Network OS" \
     --prefix x1 \
     --arches amd64 \
     --debian jessie stretch \

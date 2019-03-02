@@ -14,5 +14,6 @@ packages:
     - x1-docker-orchagent
     files:
         $__DIR__/builds/syncd.sh: /usr/bin/
+        $__DIR__/builds/syncd.service: /etc/systemd/system/
         $__DIR__/builds/swss.sh: /usr/bin/
         $__DIR__/builds/swss.service: /etc/systemd/system/
