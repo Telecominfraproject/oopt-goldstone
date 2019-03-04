@@ -1,7 +1,6 @@
 [submodule "sm/ONL"]
 	path = sm/ONL
-	url = git@github.com:carlroth/OpenNetworkLinux
-	branch = X1
+	url = git@github.com:opennetworklinux/OpenNetworkLinux
 [submodule "sm/sonic-buildimage"]
 	path = sm/sonic-buildimage
 	url = https://github.com/ishidawataru/sonic-buildimage.git
