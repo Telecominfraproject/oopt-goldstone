@@ -21,7 +21,7 @@ endif
 ifdef SSH_AUTH_SOCK
 
 VOLUMES_ARGS		= \
-  $(shell sm/ONL/docker/tools/gitroot) \
+  $(shell sm/ONL/tools/scripts/gitroot) \
   /var/run/docker.sock \
   $(shell realpath $${SSH_AUTH_SOCK}) \
   # THIS LINE INTENTIONALLY LEFT BLANK
@@ -29,7 +29,7 @@ VOLUMES_ARGS		= \
 else
 
 VOLUMES_ARGS		= \
-  $(shell sm/ONL/docker/tools/gitroot) \
+  $(shell sm/ONL/tools/scripts/gitroot) \
   /var/run/docker.sock \
   # THIS LINE INTENTIONALLY LEFT BLANK
 
