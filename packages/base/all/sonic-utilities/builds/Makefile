@@ -6,8 +6,15 @@ include $(SONIC)/rules/sonic-utilities.mk
 all: python-sonic-utilities_all.deb python-click_all.deb
 
 python-sonic-utilities_all.deb:
-	$(MAKE) -C $(SONIC) target/python-debs/$(SONIC_UTILS)
-	ln -sf $(SONIC)/target/python-debs/$(SONIC_UTILS) $@
+	@: ;\
+	set -x; set -e ;\
+	if test -d $(SONIC)/target/python-debs; then \
+	  $(MAKE) -C $(SONIC) target/python-debs/$(SONIC_UTILS) ;\
+	  ln -sf $(SONIC)/target/python-debs/$(SONIC_UTILS) $@ ;\
+	else \
+	  $(MAKE) -C $(SONIC) target/debs/$(SONIC_UTILS) ;\
+	  ln -sf $(SONIC)/target/debs/$(SONIC_UTILS) $@ ;\
+	fi
 
 python-click_all.deb:
 	$(MAKE) -C $(SONIC) target/debs/$(PYTHON_CLICK)
