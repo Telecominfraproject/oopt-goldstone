@@ -13,6 +13,7 @@ environment:
 
 rc.local: $(SONIC)/files/image_config/platform/rc.local edit-rc-local
 	./edit-rc-local $(SONIC)/files/image_config/platform/rc.local $@
+	chmod +x $@
 
 device:
 	mkdir device
