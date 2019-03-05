@@ -22,6 +22,26 @@ for pkg in $DOCKER_PKGS; do
     dpkg --root $TARGET --unpack `$ONL/tools/onlpm.py --lookup $pkg`
 done
 
+# for now syncd and swss are using init and not systemd
+# see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=805498
+# UGH UGH UGH update-rc.d is not aware of systemd units
+
+ln -s /etc/init.d/syncd $TARGET/etc/rc0.d/K01syncd
+ln -s /etc/init.d/syncd $TARGET/etc/rc1.d/K01syncd
+ln -s /etc/init.d/syncd $TARGET/etc/rc2.d/S90syncd
+ln -s /etc/init.d/syncd $TARGET/etc/rc3.d/S90syncd
+ln -s /etc/init.d/syncd $TARGET/etc/rc4.d/S90syncd
+ln -s /etc/init.d/syncd $TARGET/etc/rc5.d/S90syncd
+ln -s /etc/init.d/syncd $TARGET/etc/rc6.d/K01syncd
+
+ln -s /etc/init.d/swss $TARGET/etc/rc0.d/K01swss
+ln -s /etc/init.d/swss $TARGET/etc/rc1.d/K01swss
+ln -s /etc/init.d/swss $TARGET/etc/rc2.d/S90swss
+ln -s /etc/init.d/swss $TARGET/etc/rc3.d/S90swss
+ln -s /etc/init.d/swss $TARGET/etc/rc4.d/S90swss
+ln -s /etc/init.d/swss $TARGET/etc/rc5.d/S90swss
+ln -s /etc/init.d/swss $TARGET/etc/rc6.d/K01swss
+
 test -d /newroot || mkdir /newroot
 rm -r $TARGET/oldroot 2> /dev/null || true
 mkdir $TARGET/oldroot
