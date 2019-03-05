@@ -21,7 +21,9 @@ dst=$1; shift
 	/[>][>] [/]host[/]machine[.]conf/
 	/done/
 	a
-	echo "onie_platform=\${onie_build_platform}" >> /host/machine.conf
+	if test "\${onie_build_platform}"; then
+	  echo "onie_platform=\${onie_build_platform}" >> /host/machine.conf
+	fi
 	.
 	w $dst
 	q
