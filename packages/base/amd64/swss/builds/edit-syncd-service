@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+set -x
+
+src=$1; shift
+dst=$1; shift
+
+j2 "$src" > ${dst}~
+
+/bin/ed <<-END
+	H
+	P
+	r ${dst}~
+	,g/opennsl/d
+	,g/interfaces/d
+	,g/\/usr\/local\/bin/s/\/usr\/local/\/usr/
+	w $dst
+	q
+	END
+
+exit 0

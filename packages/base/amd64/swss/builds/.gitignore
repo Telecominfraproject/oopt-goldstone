@@ -3,3 +3,6 @@
 !Makefile
 !swss.mk
 !syncd.mk
+!edit-docker-template
+!edit-syncd-service
+!edit-swss-service

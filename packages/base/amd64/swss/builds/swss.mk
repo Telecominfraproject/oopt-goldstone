@@ -12,15 +12,8 @@ swss.sh: docker_image_ctl.j2
 	j2 docker_image_ctl.j2 > $@
 	chmod +x $@
 
-swss.service: $(SONIC)/files/build_templates/swss.service.j2 swss.mk
-	j2 $< > $@
-	sed -i -e '/opennsl/d' $@
-	sed -i -e '/interfaces/d' $@
-	sed -i -e '14i ExecStartPre=-/usr/bin/bcm-kmods' $@
-	sed -i -e 's|/usr/local/bin/|/usr/bin/|' $@
+swss.service: $(SONIC)/files/build_templates/swss.service.j2 edit-swss-service
+	./edit-swss-service $(SONIC)/files/build_templates/swss.service.j2 $@
 
-syncd.service: $(SONIC)/files/build_templates/syncd.service.j2 swss.mk
-	j2 $< > $@
-	sed -i -e '/opennsl/d' $@
-	sed -i -e '/interfaces/d' $@
-	sed -i -e 's|/usr/local/bin/|/usr/bin/|' $@
+syncd.service: $(SONIC)/files/build_templates/syncd.service.j2 edit-syncd-service
+	./edit-syncd-service $(SONIC)/files/build_templates/syncd.service.j2 $@
