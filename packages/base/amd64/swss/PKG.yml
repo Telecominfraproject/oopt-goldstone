@@ -7,13 +7,9 @@ packages:
     changelog: Initial
     support:   support@bigswitch.com
     summary: X1 Switch State Service
-    after-install: $__DIR__/after-install.sh
-    after-remove: $__DIR__/after-remove.sh
     depends:
     - x1-docker-syncd
     - x1-docker-orchagent
     files:
-        $__DIR__/builds/syncd.sh: /usr/bin/
-        $__DIR__/builds/syncd.service: /etc/systemd/system/
-        $__DIR__/builds/swss.sh: /usr/bin/
-        $__DIR__/builds/swss.service: /etc/systemd/system/
+        $__DIR__/builds/syncd.sh: /etc/init.d/syncd
+        $__DIR__/builds/swss.sh: /etc/init.d/swss

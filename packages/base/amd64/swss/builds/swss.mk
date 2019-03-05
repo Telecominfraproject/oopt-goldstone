@@ -8,12 +8,11 @@ export docker_container_name := $($(docker)_CONTAINER_NAME)
 export docker_image_run_opt := $($(docker)_RUN_OPT)
 export sonic_asic_platform := broadcom
 
-swss.sh: docker_image_ctl.j2
-	j2 docker_image_ctl.j2 > $@
+swss.sh: docker_image_ctl.j2 swss.sh.pre
+	cp /dev/null $@
+	cat swss.sh.pre >> $@
+	j2 docker_image_ctl.j2 >> $@
 	chmod +x $@
 
 swss.service: $(SONIC)/files/build_templates/swss.service.j2 edit-swss-service
 	./edit-swss-service $(SONIC)/files/build_templates/swss.service.j2 $@
-
-syncd.service: $(SONIC)/files/build_templates/syncd.service.j2 edit-syncd-service
-	./edit-syncd-service $(SONIC)/files/build_templates/syncd.service.j2 $@

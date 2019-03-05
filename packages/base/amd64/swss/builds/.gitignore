@@ -6,3 +6,5 @@
 !edit-docker-template
 !edit-syncd-service
 !edit-swss-service
+!swss.sh.pre
+!syncd.sh.pre

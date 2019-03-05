@@ -17,7 +17,7 @@ syncd.sh: docker_image_ctl.j2
 	$(MAKE) -f syncd.mk $@
 
 syncd.service: swss.mk
-	$(MAKE) -f swss.mk $@
+	$(MAKE) -f syncd.mk $@
 
 clean:
 	-rm $(ALL)

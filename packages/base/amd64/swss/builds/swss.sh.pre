@@ -1,0 +1,12 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:        swss
+# Required-Start:  $network $remote_fs $syslog database updategraph
+# Required-Stop:   $network $remote_fs $syslog database updategraph
+# Default-Start:   2 3 4 5
+# Default-Stop:
+# Short-Description: Start SoNIC swss service
+### END INIT INFO
+
+/usr/bin/bcm-kmods || :

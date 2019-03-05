@@ -1,0 +1,10 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:        syncd
+# Required-Start:  $network $remote_fs $syslog database updategraph
+# Required-Stop:   $network $remote_fs $syslog database updategraph
+# Default-Start:   2 3 4 5
+# Default-Stop:
+# Short-Description: Start the SoNIC syncd service
+### END INIT INFO
