@@ -1,5 +1,5 @@
 variables:
-  !include $X1/make/versions/version-x1.yml
+  !include $X1/make/versions/version-sonl.yml
 
 prerequisites:
   broken: true
@@ -23,4 +23,3 @@ packages:
 release:
   - builds/*.swi : $ARCH/
   - builds/*.md5sum : $ARCH/
-

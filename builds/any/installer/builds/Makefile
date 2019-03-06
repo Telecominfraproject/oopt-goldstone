@@ -7,7 +7,7 @@ $(error $$BOOTMODE not set)
 endif
 
 # Hardcoded to match ONL File naming conventions.
-include $(X1)/make/versions/version-x1.mk
+include $(X1)/make/versions/version-sonl.mk
 INSTALLER_NAME=$(FNAME_PRODUCT_VERSION)_ONL-OS_$(FNAME_BUILD_ID)_$(UARCH)_$(BOOTMODE)_INSTALLER
 
 MKINSTALLER_OPTS := \
