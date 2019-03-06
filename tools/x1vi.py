@@ -4,7 +4,7 @@ class OnlVersionImplementation(object):
 
     PRODUCTS = [
         {
-            "id" : "X1",
+            "id" : "SONL",
 #            "version": "Your poduct version here.""
             }
         ]
@@ -45,16 +45,16 @@ class OnlVersionImplementation(object):
         return data['product']['version']
 
     def V_VERSION_ID(self, data):
-        return "X1-{}".format(self.V_PRODUCT_ID_VERSION(data))
+        return "SONL-{}".format(self.V_PRODUCT_ID_VERSION(data))
 
     def V_FNAME_VERSION_ID(self, data):
         return self.V_VERSION_ID(data)
 
     def V_PRODUCT_VERSION(self, data):
-        return "X1-{}".format(self.V_PRODUCT_ID_VERSION(data))
+        return "SONL-{}".format(self.V_PRODUCT_ID_VERSION(data))
 
     def V_FNAME_PRODUCT_VERSION(self, data):
-        return "X1-{}".format(self.V_PRODUCT_ID_VERSION(data))
+        return "SONL-{}".format(self.V_PRODUCT_ID_VERSION(data))
 
     def V_VERSION_STRING(self, data):
         return "{} {}, {}".format(self.V_OS_NAME(data), self.V_VERSION_ID(data), self.V_BUILD_ID(data))
