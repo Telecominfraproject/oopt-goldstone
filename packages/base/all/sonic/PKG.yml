@@ -15,3 +15,4 @@ packages:
         $__DIR__/builds/firsttime: /host/image-${SONIC_VERSION}/platform/
         $X1/sm/sonic-buildimage/fsroot/etc/sonic : /etc/sonic
         $X1/sm/sonic-buildimage/fsroot/usr/bin/vtysh : /usr/bin/
+        $X1/sm/sonic-buildimage/fsroot/usr/bin/lldpctl : /usr/bin/
