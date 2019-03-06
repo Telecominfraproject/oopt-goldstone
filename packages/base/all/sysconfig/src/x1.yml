@@ -4,7 +4,7 @@
 #
 ############################################################
 installer:
-  menu_name: X1
+  menu_name: SONL
   os_name: SONiC+ONL Network OS
   grub:
     - $PLATFORM.cpio.gz
@@ -21,18 +21,18 @@ upgrade:
   onie:
     auto: advisory
     package:
-      dir: /lib/platform-config/current/x1/upgrade/onie
+      dir: /lib/platform-config/current/sonl/upgrade/onie
 
   firmware:
     auto: advisory
     package:
-      dir: /lib/platform-config/current/x1/upgrade/firmware
+      dir: /lib/platform-config/current/sonl/upgrade/firmware
 
   loader:
     auto: force
-    versions: /etc/x1/loader/versions.json
+    versions: /etc/sonl/loader/versions.json
     package:
-      dir: /etc/x1/upgrade/$PARCH
+      dir: /etc/sonl/upgrade/$PARCH
       grub:
         - $PLATFORM.cpio.gz
         - x1-loader-initrd-$PARCH.cpio.gz
@@ -56,4 +56,3 @@ pki:
         organizationalUnitName: Open Network Linux
         emailAddress: support@bigswitch.com
       cdays: 3600
-

@@ -4,8 +4,8 @@
 # custom preparation prior to switching root.
 #
 ############################################################
-cp -R /etc/x1 /newroot/etc
+cp -R /etc/sonl /newroot/etc
 
 if [ -d /var/run/udhcpc ]; then
-   cp -R /var/run/udhcpc /newroot/etc/x1/loader
+   cp -R /var/run/udhcpc /newroot/etc/sonl/loader
 fi

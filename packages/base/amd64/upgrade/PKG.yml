@@ -13,7 +13,7 @@ packages:
     maintainer: support@bigswitch.com
     changelog: Initial
     support:   support@bigswitch.com
-    summary: X1 Upgrade Package
+    summary: SONL Upgrade Package
 
     files:
-      builds/files : /etc/x1/upgrade/amd64
+      builds/files : /etc/sonl/upgrade/amd64
