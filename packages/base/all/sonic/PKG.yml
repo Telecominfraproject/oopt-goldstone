@@ -8,9 +8,10 @@ packages:
     support:   support@bigswitch.com
     summary: SONiC basic
     files:
-        $__DIR__/builds/sonic_version.yml: /etc/sonic/
         $__DIR__/builds/motd: /etc/environment/
         $__DIR__/builds/environment: /etc/environment/
         $__DIR__/builds/rc.local: /etc/
         $__DIR__/builds/device: /usr/share/sonic/device/
         $__DIR__/builds/firsttime: /host/image-${SONIC_VERSION}/platform/
+        $X1/sm/sonic-buildimage/fsroot/etc/sonic : /etc/sonic
+        $X1/sm/sonic-buildimage/fsroot/usr/bin/vtysh : /usr/bin/
