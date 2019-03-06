@@ -1,6 +1,7 @@
 include $(X1)/make/config.mk
 
 ALL := syncd.sh syncd.service swss.sh swss.service
+.PHONY : $(ALL)
 
 all: $(ALL)
 
