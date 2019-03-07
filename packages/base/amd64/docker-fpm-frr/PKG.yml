@@ -1,0 +1,19 @@
+packages:
+  - name: x1-docker-fpm-frr
+    arch: amd64
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Docker Service for fpm-frr
+    after-install: $__DIR__/after-install.sh
+    after-remove: $__DIR__/after-remove.sh
+    depends:
+    - docker-ce
+    build-depends:
+    - docker-ce
+    files:
+        $__DIR__/builds/docker-fpm-frr.gz: /var/cache/apt/
+        $__DIR__/builds/bgp.sh: /usr/bin/
+        $__DIR__/builds/bgp.service: /etc/systemd/system/
