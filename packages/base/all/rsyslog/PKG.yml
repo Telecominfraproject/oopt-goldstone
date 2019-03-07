@@ -14,5 +14,4 @@ packages:
     files:
         $SONIC_IMAGE_CONFIGS/rsyslog/rsyslog-config.service: /etc/systemd/system/
         $SONIC_IMAGE_CONFIGS/rsyslog/rsyslog-config.sh: /usr/bin/
-        $SONIC_IMAGE_CONFIGS/rsyslog/rsyslog.conf.j2: /usr/share/sonic/templates/
         $SONIC_IMAGE_CONFIGS/rsyslog/rsyslog.d: /etc/rsyslog.d

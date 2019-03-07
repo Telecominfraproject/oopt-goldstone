@@ -8,11 +8,19 @@ packages:
     support:   support@bigswitch.com
     summary: SONiC basic
     files:
-        $__DIR__/builds/motd: /etc/environment/
-        $__DIR__/builds/environment: /etc/environment/
-        $__DIR__/builds/rc.local: /etc/
-        $__DIR__/builds/device: /usr/share/sonic/device/
-        $__DIR__/builds/firsttime: /host/image-${SONIC_VERSION}/platform/
+        builds/motd: /etc/environment/
+        builds/environment: /etc/environment/
+        builds/rc.local: /etc/
+        builds/firsttime: /host/image-${SONIC_VERSION}/platform/
+        builds/pmon.service : /etc/systemd/system/
+        $X1/sm/sonic-buildimage/fsroot/usr/share/sonic/device : /usr/share/sonic/device
+        $X1/sm/sonic-buildimage/fsroot/usr/share/sonic/templates : /usr/share/sonic/templates
         $X1/sm/sonic-buildimage/fsroot/etc/sonic : /etc/sonic
         $X1/sm/sonic-buildimage/fsroot/usr/bin/vtysh : /usr/bin/
         $X1/sm/sonic-buildimage/fsroot/usr/bin/lldpctl : /usr/bin/
+        $X1/sm/sonic-buildimage/fsroot/usr/bin/hostname-config.sh : /usr/bin/
+        $X1/sm/sonic-buildimage/fsroot/etc/systemd/system/hostname-config.service : /etc/systemd/system/
+        $X1/sm/sonic-buildimage/fsroot/usr/bin/interfaces-config.sh : /usr/bin/
+        $X1/sm/sonic-buildimage/fsroot/etc/systemd/system/interfaces-config.service : /etc/systemd/system/
+        $X1/sm/sonic-buildimage/fsroot/usr/bin/ntp-config.sh : /usr/bin/
+        $X1/sm/sonic-buildimage/fsroot/etc/systemd/system/ntp-config.service : /etc/systemd/system/
