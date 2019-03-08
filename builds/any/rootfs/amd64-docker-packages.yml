@@ -2,7 +2,7 @@
 - x1-docker-database
 - x1-docker-syncd
 - x1-docker-orchagent
-- x1-docker-fpm-frr
+- x1-docker-fpm-quagga
 - x1-docker-router-advertiser
 - x1-docker-teamd
 - x1-docker-lldp-sv2
