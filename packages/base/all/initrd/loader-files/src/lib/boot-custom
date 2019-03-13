@@ -9,3 +9,5 @@ cp -R /etc/sonl /newroot/etc
 if [ -d /var/run/udhcpc ]; then
    cp -R /var/run/udhcpc /newroot/etc/sonl/loader
 fi
+
+ip link set dev ma1 name eth0
