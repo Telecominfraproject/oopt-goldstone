@@ -1,0 +1,6 @@
+[Unit]
+Description=some description
+
+[Service]
+Type=oneshot
+ExecStart=/bin/true
