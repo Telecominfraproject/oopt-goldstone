@@ -1,5 +1,8 @@
 #!/bin/sh
 
-docker inspect docker-fpm-frr:latest || docker load < /var/cache/apt/docker-fpm-frr.gz
+set -eux
+
+IMAGE=docker-fpm-frr
+docker inspect $IMAGE:latest || docker load < /var/cache/apt/$IMAGE.gz
 systemctl enable bgp
-rm /var/cache/apt/docker-fpm-frr.gz
+rm /var/cache/apt/$IMAGE.gz

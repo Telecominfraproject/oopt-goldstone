@@ -2,15 +2,24 @@ include $(X1)/make/config.mk
 
 export sonic_asic_platform := broadcom
 
-all: docker-orchagent.gz
+ALL := docker-orchagent.gz swss.sh swss.service
+.PHONY: $(ALL)
+
+all: $(ALL)
 
 $(SONIC)/.platform:
 	$(MAKE) -C $(SONIC) init
 	$(MAKE) -C $(SONIC) configure PLATFORM=$(sonic_asic_platform)
 
 docker-orchagent.gz: $(SONIC)/.platform
-	$(MAKE) -C $(SONIC) target/docker-orchagent-brcm.gz
-	ln -sf $(SONIC)/target/docker-orchagent-brcm.gz $@
+	$(MAKE) -C $(SONIC) target/$@
+	ln -sf $(SONIC)/target/$@ $@
+
+swss.sh: swss.mk
+	$(MAKE) -f swss.mk $@
+
+swss.service: swss.mk
+	$(MAKE) -f swss.mk $@
 
 clean:
-	-rm docker-orchagent.gz
+	-$(RM) $(ALL) *~

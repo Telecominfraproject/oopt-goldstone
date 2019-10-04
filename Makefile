@@ -41,7 +41,7 @@ VOLUMES_OPTS		= \
 
 BUILDER_OPTS		= \
   --verbose \
-  -8 \
+  -9 \
   --hostname x1builder$(VERSION) \
   --workdir $(shell pwd) \
   --isolate \

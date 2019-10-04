@@ -1,5 +1,8 @@
 #!/bin/sh
 
-docker inspect docker-router-advertiser:latest || docker load < /var/cache/apt/docker-router-advertiser.gz
+set -eux
+
+IMAGE=docker-router-advertiser
+docker inspect $IMAGE:latest || docker load < /var/cache/apt/$IMAGE.gz
 systemctl enable radv
-rm /var/cache/apt/docker-router-advertiser.gz
+rm /var/cache/apt/$IMAGE.gz

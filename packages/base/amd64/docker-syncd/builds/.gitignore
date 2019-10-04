@@ -1,3 +1,4 @@
-*
-!.gitignore
-!Makefile
+docker_image_ctl.j2
+syncd.sh
+syncd.service
+*.gz

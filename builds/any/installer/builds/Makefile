@@ -7,7 +7,7 @@ $(error $$BOOTMODE not set)
 endif
 
 # Hardcoded to match ONL File naming conventions.
-include $(X1)/make/versions/version-sonl.mk
+include $(X1)/make/versions/version-goldstone.mk
 INSTALLER_NAME=$(FNAME_PRODUCT_VERSION)_ONL-OS_$(FNAME_BUILD_ID)_$(UARCH)_$(BOOTMODE)_INSTALLER
 
 MKINSTALLER_OPTS := \
@@ -15,6 +15,7 @@ MKINSTALLER_OPTS := \
   --boot-config boot-config \
   --swi x1-swi:$(ARCH) \
   --add-file zerotouch.json \
+  --onl-version "$(VERSION_STRING)" \
   # THIS LINE INTENTIONALLY LEFT BLANK
 
 ifeq ($(ARCH_BOOT),uboot)
@@ -30,3 +31,6 @@ __installer:
 	$(ONLPM) --copy-file x1-loader-initrd:$(ARCH) zerotouch.json .
 	$(ONL)/tools/mkinstaller.py $(MKINSTALLER_OPTS) --out $(INSTALLER_NAME)
 	md5sum "$(INSTALLER_NAME)" | awk '{ print $$1 }' > "$(INSTALLER_NAME).md5sum"
+
+clean:
+	rm -rf $(WORK_DIR)

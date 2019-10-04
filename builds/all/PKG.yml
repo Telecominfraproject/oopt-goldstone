@@ -1,5 +1,5 @@
 variables:
-  - !include $X1/make/versions/version-sonl.yml
+  - !include $X1/make/versions/version-goldstone.yml
   - INSTALL_DIR : /usr/share/floodlight/zerotouch
 
 prerequisites:

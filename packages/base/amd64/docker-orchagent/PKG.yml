@@ -1,1 +1,19 @@
-!include $X1_TEMPLATES/x1-docker.yml SERVICE=orchagent ARCH=amd64 VERSION=1.0.0
+packages:
+  - name: x1-docker-orchagent
+    arch: amd64
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Docker Service for orchagent
+    after-install: $__DIR__/after-install.sh
+    after-remove: $__DIR__/after-remove.sh
+    depends:
+    - podman
+    build-depends:
+    - podman
+    files:
+        $__DIR__/builds/docker-orchagent.gz: /var/cache/apt/
+        $__DIR__/builds/swss.sh: /usr/bin/
+        $__DIR__/builds/swss.service: /etc/systemd/system/

@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+set -x
+
+src=$1; shift
+dst=$1; shift
+
+j2 "$src" > ${dst}~
+
+/bin/ed <<-END
+    H
+    P
+    r ${dst}~
+    /DOCKERCHECK/
+    i
+    mkdir -p /var/run/docker-syncd
+.
+    /--name=/
+    ?--tmpfs /tmp?d
+    a
+        -v /tmp:/tmp \\
+        -v /dev:/dev \\
+        -v /usr/lib/libsai.so.1.0:/usr/lib/libsai.so.1.0 \\
+.
+    w $dst
+    q
+END
+
+exit 0

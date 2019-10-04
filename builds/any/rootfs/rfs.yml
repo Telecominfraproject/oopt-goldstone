@@ -1,14 +1,3 @@
-variables:
-  !include $X1/make/versions/version-sonl.yml
-
-Packages: &Packages
-  - !include $ONL/builds/any/rootfs/$ONL_DEBIAN_SUITE/common/all-base-packages.yml
-  - !include $ONL/builds/any/rootfs/$ONL_DEBIAN_SUITE/common/${ARCH}-base-packages.yml
-  - !include $ONL/builds/any/rootfs/$ONL_DEBIAN_SUITE/common/${ARCH}-onl-packages.yml
-  - !script  $ONL/tools/onl-platform-pkgs.py ${PLATFORM_LIST}
-  - !include $X1/builds/any/rootfs/all-packages.yml
-  - !include $X1/builds/any/rootfs/${ARCH}-packages.yml
-
 Multistrap:
   General:
     arch: ${ARCH}
@@ -16,111 +5,59 @@ Multistrap:
     noauth: true
     explicitsuite: false
     unpack: true
-    debootstrap: Debian-Local Local-All Local-Arch ONL-Local Docker
+    debootstrap: Local-Arch Local-All Debian Ubuntu-PPA
     aptsources: Debian ONL
 
   Debian:
-    packages: *Packages
     source: http://${DEBIAN_MIRROR}
     suite: ${ONL_DEBIAN_SUITE}
     keyring: debian-archive-keyring
     omitdebsrc: true
 
-  Debian-Local:
-    packages: *Packages
-    source: http://${APT_CACHE}${DEBIAN_MIRROR}
-    suite: ${ONL_DEBIAN_SUITE}
-    keyring: debian-archive-keyring
-    omitdebsrc: true
-
   ONL:
-    packages: *Packages
     source: http://apt.opennetlinux.org/debian
     suite: unstable
     omitdebsrc: true
 
-  ONL-Local:
-    packages: *Packages
-    source: http://${APT_CACHE}apt.opennetlinux.org/debian
-    suite: unstable
-    omitdebsrc: true
-
   Local-All:
+    packages:
+    - python-sonic-utilities:all
     source: ${ONLPM_OPTION_REPO}/${ONL_DEBIAN_SUITE}/packages/binary-all
     omitdebsrc: true
 
   Local-Arch:
+    packages:
+    - x1-docker-database:amd64
+    - x1-docker-syncd:amd64
+    - x1-docker-orchagent:amd64
+      #    - x1-docker-fpm-frr:amd64
+      #    - x1-docker-router-advertiser:amd64
+      #    - x1-docker-teamd:amd64
+      #    - x1-docker-lldp-sv2:amd64
+      #    - x1-docker-dhcp-relay:amd64
+      #    - x1-docker-snmp-sv2:amd64
     source: ${ONLPM_OPTION_REPO}/${ONL_DEBIAN_SUITE}/packages/binary-${ARCH}
     omitdebsrc: true
 
-  Docker:
-    packages: docker-ce=18.03.1~ce-0~debian
-    source: https://download.docker.com/linux/debian
-    suite: ${ONL_DEBIAN_SUITE}
-    components: stable
+  Ubuntu-PPA:
+    packages: podman
+    source: http://ppa.launchpad.net/projectatomic/ppa/ubuntu
+    suite: bionic
     omitdebsrc: true
 
 Configure:
-  overlays:
-    - $ONL/builds/any/rootfs/${ONL_DEBIAN_SUITE}/common/overlay
-    - $X1/builds/any/rootfs/overlay
-
-  update-rc.d:
-    - 'faultd defaults'
-    - 'onlpd defaults'
-    - 'snmpd defaults'
-    - 'ssh defaults'
-    - 'openbsd-inetd remove'
-    - 'ntp remove'
-    - 'nfs-common remove'
-    - 'rpcbind remove'
-    - 'motd remove'
-    - 'mountall-bootclean.sh remove'
-    - 'mountall.sh remove'
-    - 'checkfs.sh remove'
-    - 'mtab.sh remove'
-    - 'checkroot-bootclean.sh remove'
-    - 'checkroot.sh remove'
-    - 'mountnfs-bootclean.sh remove'
-    - 'mountnfs.sh remove'
-    - 'lm-sensors remove'
-    - 'netplug defaults'
-    - 'watchdog defaults'
-    - 'wd_keepalive remove'
-
-  options:
-    clean: True
-    securetty: False
-    ttys: False
-    console: True
-    PermitRootLogin: 'yes'
-
-  users:
-    root:
-      password: x1
-
-  manifests:
-    '/etc/onl/rootfs/manifest.json' :
-      version : $ONL/make/versions/version-onl.json
-      platforms : $PLATFORM_LIST
-
-    '/etc/x1/rootfs/manifest.json' :
-      version : $X1/make/versions/version-sonl.json
-      platforms : $PLATFORM_LIST
-      keys:
-        version :
-          CONFIGURATION: RELEASE
-
-  issue: $VERSION_STRING
+  commands:
+    - 'sudo rm -rf __rfs__/var/tmp'
+    - 'sudo mkdir -p __rfs__/var/tmp'
+    - 'sudo mkdir -p __rfs__/host/warmboot'
+    - 'sudo mkdir -p __rfs__/var/log/swss'
 
   files:
     remove:
-      - /etc/motd
-      - /etc/inittab
-
-  scripts:
-    - $__DIR__/sonic-setup.sh
-    - $__DIR__/python-setup.sh
-    - $__DIR__/docker-setup.sh
-    - $__DIR__/deb-setup.sh
-    - $__DIR__/docker-supervisord.py
+    - /tmp
+    - /etc/motd
+    - /etc/inittab
+    - /usr/bin/reboot # remove SONiC reboot
+    - /etc/udev/rules.d/60-block.rules
+    - /etc/udev/rules.d/60-net.rules
+    - /etc/boot.d/70.dhclient.conf

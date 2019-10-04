@@ -10,9 +10,9 @@ packages:
     after-install: $__DIR__/after-install.sh
     after-remove: $__DIR__/after-remove.sh
     depends:
-    - docker-ce
+    - podman
     build-depends:
-    - docker-ce
+    - podman
     files:
         $__DIR__/builds/docker-fpm-quagga.gz: /var/cache/apt/
         $__DIR__/builds/bgp.sh: /usr/bin/

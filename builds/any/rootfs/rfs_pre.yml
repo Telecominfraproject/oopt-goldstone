@@ -1,0 +1,127 @@
+variables:
+  !include $X1/make/versions/version-goldstone.yml
+
+Packages: &Packages
+  - !script  $ONL/tools/onl-init-pkgs.py ${INIT}
+  - !include $ONL/builds/any/rootfs/$ONL_DEBIAN_SUITE/common/all-base-packages.yml
+  - !script  $ONL/tools/onl-platform-pkgs.py ${PLATFORM_LIST}
+  - !include $X1/builds/any/rootfs/all-packages.yml
+  - !include $X1/builds/any/rootfs/${ARCH}-packages.yml
+
+Multistrap:
+  General:
+    arch: ${ARCH}
+    cleanup: true
+    noauth: true
+    explicitsuite: false
+    unpack: true
+    debootstrap: Debian-Local Local-All Local-Arch ONL-Local
+    aptsources: Debian ONL
+
+  Debian:
+    packages: *Packages
+    source: http://${DEBIAN_MIRROR}
+    suite: ${ONL_DEBIAN_SUITE}
+    keyring: debian-archive-keyring
+    omitdebsrc: true
+
+  Debian-Local:
+    packages: *Packages
+    source: http://${APT_CACHE}${DEBIAN_MIRROR}
+    suite: ${ONL_DEBIAN_SUITE}
+    keyring: debian-archive-keyring
+    omitdebsrc: true
+
+  ONL:
+    packages: *Packages
+    source: http://apt.opennetlinux.org/debian
+    suite: unstable
+    omitdebsrc: true
+
+  ONL-Local:
+    packages: *Packages
+    source: http://${APT_CACHE}apt.opennetlinux.org/debian
+    suite: unstable
+    omitdebsrc: true
+
+  Local-All:
+    source: ${ONLPM_OPTION_REPO}/${ONL_DEBIAN_SUITE}/packages/binary-all
+    omitdebsrc: true
+
+  Local-Arch:
+    source: ${ONLPM_OPTION_REPO}/${ONL_DEBIAN_SUITE}/packages/binary-${ARCH}
+    omitdebsrc: true
+
+Configure:
+  overlays:
+    - $ONL/builds/any/rootfs/${ONL_DEBIAN_SUITE}/common/overlay
+    - $X1/builds/any/rootfs/overlay
+
+  update-rc.d:
+    - 'faultd defaults'
+    - 'onlpd defaults'
+    - 'snmpd defaults'
+    - 'ssh defaults'
+    - 'openbsd-inetd remove'
+    - 'ntp remove'
+    - 'nfs-common remove'
+    - 'rpcbind remove'
+    - 'motd remove'
+    - 'mountall-bootclean.sh remove'
+    - 'mountall.sh remove'
+    - 'checkfs.sh remove'
+    - 'mtab.sh remove'
+    - 'checkroot-bootclean.sh remove'
+    - 'checkroot.sh remove'
+    - 'mountnfs-bootclean.sh remove'
+    - 'mountnfs.sh remove'
+    - 'lm-sensors remove'
+    - 'netplug defaults'
+    - 'watchdog defaults'
+    - 'wd_keepalive remove'
+
+  options:
+    clean: True
+    securetty: False
+    ttys: False
+    console: True
+    PermitRootLogin: 'yes'
+
+  users:
+    root:
+      password: x1
+
+  manifests:
+    '/etc/onl/rootfs/manifest.json' :
+      version : $ONL/make/versions/version-onl.json
+      platforms : $PLATFORM_LIST
+
+    '/etc/goldstone/rootfs/manifest.json' :
+      version : $X1/make/versions/version-goldstone.json
+      platforms : $PLATFORM_LIST
+      keys:
+        version :
+          CONFIGURATION: RELEASE
+
+  issue: $VERSION_STRING
+
+  files:
+    link:
+      # 2 issues brought docker symlink creation here though the podman
+      # installation happends in rfs.yml.
+      #
+      # 1. podman can't be installed in rfs_pre.yml because it has confliction
+      # issue with vim installation. The package includes vim-info varlink
+      # syntax configuration which conflicts with the vim installation.
+      # podman installation must happen after the vim installation, but the
+      # package doesn't have vim dependencies
+      #
+      # 2. x1-docker-* packages needs docker symlink. This 'files' configuration
+      # happends after multistrap does the package installation. So making
+      # symlink in rfs.yml is too late to configure x1-docker-* packages
+      - src: podman
+        dst: /usr/bin/docker
+        symbolic: true
+
+  scripts:
+    - $__DIR__/python-setup.sh

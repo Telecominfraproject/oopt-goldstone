@@ -1,5 +1,8 @@
 #!/bin/sh
 
-docker inspect docker-teamd:latest || docker load < /var/cache/apt/docker-teamd.gz
+set -eux
+
+IMAGE=docker-teamd
+docker inspect $IMAGE:latest || docker load < /var/cache/apt/$IMAGE.gz
 systemctl enable teamd
-rm /var/cache/apt/docker-teamd.gz
+rm /var/cache/apt/$IMAGE.gz

@@ -1,5 +1,5 @@
 variables:
-  !include $X1/make/versions/version-sonl.yml
+  !include $X1/make/versions/version-goldstone.yml
 
 prerequisites:
   broken: true
@@ -7,7 +7,7 @@ prerequisites:
 
 packages:
   - name: x1-swi
-    summary: SONiC+ONL Network OS Switch Image (All $ARCH) Platforms)
+    summary: Goldstone Network OS Switch Image (All $ARCH) Platforms)
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
     copyright: Copyright 2018 Big Switch Networks
@@ -16,10 +16,10 @@ packages:
     support:   support@bigswitch.com
 
     files:
-      builds/*.swi          : $$PKG_INSTALL/
-      builds/*.md5sum       : $$PKG_INSTALL/
-      builds/manifest.json  : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/*.swi          : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/*.md5sum       : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/manifest.json  : $$PKG_INSTALL/
 
 release:
-  - builds/*.swi : $ARCH/
-  - builds/*.md5sum : $ARCH/
+  - builds/$ONL_DEBIAN_SUITE/*.swi : $ARCH/
+  - builds/$ONL_DEBIAN_SUITE/*.md5sum : $ARCH/

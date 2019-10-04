@@ -1,8 +1,8 @@
-LOADER_SYSTEM_NAME="SONiC+ONL Network OS"
+LOADER_SYSTEM_NAME="Goldstone Network OS"
 LOADER_LOADER_NAME="Loader"
 LOADER_PROMPT="loader# "
-ONL_UDHCPC_VENDOR="SONL"
+ONL_UDHCPC_VENDOR="GOLDSTONE"
 
-if [ -f /etc/sonl/loader/versions.sh ]; then
-    . /etc/sonl/loader/versions.sh
+if [ -f /etc/goldstone/loader/versions.sh ]; then
+    . /etc/goldstone/loader/versions.sh
 fi

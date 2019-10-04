@@ -1,12 +1,13 @@
 variables:
-  !include $X1/make/versions/version-sonl.yml
+  !include $X1/make/versions/version-goldstone.yml
 
 prerequisites:
   broken: true
+  packages: [ "onl-rootfs:$ARCH" ]
 
 packages:
   - name: x1-rootfs
-    summary: SONiC+ONL Network OS Root Filesystem
+    summary: Goldstone Network OS Root Filesystem
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
     copyright: Copyright 2018 Big Switch Networks
@@ -15,6 +16,6 @@ packages:
     support:   support@bigswitch.com
 
     files:
-      builds/rootfs-$ARCH.cpio.gz : $$PKG_INSTALL/
-      builds/rootfs-$ARCH.sqsh : $$PKG_INSTALL/
-      builds/manifest.json : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/rootfs-$ARCH.cpio.gz : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/rootfs-$ARCH.sqsh : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/manifest.json : $$PKG_INSTALL/

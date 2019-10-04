@@ -17,5 +17,6 @@ python-sonic-utilities_all.deb:
 	fi
 
 python-click_all.deb:
-	$(MAKE) -C $(SONIC) target/debs/$(PYTHON_CLICK)
-	ln -sf $(SONIC)/target/debs/$(PYTHON_CLICK) $@
+	mkdir -p $(SONIC)/target/debs/stretch
+	$(MAKE) -C $(SONIC) target/debs/stretch/$(PYTHON_CLICK)
+	ln -sf $(SONIC)/target/debs/stretch/$(PYTHON_CLICK) $@

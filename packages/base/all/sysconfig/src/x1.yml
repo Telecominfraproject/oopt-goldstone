@@ -1,11 +1,11 @@
 ############################################################
 #
-# X1 System Configuration
+# Goldstone System Configuration
 #
 ############################################################
 installer:
-  menu_name: SONL
-  os_name: SONiC+ONL Network OS
+  menu_name: Goldstone
+  os_name: Goldstone Network OS
   grub:
     - $PLATFORM.cpio.gz
     - x1-loader-initrd-$PARCH.cpio.gz
@@ -21,18 +21,18 @@ upgrade:
   onie:
     auto: advisory
     package:
-      dir: /lib/platform-config/current/sonl/upgrade/onie
+      dir: /lib/platform-config/current/goldstone/upgrade/onie
 
   firmware:
     auto: advisory
     package:
-      dir: /lib/platform-config/current/sonl/upgrade/firmware
+      dir: /lib/platform-config/current/goldstone/upgrade/firmware
 
   loader:
     auto: force
-    versions: /etc/sonl/loader/versions.json
+    versions: /etc/goldstone/loader/versions.json
     package:
-      dir: /etc/sonl/upgrade/$PARCH
+      dir: /etc/goldstone/upgrade/$PARCH
       grub:
         - $PLATFORM.cpio.gz
         - x1-loader-initrd-$PARCH.cpio.gz

@@ -4,10 +4,10 @@
 # custom preparation prior to switching root.
 #
 ############################################################
-cp -R /etc/sonl /newroot/etc
+cp -R /etc/goldstone /newroot/etc
 
 if [ -d /var/run/udhcpc ]; then
-   cp -R /var/run/udhcpc /newroot/etc/sonl/loader
+   cp -R /var/run/udhcpc /newroot/etc/goldstone/loader
 fi
 
 ip link set dev ma1 name eth0

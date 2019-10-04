@@ -1,3 +1,8 @@
+prerequisites:
+  packages:
+  - 'libsaibcm:$ARCH'
+  - 'libsaibcm-dev:$ARCH'
+
 packages:
   - name: x1-sai-sanity
     arch: $ARCH

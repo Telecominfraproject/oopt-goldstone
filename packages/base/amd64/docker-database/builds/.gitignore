@@ -1,3 +1,4 @@
-*
-!.gitignore
-!Makefile
+*~
+*.gz
+database.service
+database.sh

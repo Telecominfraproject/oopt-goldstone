@@ -2,7 +2,10 @@ include $(X1)/make/config.mk
 
 export sonic_asic_platform := broadcom
 
-all: docker-syncd.gz
+ALL := docker-syncd.gz syncd.sh syncd.service
+.PHONY : $(ALL)
+
+all: $(ALL)
 
 $(SONIC)/.platform:
 	$(MAKE) -C $(SONIC) init
@@ -12,5 +15,11 @@ docker-syncd.gz: $(SONIC)/.platform
 	$(MAKE) -C $(SONIC) target/docker-syncd-brcm.gz
 	ln -sf $(SONIC)/target/docker-syncd-brcm.gz $@
 
+syncd.sh: syncd.mk
+	$(MAKE) -f syncd.mk $@
+
+syncd.service: syncd.mk
+	$(MAKE) -f syncd.mk $@
+
 clean:
-	-rm docker-syncd.gz
+	-$(RM) $(ALL) *~

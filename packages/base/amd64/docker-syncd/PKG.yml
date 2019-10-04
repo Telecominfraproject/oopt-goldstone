@@ -1,1 +1,19 @@
-!include $X1_TEMPLATES/x1-docker.yml SERVICE=syncd ARCH=amd64 VERSION=1.0.0
+packages:
+  - name: x1-docker-syncd
+    arch: amd64
+    version: 1.0.0
+    copyright: Copyright 2018 Big Switch Networks
+    maintainer: support@bigswitch.com
+    changelog: Initial
+    support:   support@bigswitch.com
+    summary: X1 Docker Service for syncd
+    after-install: $__DIR__/after-install.sh
+    after-remove: $__DIR__/after-remove.sh
+    depends:
+    - podman
+    build-depends:
+    - podman
+    files:
+        $__DIR__/builds/docker-syncd.gz: /var/cache/apt/
+        $__DIR__/builds/syncd.sh: /usr/local/bin/
+        $__DIR__/builds/syncd.service: /etc/systemd/system/

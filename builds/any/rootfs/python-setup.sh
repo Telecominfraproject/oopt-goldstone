@@ -8,9 +8,10 @@ PYTHON_PKGS=`cat $X1/builds/any/rootfs/python-packages.yml | python -c 'import s
 
 cd $X1
 
-##chroot $TARGET pip install natsort
-##chroot $TARGET pip install click-default-group
-##chroot $TARGET pip install tabulate
+DEBIAN_FRONTEND=noninteractive chroot $TARGET pip install pexpect click-default-group==1.2 tabulate==0.8.2 natsort
+
+mkdir -p $TARGET/var/cache/sonic
+sudo -E -u $SUDO_USER mkdir -p $SONIC/target/python-wheels
 
 for pkg in $PYTHON_PKGS; do
     WHEEL=target/python-wheels/$pkg

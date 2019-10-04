@@ -1,5 +1,8 @@
 #!/bin/sh
 
-docker inspect docker-fpm-quagga:latest || docker load < /var/cache/apt/docker-fpm-quagga.gz
+set -eux
+
+IMAGE=docker-fpm-quagga
+docker inspect $IMAGE:latest || docker load < /var/cache/apt/$IMAGE.gz
 systemctl enable bgp
-rm /var/cache/apt/docker-fpm-quagga.gz
+rm /var/cache/apt/$IMAGE.gz

@@ -9,6 +9,7 @@ export docker_image_name := $(basename $(docker))
 export docker_container_name := $($(docker)_CONTAINER_NAME)
 export docker_image_run_opt := $($(docker)_RUN_OPT)
 export sonic_asic_platform := broadcom
+export install_debug_image := "n"
 
 all: docker-snmp-sv2.gz snmp.sh snmp.service
 

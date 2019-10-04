@@ -1,7 +1,11 @@
+prerequisites:
+  packages:
+  - 'sonic:all'
+
 packages:
   - name: libsaibcm
     arch: amd64
-    external: "$X1/sm/sonic-buildimage/target/debs/libsaibcm_3.3.3.1-3_amd64.deb"
+    external: "$SONIC/target/debs/${ONL_DEBIAN_SUITE}/libsaibcm_3.5.2.3_amd64.deb"
   - name: libsaibcm-dev
     arch: amd64
-    external: "$X1/sm/sonic-buildimage/target/debs/libsaibcm-dev_3.3.3.1-3_amd64.deb"
+    external: "$SONIC/target/debs/${ONL_DEBIAN_SUITE}/libsaibcm-dev_3.5.2.3_amd64.deb"

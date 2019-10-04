@@ -13,7 +13,7 @@ packages:
     maintainer: support@bigswitch.com
     changelog: Initial
     support:   support@bigswitch.com
-    summary: SONL Upgrade Package
+    summary: Goldstone Upgrade Package
 
     files:
-      builds/files : /etc/sonl/upgrade/amd64
+      builds/files : /etc/goldstone/upgrade/amd64

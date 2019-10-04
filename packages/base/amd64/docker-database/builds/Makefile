@@ -8,6 +8,7 @@ export docker_image_name := $(basename $(docker))
 export docker_container_name := $($(docker)_CONTAINER_NAME)
 export docker_image_run_opt := $($(docker)_RUN_OPT)
 export sonic_asic_platform := broadcom
+export install_debug_image := "n"
 
 all: docker-database.gz database.sh database.service
 
@@ -19,12 +20,12 @@ docker-database.gz: $(SONIC)/.platform
 	$(MAKE) -C $(SONIC) target/docker-database.gz
 	ln -sf $(SONIC)/target/docker-database.gz $@
 
-database.sh:
-	j2 $(SONIC)/files/build_templates/docker_image_ctl.j2 > $@
+database.sh: edit-database-sh $(SONIC)/files/build_templates/docker_image_ctl.j2
+	./edit-database-sh $(SONIC)/files/build_templates/docker_image_ctl.j2 $@
 	chmod +x $@
 
-database.service:
-	j2 $(SONIC)/files/build_templates/database.service.j2 > $@
+database.service: edit-database-service $(SONIC)/files/build_templates/database.service.j2
+	./edit-database-service $(SONIC)/files/build_templates/database.service.j2 $@
 
 clean:
 	-rm docker-database.gz database.sh database.service
