@@ -16,9 +16,6 @@ j2 "$src" > ${dst}~
 	,g/interfaces/d
 	1
 	/ExecStart=/
-	a
-	ExecStartPre=-/usr/bin/bcm-kmods
-	.
 	,g/\/usr\/local\/bin/s/\/usr\/local/\/usr/
 	w $dst
 	q

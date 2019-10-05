@@ -1,0 +1,2 @@
+ACTION=="add",    ATTRS{vendor}=="0x14e4", ATTRS{device}=="0xb[0-9][0-9][0-9]", RUN+="/usr/bin/bcm-kmods"
+ACTION=="remove", ATTRS{vendor}=="0x14e4", ATTRS{device}=="0xb[0-9][0-9][0-9]", RUN+="/usr/bin/bcm-kmods remove"

@@ -12,3 +12,5 @@ packages:
 
     files:
       builds/lib : lib
+      ${X1}/packages/base/any/sai/bcm/saibcm-kernel/10-bcm-kmods.rules: /etc/udev/rules.d/10-bcm-kmods.rules
+      ${X1}/packages/base/any/sai/bcm/saibcm-kernel/bcm-kmods: /usr/bin/bcm-kmods
