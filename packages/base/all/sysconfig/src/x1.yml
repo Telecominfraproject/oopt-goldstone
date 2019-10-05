@@ -8,7 +8,7 @@ installer:
   os_name: Goldstone Network OS
   grub:
     - $PLATFORM.cpio.gz
-    - x1-loader-initrd-$PARCH.cpio.gz
+    - x1-loader-initrd-amd64.cpio.gz
   fit:
     - $PLATFORM.itb
     - x1-loader-fit.itb
