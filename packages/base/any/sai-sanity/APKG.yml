@@ -12,5 +12,11 @@ packages:
     changelog: Initial
     support:   support@bigswitch.com
     summary: X1 SAI Sanity Test Program
+    depends:
+    - libsaibcm
+    - libsaibcm-dev
+    build-depends:
+    - libsaibcm
+    - libsaibcm-dev
     files:
       builds/sai-sanity : /usr/bin/
