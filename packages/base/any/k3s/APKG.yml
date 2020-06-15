@@ -1,0 +1,17 @@
+packages:
+  - name: k3s
+    arch: $ARCH
+    version: 1.0.0
+    copyright: Copyright 2020 Wataru Ishida
+    maintainer: wataru.ishid@gmail.com
+    changelog: Initial
+    support:   wataru.ishid@gmail.com
+    summary: k3s
+    after-install: $X1/packages/base/any/k3s/after-install.sh
+    build-depends:
+    - apt-transport-https
+    - ca-certificates
+    files:
+        builds/k3s-airgap-images-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/k3s: /usr/local/bin/
+        builds/install.sh: /usr/share/k3s/
