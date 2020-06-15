@@ -4,7 +4,6 @@ ifndef PLATFORM_LIST
     export PLATFORM_LIST=$(shell onlpm --list-platforms --arch amd64 --csv )
 endif
 
-RFS_PRE_CONFIG := $(X1)/builds/any/rootfs/rfs_pre.yml
 RFS_CONFIG := $(X1)/builds/any/rootfs/rfs.yml
 
 ifndef ARCH
@@ -31,7 +30,7 @@ ifndef RFS_SQUASH
 RFS_SQUASH := $(RFS_WORKDIR)/rootfs-$(ARCH).sqsh
 endif
 
-RFS_COMMAND := $(ONL)/tools/onlrfs.py --config $(RFS_CONFIG) --arch $(ARCH) --dir $(RFS_DIR) --use-existing-rootfs
+RFS_COMMAND := $(ONL)/tools/onlrfs.py --config $(RFS_CONFIG) --arch $(ARCH) --dir $(RFS_DIR)
 
 ifdef RFS_CPIO
 RFS_COMMAND += --cpio $(RFS_CPIO)
@@ -48,7 +47,7 @@ endif
 LOCAL_MANIFEST := $(RFS_WORKDIR)/manifest.json
 
 RFS: clean
-	$(ONL_V_at) $(ONL)/tools/onlrfs.py --arch $(ARCH) --dir $(RFS_DIR) --config $(RFS_PRE_CONFIG) && $(RFS_COMMAND)
+	$(ONL_V_at) $(RFS_COMMAND)
 	$(ONL_V_at) [ -f $(RFS_DIR)/$(RFS_MANIFEST) ] && sudo cp $(RFS_DIR)/$(RFS_MANIFEST) $(LOCAL_MANIFEST)
 
 clean:
