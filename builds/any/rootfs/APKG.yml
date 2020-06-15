@@ -1,10 +1,6 @@
 variables:
   !include $X1/make/versions/version-goldstone.yml
 
-prerequisites:
-  broken: true
-  packages: [ "onl-rootfs:$ARCH" ]
-
 packages:
   - name: x1-rootfs
     summary: Goldstone Network OS Root Filesystem

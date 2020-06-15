@@ -1,5 +1,5 @@
 variables:
-  !include $X1/make/versions/version-sonl.yml
+  !include $X1/make/versions/version-goldstone.yml
 
 Packages: &Packages
   - !script  $ONL/tools/onl-init-pkgs.py ${INIT}
@@ -85,8 +85,8 @@ Configure:
       version : $ONL/make/versions/version-onl.json
       platforms : $PLATFORM_LIST
 
-    '/etc/x1/rootfs/manifest.json' :
-      version : $X1/make/versions/version-sonl.json
+    '/etc/goldstone/rootfs/manifest.json' :
+      version : $X1/make/versions/version-goldstone.json
       platforms : $PLATFORM_LIST
       keys:
         version :
