@@ -1,6 +1,3 @@
-[submodule "sm/sonic-buildimage"]
-	path = sm/sonic-buildimage
-	url = https://github.com/Telecominfraproject/sonic-buildimage.git
 [submodule "sm/ONL"]
 	path = sm/ONL
 	url = https://github.com/Telecominfraproject/OpenNetworkLinux.git
