@@ -41,7 +41,7 @@ VOLUMES_OPTS		= \
 
 BUILDER_OPTS		= \
   --verbose \
-  --10 \
+  --image x1-builder \
   --hostname x1builder$(VERSION) \
   --workdir $(shell pwd) \
   --isolate \
@@ -58,6 +58,9 @@ docker_check:
 # create an interative docker shell, for debugging builds
 docker-debug: docker_check
 	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/debug.sh
+
+docker-image:
+	cd docker/images/builder && docker build -t x1-builder .
 
 docker: docker_check
 	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/autobuild/build.sh -b HEAD
