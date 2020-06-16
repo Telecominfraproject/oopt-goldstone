@@ -1,14 +1,18 @@
 all: autobuild
 
+ifndef GOLDSTONE_BUILDER_IMAGE
+    GOLDSTONE_BUILDER_IMAGE = gs-builder
+endif
+
 ifdef X1
 else
-X1			= $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+X1 = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 export X1
 endif
 
 ifdef ONL
 else
-ONL			= $(X1)/sm/ONL
+ONL = $(X1)/sm/ONL
 export ONL
 endif
 
@@ -20,7 +24,7 @@ endif
 
 ifdef SSH_AUTH_SOCK
 
-VOLUMES_ARGS		= \
+VOLUMES_ARGS = \
   $(shell sm/ONL/tools/scripts/gitroot) \
   /var/run/docker.sock \
   $(shell realpath $${SSH_AUTH_SOCK}) \
@@ -28,47 +32,43 @@ VOLUMES_ARGS		= \
 
 else
 
-VOLUMES_ARGS		= \
+VOLUMES_ARGS = \
   $(shell sm/ONL/tools/scripts/gitroot) \
   /var/run/docker.sock \
   # THIS LINE INTENTIONALLY LEFT BLANK
 
 endif
 
-VOLUMES_OPTS		= \
+VOLUMES_OPTS = \
   --volumes $(VOLUMES_ARGS) \
   # THIS LINE INTENTIONALLY LEFT BLANK
 
-BUILDER_OPTS		= \
+BUILDER_OPTS = \
   --verbose \
-  --image x1-builder \
-  --hostname x1builder$(VERSION) \
+  --image $(GOLDSTONE_BUILDER_IMAGE) \
+  --hostname gsbuilder$(VERSION) \
   --workdir $(shell pwd) \
   --isolate \
   # THIS LINE INTENTIONALLY LEFT BLANK
 
-ARCH			= amd64
+ARCH = amd64
 
 autobuild:
 	$(MAKE) -C builds/$(ARCH)
 
-docker_check:
-	@which docker > /dev/null || (echo "*** Docker appears to be missing. Please install docker-io in order to build X1." && exit 1)
+docker-check:
+	@which docker > /dev/null || (echo "*** Docker appears to be missing. Please install docker in order to build Goldstone." && exit 1)
+	@docker inspect $(GOLDSTONE_BUILDER_IMAGE) > /dev/null 2>&1 || (echo "*** Docker builder $(GOLDSTONE_BUILDER_IMAGE) doesn't exist. Please execute 'make builder' to build it." && exit 1)
 
 # create an interative docker shell, for debugging builds
-docker-debug: docker_check
+docker-debug: docker-check
 	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/debug.sh
 
-docker-image:
-	cd docker/images/builder && docker build -t x1-builder .
+builder:
+	cd docker/images/builder && docker build -t $(GOLDSTONE_BUILDER_IMAGE) .
 
-docker: docker_check
+docker: docker-check
 	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/autobuild/build.sh -b HEAD
-
-sonic:
-	$(MAKE) -C sm/sonic-buildimage init
-	$(MAKE) -C sm/sonic-buildimage configure PLATFORM=broadcom
-	$(MAKE) -C sm/sonic-buildimage target/sonic-broadcom.bin
 
 versions:
 	$(ONL)/tools/make-versions.py --import-file=$(X1)/tools/x1vi --class-name=OnlVersionImplementation --output-dir $(X1)/make/versions --force
