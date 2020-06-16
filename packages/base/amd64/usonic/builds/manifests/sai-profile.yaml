@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: sai-profile
+data:
+    profile.ini: |
+        SAI_VS_SWITCH_TYPE=SAI_VS_SWITCH_TYPE_BCM56850
+        SAI_VS_HOSTIF_USE_TAP_DEVICE=true
+        SAI_VS_INTERFACE_LANE_MAP_FILE=/etc/sonic/lanemap.conf
+    lanemap.conf: |
+        vEthernet1:1,2,3,4
+        vEthernet2:5,6,7,8

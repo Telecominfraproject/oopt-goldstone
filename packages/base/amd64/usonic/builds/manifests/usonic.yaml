@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+        spec:
+            initContainers:
+            - name: init-loglevel
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '/var/run/start/start.sh']
+              volumeMounts:
+              - name: start-script
+                mountPath: /var/run/start
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: init-configdb
+              image: docker.io/library/usonic-cli:201811
+              imagePullPolicy: Never
+              command: ['sonic-cfggen', '-j', '/etc/sonic/config_db.json', '--write-to-db']
+              volumeMounts:
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              - name: config-db-json
+                mountPath: /etc/sonic/
+            - name: complete-init
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['redis-cli', '-h', 'redis.default.svc.cluster.local', '-n', '4', 'SET', 'CONFIG_DB_INITIALIZED', '1']
+            containers:
+            - name: syncd
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '-c', 'service syslog-ng start && dsserve /usr/bin/syncd -p /etc/sonic/profile.ini -d']
+              volumeMounts:
+              - name: sai-profile
+                mountPath: /etc/sonic/
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              - name: tun
+                mountPath: /dev/net/tun
+              - name: warm-boot
+                mountPath: /var/warmboot
+              - name: bcmsh-sock
+                mountPath: /var/run/sswsyncd
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: orchagent
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '-c', 'sleep 5 && gdb -ex "run" -ex "bt" --args orchagent -m 72:16:EA:18:79:F9']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+            - name: portsyncd
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" portsyncd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+            - name: neighsyncd
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" neighsyncd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+            - name: vlanmgrd
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '-c', 'mount -o remount,rw /sys && sleep 8 && gdb -ex "run" -ex "bt" vlanmgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                privileged: true
+            - name: intfmgrd
+              image: docker.io/library/usonic-debug:201811
+              imagePullPolicy: Never
+              command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" intfmgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: tun
+              hostPath:
+                  path: /dev/net/tun
+                  type: CharDevice
+            - name: start-script
+              configMap:
+                  name: start-script
+            - name: sai-profile
+              configMap:
+                  name: sai-profile
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+            - name: config-db-json
+              configMap:
+                  name: config-db-json
+            - name: warm-boot
+              emptyDir: {}
+            - name: bcmsh-sock
+              emptyDir: {}

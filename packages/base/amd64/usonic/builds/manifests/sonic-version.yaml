@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  sonic_version.yml: |
+    build_version: 'HEAD.0-45847851'
+    asic_type: broadcom
+    commit_id: '443ccce'
+    build_date: Fri Sep 27 23:52:52 UTC 2019
+    build_number: 0
+    built_by: wataru@x1builder
+    debian_version: 8.11
+    kernel_version: 4.9.0-9-2-amd64
+kind: ConfigMap
+metadata:
+  name: sonic-version

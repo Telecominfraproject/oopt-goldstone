@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: start-script
+data:
+  start.sh: | 
+    #!/bin/sh
+    set -eux
+
+    REDIS_HOST='-h redis.default.svc.cluster.local'
+
+    redis-cli ${REDIS_HOST} flushall
+
+    for daemon in syncd:syncd intfmgrd:intfmgrd orchagent:orchagent portsyncd:portsyncd neighsyncd:neighsyncd vlanmgrd:vlanmgrd;
+    do
+        redis-cli -n 3 ${REDIS_HOST} hset $daemon LOGOUTPUT STDERR;
+    done
+
+    for index in $(seq 2);
+    do
+        ip link add vEthernet$index type veth peer name veth$index
+        ip link set up dev vEthernet$index
+        ip link set up dev veth$index
+    done
