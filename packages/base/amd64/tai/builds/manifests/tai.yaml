@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: tai
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: tai
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: tai
+        spec:
+            containers:
+            - name: taish-server
+              image: docker.io/library/tai:latest
+              imagePullPolicy: Never
+              command: taish_server
+              securityContext:
+                privileged: true

@@ -1,17 +1,15 @@
 packages:
-  - name: x1-usonic
+  - name: x1-tai
     arch: amd64
     version: 1.0.0
     copyright: Copyright 2020 Wataru Ishida
     maintainer: wataru.ishid@gmail.com
     changelog: Initial
     support:   wataru.ishid@gmail.com
-    summary: usonic
-    after-install: $__DIR__/after-install.sh
-    after-remove: $__DIR__/after-remove.sh
+    summary: TAI shell server
     before-remove: $__DIR__/before-remove.sh
     depends:
     - k3s
     files:
-        builds/usonic-amd64.tar: /var/lib/rancher/k3s/agent/images/
-        builds/manifests:  /var/lib/rancher/k3s/server/manifests/usonic
+        builds/tai-amd64.tar: /var/lib/rancher/k3s/agent/images/
+        builds/manifests:  /var/lib/rancher/k3s/server/manifests/tai/

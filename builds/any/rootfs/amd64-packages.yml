@@ -8,4 +8,6 @@
 - x1-upgrade
 - onl-kernel-5.4-lts-x86-64-all-modules
 - x1-saibcm-kernel-5.4-lts-x86-64-all:amd64
+- x1-usonic:amd64
+- x1-tai:amd64
 - k3s:amd64
