@@ -68,7 +68,7 @@ builder:
 	cd docker/images/builder && docker build -t $(GOLDSTONE_BUILDER_IMAGE) .
 
 docker: docker-check
-	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/autobuild/build.sh -b HEAD
+	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) --non-interactive $(VOLUMES_OPTS) -c tools/autobuild/build.sh -b HEAD
 
 versions:
 	$(ONL)/tools/make-versions.py --import-file=$(X1)/tools/x1vi --class-name=OnlVersionImplementation --output-dir $(X1)/make/versions --force
