@@ -3,7 +3,6 @@ variables:
 
 Packages: &Packages
   - !script  $ONL/tools/onl-init-pkgs.py ${INIT}
-  - !include $ONL/builds/any/rootfs/$ONL_DEBIAN_SUITE/common/all-base-packages.yml
   - !script  $ONL/tools/onl-platform-pkgs.py ${PLATFORM_LIST}
   - !include $X1/builds/any/rootfs/all-packages.yml
   - !include $X1/builds/any/rootfs/${ARCH}-packages.yml
@@ -47,14 +46,8 @@ Configure:
     - $X1/builds/any/rootfs/overlay
 
   update-rc.d:
-    - 'faultd defaults'
     - 'onlpd defaults'
-    - 'snmpd remove'
     - 'ssh defaults'
-    - 'openbsd-inetd remove'
-    - 'ntp remove'
-    - 'nfs-common remove'
-    - 'rpcbind remove'
     - 'motd remove'
     - 'mountall-bootclean.sh remove'
     - 'mountall.sh remove'
@@ -65,7 +58,6 @@ Configure:
     - 'mountnfs-bootclean.sh remove'
     - 'mountnfs.sh remove'
     - 'lm-sensors remove'
-    - 'netplug defaults'
     - 'watchdog defaults'
     - 'wd_keepalive remove'
 
