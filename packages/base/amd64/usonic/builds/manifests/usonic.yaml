@@ -56,6 +56,8 @@ spec:
                 mountPath: /var/warmboot
               - name: bcmsh-sock
                 mountPath: /var/run/sswsyncd
+              - name: host-libsai
+                mountPath: /usr/lib/usonic
               securityContext:
                 privileged: true
                 capabilities:
@@ -63,7 +65,10 @@ spec:
             - name: orchagent
               image: docker.io/library/usonic-debug:201811
               imagePullPolicy: Never
-              command: ['sh', '-c', 'sleep 5 && gdb -ex "run" -ex "bt" --args orchagent -m 72:16:EA:18:79:F9']
+              command: ['sh', '-c', 'sleep 5 && gdb -ex "run" -ex "bt" --args orchagent -m $GLOBAL_MAC_ADDRESS']
+              env:
+              - name: GLOBAL_MAC_ADDRESS
+                value: "72:16:EA:18:79:F9"
               volumeMounts:
               - name: redis-sock
                 mountPath: /var/run/redis/redis.sock
@@ -135,3 +140,6 @@ spec:
               emptyDir: {}
             - name: bcmsh-sock
               emptyDir: {}
+            - name: host-libsai
+              hostPath:
+                  path: /usr/lib/usonic/
