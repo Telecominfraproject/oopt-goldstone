@@ -636,8 +636,8 @@ create_systemd_service_file() {
 [Unit]
 Description=Lightweight Kubernetes
 Documentation=https://k3s.io
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target time-sync.target
+After=network-online.target time-sync.target
 
 [Install]
 WantedBy=multi-user.target
