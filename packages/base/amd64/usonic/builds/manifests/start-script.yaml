@@ -3,6 +3,14 @@ kind: ConfigMap
 metadata:
   name: start-script
 data:
+  prepvs.sh: |
+    #!/bin/sh
+    for index in $(seq 2);
+    do
+        ip link add vEthernet$index type veth peer name veth$index
+        ip link set up dev vEthernet$index
+        ip link set up dev veth$index
+    done
   start.sh: | 
     #!/bin/sh
     set -eux
@@ -16,9 +24,4 @@ data:
         redis-cli -n 3 ${REDIS_HOST} hset $daemon LOGOUTPUT STDERR;
     done
 
-    for index in $(seq 2);
-    do
-        ip link add vEthernet$index type veth peer name veth$index
-        ip link set up dev vEthernet$index
-        ip link set up dev veth$index
-    done
+    $(dirname $0)/prepvs.sh

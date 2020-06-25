@@ -18,7 +18,7 @@ spec:
             - name: init-loglevel
               image: docker.io/library/usonic-debug:201811
               imagePullPolicy: Never
-              command: ['sh', '/var/run/start/start.sh']
+              command: ['/var/run/start/start.sh']
               volumeMounts:
               - name: start-script
                 mountPath: /var/run/start
@@ -127,6 +127,7 @@ spec:
             - name: start-script
               configMap:
                   name: start-script
+                  defaultMode: 0777
             - name: sai-profile
               configMap:
                   name: sai-profile
