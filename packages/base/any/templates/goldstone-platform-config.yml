@@ -1,0 +1,17 @@
+variables:
+    PLATFORM: $BASENAME-$REVISION
+
+packages:
+  - name: goldstone-platform-config-$PLATFORM
+    arch: $ARCH
+    version: 1.0.0
+    copyright: Copyright 2020 Wataru Ishida
+    maintainer: wataru.ishid@gmail.com
+    changelog: Initial
+    support:   wataru.ishid@gmail.com
+    summary: Goldstone config file for $PLATFORM
+    files:
+        builds/sai.profile: /var/lib/goldstone/device/$PLATFORM/sai.profile
+        builds/config.bcm: /var/lib/goldstone/device/$PLATFORM/config.bcm
+        builds/port_config.ini: /var/lib/goldstone/device/$PLATFORM/port_config.ini
+        builds/blacklist.conf: /etc/modprobe.d/$PLATFORM.conf

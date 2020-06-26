@@ -1,0 +1,12 @@
+[Unix]
+Description=load uSONiC platform config
+After=k3s.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/load_usonic_config.sh
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

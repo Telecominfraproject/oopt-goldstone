@@ -4,6 +4,7 @@ variables:
 Packages: &Packages
   - !script  $ONL/tools/onl-init-pkgs.py ${INIT}
   - !script  $ONL/tools/onl-platform-pkgs.py ${PLATFORM_LIST}
+  - !script  $X1/tools/usonic-platform-pkgs.py ${PLATFORM_LIST}
   - !include $X1/builds/any/rootfs/all-packages.yml
   - !include $X1/builds/any/rootfs/${ARCH}-packages.yml
 

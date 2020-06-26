@@ -15,3 +15,5 @@ packages:
     files:
         builds/usonic-amd64.tar: /var/lib/rancher/k3s/agent/images/
         builds/manifests:  /var/lib/rancher/k3s/server/manifests/usonic
+        builds/load-usonic-config.service: /etc/systemd/system/
+        builds/load_usonic_config.sh: /usr/bin/

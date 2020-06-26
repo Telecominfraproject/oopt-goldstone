@@ -28,12 +28,14 @@ spec:
             - name: init-configdb
               image: docker.io/library/usonic-cli:201811
               imagePullPolicy: Never
-              command: ['sonic-cfggen', '-j', '/etc/sonic/config_db.json', '--write-to-db']
+              command: ['sonic-cfggen', '-k', 'dummy', '-p', '/etc/usonic/port_config.ini', '-j', '/etc/sonic/config_db.json', '--write-to-db']
               volumeMounts:
               - name: sonic-db-config
                 mountPath: /var/run/redis/sonic-db/
               - name: config-db-json
                 mountPath: /etc/sonic/
+              - name: usonic-config
+                mountPath: /etc/usonic/
             - name: complete-init
               image: docker.io/library/usonic-debug:201811
               imagePullPolicy: Never
@@ -42,9 +44,9 @@ spec:
             - name: syncd
               image: docker.io/library/usonic-debug:201811
               imagePullPolicy: Never
-              command: ['sh', '-c', 'service syslog-ng start && dsserve /usr/bin/syncd -p /etc/sonic/profile.ini -d']
+              command: ['sh', '-c', 'service syslog-ng start && LD_LIBRARY_PATH=/usr/lib/usonic dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
               volumeMounts:
-              - name: sai-profile
+              - name: usonic-config
                 mountPath: /etc/sonic/
               - name: redis-sock
                 mountPath: /var/run/redis/redis.sock
@@ -131,6 +133,9 @@ spec:
             - name: sai-profile
               configMap:
                   name: sai-profile
+            - name: usonic-config
+              configMap:
+                  name: usonic-config
             - name: sonic-db-config
               configMap:
                   name: sonic-db-config

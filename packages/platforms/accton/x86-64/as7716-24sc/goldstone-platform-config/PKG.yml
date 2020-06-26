@@ -1,0 +1,1 @@
+!include $X1_TEMPLATES/goldstone-platform-config.yml ARCH=amd64 BASENAME=x86-64-accton-as7716-24sc REVISION=r0

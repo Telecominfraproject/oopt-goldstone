@@ -13,6 +13,8 @@ spec:
         mountPath: /var/run/redis/sonic-db/
       - name: sonic-version
         mountPath: /etc/sonic/
+      - name: usonic-config
+        mountPath: /etc/usonic/
     volumes:
     - name: sonic-db-config
       configMap:
@@ -20,3 +22,6 @@ spec:
     - name: sonic-version
       configMap:
           name: sonic-version
+    - name: usonic-config
+      configMap:
+          name: usonic-config
