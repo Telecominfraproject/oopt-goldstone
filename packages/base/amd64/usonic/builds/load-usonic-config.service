@@ -1,6 +1,7 @@
-[Unix]
+[Unit]
 Description=load uSONiC platform config
 After=k3s.service
+Requires=k3s.service
 
 [Service]
 Type=oneshot

@@ -53,6 +53,8 @@ BUILDER_OPTS = \
 
 ARCH = amd64
 
+all: builder docker
+
 autobuild:
 	$(MAKE) -C builds/$(ARCH)
 

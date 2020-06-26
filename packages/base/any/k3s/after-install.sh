@@ -658,6 +658,7 @@ Restart=no
 RestartSec=5s
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
+ExecStartPost=/bin/sh -c 'while [ true ]; do ( kubectl get nodes | grep " Ready" ) && exit 0; sleep 1; done'
 ExecStart=${BIN_DIR}/k3s \\
     ${CMD_K3S_EXEC}
 

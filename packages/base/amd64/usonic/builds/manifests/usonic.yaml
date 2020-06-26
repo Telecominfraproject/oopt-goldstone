@@ -44,7 +44,7 @@ spec:
             - name: syncd
               image: docker.io/library/usonic-debug:201811
               imagePullPolicy: Never
-              command: ['sh', '-c', 'service syslog-ng start && LD_LIBRARY_PATH=/usr/lib/usonic dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
+              command: ['sh', '-c', 'service syslog-ng start && LD_LIBRARY_PATH=/var/lib/usonic dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
               volumeMounts:
               - name: usonic-config
                 mountPath: /etc/sonic/
@@ -59,7 +59,7 @@ spec:
               - name: bcmsh-sock
                 mountPath: /var/run/sswsyncd
               - name: host-libsai
-                mountPath: /usr/lib/usonic
+                mountPath: /var/lib/usonic
               securityContext:
                 privileged: true
                 capabilities:
@@ -148,4 +148,4 @@ spec:
               emptyDir: {}
             - name: host-libsai
               hostPath:
-                  path: /usr/lib/usonic/
+                  path: /var/lib/usonic/

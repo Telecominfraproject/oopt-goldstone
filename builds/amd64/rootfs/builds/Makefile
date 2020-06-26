@@ -41,7 +41,7 @@ RFS_COMMAND += --squash $(RFS_SQUASH)
 endif
 
 ifndef RFS_MANIFEST
-RFS_MANIFEST := etc/onl/rootfs/manifest.json
+RFS_MANIFEST := etc/goldstone/rootfs/manifest.json
 endif
 
 LOCAL_MANIFEST := $(RFS_WORKDIR)/manifest.json

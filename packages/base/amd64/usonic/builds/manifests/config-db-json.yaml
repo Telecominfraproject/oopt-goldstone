@@ -8,16 +8,6 @@ data:
                 "mac": "72:16:EA:18:79:F9",
                 "platform": "x86_64-usonic"
             }
-        },
-        "PORT": {
-            "Ethernet1": {
-                "alias": "Ethernet1",
-                "lanes": "1,2,3,4"
-            },
-            "Ethernet2": {
-                "alias": "Ethernet2",
-                "lanes": "5,6,7,8"
-            }
         }
     }
 kind: ConfigMap
