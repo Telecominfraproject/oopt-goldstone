@@ -1,7 +1,9 @@
-USONIC_IMAGE_REPO=docker.io/wataru
-USONIC_IMAGES=tai
-USONIC_TAG=latest
+TAI_IMAGE_REPO=docker.io/wataru
+TAI_IMAGES=tai
+TAI_TAG=latest
 
-tai-amd64.tar:
-	$(foreach image,$(USONIC_IMAGES), docker pull $(USONIC_IMAGE_REPO)/$(image):$(USONIC_TAG); docker tag $(USONIC_IMAGE_REPO)/$(image):$(USONIC_TAG) $(image):$(USONIC_TAG);)
-	docker save $(foreach image,$(USONIC_IMAGES), $(image):$(USONIC_TAG)) > $@
+tai-amd64.tar: FORCE
+	DOCKER_BUILDKIT=1 docker build --build-arg BASE=$(TAI_IMAGE_REPO)/$(TAI_IMAGES):$(TAI_TAG) -t $(TAI_IMAGES):$(TAI_TAG) .
+	docker save $(foreach image,$(TAI_IMAGES), $(image):$(TAI_TAG)) > $@
+
+FORCE:
