@@ -1,7 +1,7 @@
 [Unit]
 Description=load uSONiC platform config
-After=k3s.service
-Requires=k3s.service
+After=k3s.service gs-config.service
+Requires=k3s.service gs-config.service
 
 [Service]
 Type=oneshot

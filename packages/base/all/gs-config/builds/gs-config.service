@@ -1,0 +1,12 @@
+[Unit]
+Description=setup Goldstone config file
+Before=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/gs_config.sh
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

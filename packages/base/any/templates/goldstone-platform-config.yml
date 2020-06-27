@@ -11,7 +11,7 @@ packages:
     support:   wataru.ishid@gmail.com
     summary: Goldstone config file for $PLATFORM
     files:
-        builds/sai.profile: /var/lib/goldstone/device/$PLATFORM/sai.profile
-        builds/config.bcm: /var/lib/goldstone/device/$PLATFORM/config.bcm
-        builds/port_config.ini: /var/lib/goldstone/device/$PLATFORM/port_config.ini
+        builds/sai.profile: /var/lib/goldstone/device/$PLATFORM/usonic/sai.profile
+        builds/config.bcm: /var/lib/goldstone/device/$PLATFORM/usonic/config.bcm
+        builds/port_config.ini: /var/lib/goldstone/device/$PLATFORM/usonic/port_config.ini
         builds/blacklist.conf: /etc/modprobe.d/$PLATFORM.conf

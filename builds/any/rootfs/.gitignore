@@ -1,1 +1,1 @@
-overlay/var/lib/usonic/libsai.so
+overlay/**/*.so

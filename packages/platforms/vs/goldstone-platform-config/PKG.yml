@@ -11,7 +11,7 @@ packages:
     support:   wataru.ishid@gmail.com
     summary: Goldstone config file for virtual switch
     files:
-        builds/sai.profile: /var/lib/goldstone/device/$PLATFORM/sai.profile
-        builds/lanemap.conf: /var/lib/goldstone/device/$PLATFORM/lanemap.conf
-        builds/port_config.ini: /var/lib/goldstone/device/$PLATFORM/port_config.ini
-        builds/init.sh: /var/lib/goldstone/device/$PLATFORM/init.sh
+        builds/sai.profile: /var/lib/goldstone/device/$PLATFORM/usonic/sai.profile
+        builds/lanemap.conf: /var/lib/goldstone/device/$PLATFORM/usonic/lanemap.conf
+        builds/port_config.ini: /var/lib/goldstone/device/$PLATFORM/usonic/port_config.ini
+        builds/init.sh: /var/lib/goldstone/device/$PLATFORM/usonic/init.sh
