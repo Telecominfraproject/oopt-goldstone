@@ -16,8 +16,23 @@ spec:
         spec:
             containers:
             - name: taish-server
-              image: docker.io/library/tai:latest
-              imagePullPolicy: Never
-              command: taish_server
+              image: docker.io/microsonic/tai:latest
+              imagePullPolicy: IfNotPresent
+              command: ['taish_server']
+              env:
+              - name: LD_LIBRARY_PATH
+                value: "/var/lib/tai"
+              volumeMounts:
+              - name: host-libtai
+                mountPath: /var/lib/tai
+              - name: tai-config
+                mountPath: /etc/tai
               securityContext:
                 privileged: true
+            volumes:
+            - name: host-libtai
+              hostPath:
+                path: /var/lib/tai/
+            - name: tai-config
+              hostPath:
+                path: /var/lib/goldstone/device/current/tai
