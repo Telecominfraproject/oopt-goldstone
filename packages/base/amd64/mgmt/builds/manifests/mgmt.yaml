@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: gs-mgmt
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: gs-mgmt
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: gs-mgmt
+        spec:
+            shareProcessNamespace: true
+            initContainers:
+            - name: prep-sysrepo
+              image: docker.io/microsonic/gs-mgmt-debug:latest
+              imagePullPolicy: IfNotPresent
+              command: ['sysrepoctl', '-s', '/var/lib/goldstone/yang/gs', '--install', '/var/lib/goldstone/yang/gs/goldstone-tai.yang']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+            containers:
+            - name: tai
+              image: docker.io/microsonic/gs-mgmt-debug:latest
+              imagePullPolicy: IfNotPresent
+              command: ['sh', '-c', 'gssouthd-tai --taish-server $TAISH_SERVER_SERVICE_HOST:$TAISH_SERVER_SERVICE_PORT --verbose']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+            - name: cli
+              image: docker.io/microsonic/gs-mgmt-debug:latest
+              imagePullPolicy: IfNotPresent
+              command: ['sh', '-c', 'while [ true ]; do echo gscli; sleep 10; done']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+            volumes:
+            - name: shm
+              emptyDir:
+                  medium: Memory
+            - name: sysrepo
+              emptyDir: {}

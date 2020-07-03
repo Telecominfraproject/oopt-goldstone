@@ -774,6 +774,7 @@ eval set -- $(escape "${INSTALL_K3S_EXEC}") $(quote "$@")
     INSTALL_K3S_SKIP_DOWNLOAD=true
     INSTALL_K3S_SKIP_START=true
     HAS_SYSTEMD=true
+    export K3S_KUBECONFIG_MODE="644"
     setup_env server
     download_and_verify
     setup_selinux
