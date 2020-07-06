@@ -17,9 +17,9 @@ spec:
             shareProcessNamespace: true
             initContainers:
             - name: prep-sysrepo
-              image: docker.io/microsonic/gs-mgmt-debug:latest
+              image: gs-mgmt-debug:latest
               imagePullPolicy: IfNotPresent
-              command: ['sysrepoctl', '-s', '/var/lib/goldstone/yang/gs', '--install', '/var/lib/goldstone/yang/gs/goldstone-tai.yang']
+              command: ['sysrepoctl', '-s', '/var/lib/goldstone/yang/gs', '--install', '/var/lib/goldstone/yang/gs/goldstone-tai.yang,/var/lib/goldstone/yang/gs/goldstone-onlp.yang']
               volumeMounts:
               - name: shm
                 mountPath: /dev/shm
@@ -27,7 +27,7 @@ spec:
                 mountPath: /var/lib/sysrepo
             containers:
             - name: tai
-              image: docker.io/microsonic/gs-mgmt-debug:latest
+              image: gs-mgmt-debug:latest
               imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'gssouthd-tai --taish-server $TAISH_SERVER_SERVICE_HOST:$TAISH_SERVER_SERVICE_PORT --verbose']
               volumeMounts:
@@ -35,8 +35,24 @@ spec:
                 mountPath: /dev/shm
               - name: sysrepo
                 mountPath: /var/lib/sysrepo
+            - name: onlp
+              image: gs-mgmt-debug:latest
+              imagePullPolicy: IfNotPresent
+              command: ['gssouthd-onlp']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              - name: onl
+                mountPath: /etc/onl/
+              - name: host-lib
+                mountPath: /lib/x86_64-linux-gnu/libonlp-platform.so
+              securityContext:
+                capabilities:
+                  add: ["IPC_OWNER", "IPC_LOCK"]
             - name: cli
-              image: docker.io/microsonic/gs-mgmt-debug:latest
+              image: gs-mgmt-debug:latest
               imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'while [ true ]; do echo gscli; sleep 10; done']
               volumeMounts:
@@ -50,3 +66,9 @@ spec:
                   medium: Memory
             - name: sysrepo
               emptyDir: {}
+            - name: onl
+              hostPath:
+                path: /etc/onl
+            - name: host-lib
+              hostPath:
+                path: /lib/x86_64-linux-gnu/libonlp-platform.so
