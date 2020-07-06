@@ -1,9 +1,9 @@
-TAI_IMAGE_REPO=docker.io/wataru
-TAI_IMAGES=tai
-TAI_TAG=latest
+IMAGE_REPO=docker.io/microsonic
+IMAGES=tai
+TAG=latest
 
 tai-amd64.tar: FORCE
-	DOCKER_BUILDKIT=1 docker build --build-arg BASE=$(TAI_IMAGE_REPO)/$(TAI_IMAGES):$(TAI_TAG) -t $(TAI_IMAGES):$(TAI_TAG) .
-	docker save $(foreach image,$(TAI_IMAGES), $(image):$(TAI_TAG)) > $@
+	DOCKER_BUILDKIT=1 docker build --build-arg BASE=$(IMAGE_REPO)/$(IMAGES):$(TAG) -t $(IMAGES):$(TAG) .
+	docker save $(foreach image,$(IMAGES), $(image):$(TAG)) > $@
 
 FORCE:

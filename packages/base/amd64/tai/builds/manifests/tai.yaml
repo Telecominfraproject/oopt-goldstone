@@ -16,7 +16,7 @@ spec:
         spec:
             containers:
             - name: taish-server
-              image: docker.io/microsonic/tai:latest
+              image: tai:latest
               imagePullPolicy: IfNotPresent
               command: ['taish_server']
               env:
