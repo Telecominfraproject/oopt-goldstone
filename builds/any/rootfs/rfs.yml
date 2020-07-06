@@ -72,6 +72,9 @@ Configure:
   users:
     root:
       password: x1
+    admin:
+      password: admin
+      shell: /usr/bin/gscli
 
   manifests:
     '/etc/onl/rootfs/manifest.json' :

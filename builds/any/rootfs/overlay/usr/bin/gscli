@@ -1,0 +1,10 @@
+#!/bin/sh
+
+trap "echo Starting bash; bash; exit 0" INT
+
+while true; do
+	kubectl exec -it deploy/gs-mgmt -c cli -- gscli && exit 0 || :
+	echo Goldstone CLI is not ready yet. waiting 10sec to try again..
+	echo press Ctrl-C to start bash instead.
+	sleep 10
+done
