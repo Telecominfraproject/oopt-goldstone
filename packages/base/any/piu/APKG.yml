@@ -1,0 +1,14 @@
+prerequisites:
+  packages: [ 'onl-$KERNEL:$ARCH' ]
+
+packages:
+  - name: cfp2piu-$KERNEL
+    summary: CFP2 PIU kernel module
+    arch: $ARCH
+    version: 0.1
+    copyright: Copyright 2020 NTT Electronics America
+    maintainer: ishida@nel-america.com
+    changelog: None
+
+    files:
+      builds/lib: lib

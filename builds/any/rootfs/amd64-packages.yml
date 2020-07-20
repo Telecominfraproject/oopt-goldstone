@@ -13,3 +13,4 @@
 - k3s:amd64
 - stern:amd64
 - gs-mgmt:amd64
+- cfp2piu-kernel-5.4-lts-x86-64-all:amd64

@@ -1,0 +1,21 @@
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+LINUX_KERNEL_PIU_NAME ?= cfp2piu
+
+obj-m := $(LINUX_KERNEL_PIU_NAME).o
+
+#
+# These are the sources that must be built into this module
+#
+SOURCES := $(THIS_DIR)/piu.c
+
+#
+# The kernel build system requires paths relative to the module build directory.
+#
+RELSOURCES := $(foreach source,$(SOURCES),$(shell realpath --relative-to=$(THIS_DIR) $(source)))
+
+$(LINUX_KERNEL_PIU_NAME)-y := $(RELSOURCES:.c=.o)
+
+ccflags-y := -I$(THIS_DIR)/../include
+
+# vim: ft=make
