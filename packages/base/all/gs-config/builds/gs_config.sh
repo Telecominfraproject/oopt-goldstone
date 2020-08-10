@@ -5,7 +5,7 @@ set -eux
 if [ -e /etc/goldstone/platform]; then
     PLATFORM=`cat /etc/goldstone/platform`
 else
-    PLATFORM=`onie-sysinfo`
+    PLATFORM=`onlpdump -o | awk '/Platform Name:/{ print $3 }'`
     PLATFORM=${PLATFORM//_/-}
     mkdir -p /etc/goldstone
     echo $PLATFORM > /etc/goldstone/platform
