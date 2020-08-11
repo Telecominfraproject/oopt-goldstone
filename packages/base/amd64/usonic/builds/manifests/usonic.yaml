@@ -16,8 +16,8 @@ spec:
         spec:
             initContainers:
             - name: init-loglevel
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['/var/run/start/start.sh']
               volumeMounts:
               - name: start-script
@@ -26,8 +26,8 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: init-configdb
-              image: docker.io/library/usonic-cli:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-cli:latest
+              imagePullPolicy: IfNotPresent
               command: ['sonic-cfggen', '-k', 'dummy', '-p', '/etc/usonic/port_config.ini', '-j', '/etc/sonic/config_db.json', '--write-to-db']
               volumeMounts:
               - name: sonic-db-config
@@ -37,14 +37,17 @@ spec:
               - name: usonic-config
                 mountPath: /etc/usonic/
             - name: complete-init
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['redis-cli', '-h', 'redis.default.svc.cluster.local', '-n', '4', 'SET', 'CONFIG_DB_INITIALIZED', '1']
             containers:
             - name: syncd
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
-              command: ['sh', '-c', 'service syslog-ng start && LD_LIBRARY_PATH=/var/lib/usonic dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['sh', '-c', 'service syslog-ng start && dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
+              env:
+              - name: LD_LIBRARY_PATH
+                value: "/var/lib/current:/var/lib/usonic"
               volumeMounts:
               - name: usonic-config
                 mountPath: /etc/sonic/
@@ -60,13 +63,15 @@ spec:
                 mountPath: /var/run/sswsyncd
               - name: host-libsai
                 mountPath: /var/lib/usonic
+              - name: current
+                mountPath: /var/lib/current
               securityContext:
                 privileged: true
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: orchagent
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'sleep 5 && gdb -ex "run" -ex "bt" --args orchagent -m $GLOBAL_MAC_ADDRESS']
               env:
               - name: GLOBAL_MAC_ADDRESS
@@ -77,8 +82,8 @@ spec:
               - name: sonic-db-config
                 mountPath: /var/run/redis/sonic-db/
             - name: portsyncd
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" portsyncd']
               volumeMounts:
               - name: redis-sock
@@ -86,8 +91,8 @@ spec:
               - name: sonic-db-config
                 mountPath: /var/run/redis/sonic-db/
             - name: neighsyncd
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" neighsyncd']
               volumeMounts:
               - name: redis-sock
@@ -95,8 +100,8 @@ spec:
               - name: sonic-db-config
                 mountPath: /var/run/redis/sonic-db/
             - name: vlanmgrd
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'mount -o remount,rw /sys && sleep 8 && gdb -ex "run" -ex "bt" vlanmgrd']
               volumeMounts:
               - name: redis-sock
@@ -106,8 +111,8 @@ spec:
               securityContext:
                 privileged: true
             - name: intfmgrd
-              image: docker.io/library/usonic-debug:201811
-              imagePullPolicy: Never
+              image: docker.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" intfmgrd']
               volumeMounts:
               - name: redis-sock
@@ -149,3 +154,6 @@ spec:
             - name: host-libsai
               hostPath:
                   path: /var/lib/usonic/
+            - name: current
+              hostPath:
+                  path: /var/lib/goldstone/device/current/usonic

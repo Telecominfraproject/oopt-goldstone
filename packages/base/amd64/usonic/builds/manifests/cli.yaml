@@ -5,8 +5,8 @@ metadata:
 spec:
     containers:
     - name: cli
-      image: usonic-cli:201811
-      imagePullPolicy: Never
+      image: docker.io/microsonic/usonic-cli:latest
+      imagePullPolicy: IfNotPresent
       command: ['sh', '-c', 'sleep 100000']
       volumeMounts:
       - name: sonic-db-config
