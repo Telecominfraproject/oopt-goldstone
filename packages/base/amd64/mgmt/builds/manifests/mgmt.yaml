@@ -1,23 +1,51 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
+metadata:
+    name: netopeer2
+spec:
+    selector:
+        app: gs-mgmt
+    ports:
+    - protocol: TCP
+      port: 830
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
 metadata:
     name: gs-mgmt
+    namespace: default
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: gs-mgmt
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: view
+subjects:
+- kind: ServiceAccount
+  name: gs-mgmt
+  namespace: default
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: prep-gs-mgmt
 spec:
-    replicas: 1
-    selector:
-        matchLabels:
-            app: gs-mgmt
-    strategy:
-        type: Recreate
     template:
-        metadata:
-            labels:
-                app: gs-mgmt
         spec:
-            shareProcessNamespace: true
-            initContainers:
+            hostPID: true
+            restartPolicy: Never
+            containers:
             - name: prep-sysrepo
-              image: gs-mgmt-debug:latest
+              image: docker.io/microsonic/gs-mgmt-debug:latest
               imagePullPolicy: IfNotPresent
               command: ['sysrepoctl', '-s', '/var/lib/goldstone/yang/gs', '--install', '/var/lib/goldstone/yang/gs/goldstone-tai.yang,/var/lib/goldstone/yang/gs/goldstone-onlp.yang']
               volumeMounts:
@@ -25,9 +53,145 @@ spec:
                 mountPath: /dev/shm
               - name: sysrepo
                 mountPath: /var/lib/sysrepo
+            - name: prep-np
+              image: docker.io/microsonic/gs-mgmt-netopeer2:latest
+              imagePullPolicy: IfNotPresent
+              command: ['sh', '-c', '$NP2/setup.sh && $NP2/merge_hostkey.sh && $NP2/merge_config.sh']
+              env:
+              - name: NP2
+                value: /usr/local/share/netopeer2/scripts
+              - name: NP2_MODULE_OWNER
+                value: root
+              - name: NP2_MODULE_GROUP
+                value: root
+              - name: NP2_MODULE_PERMS
+                value: "600"
+              - name: NP2_MODULE_DIR
+                value: /usr/local/share/yang/modules/netopeer2
+              volumeMounts:
+              - mountPath: /dev/shm
+                name: shm
+              - mountPath: /var/lib/sysrepo
+                name: sysrepo
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: gs-mgmt-cli
+    labels:
+        app: gs-mgmt
+spec:
+    selector:
+        matchLabels:
+            app: gs-mgmt-cli
+    template:
+        metadata:
+            labels:
+                app: gs-mgmt-cli
+        spec:
+            hostPID: true
+            serviceAccountName: gs-mgmt
+            initContainers:
+            - name: wait-prep
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=complete', 'job/prep-gs-mgmt']
+            containers:
+            - name: cli
+              image: docker.io/microsonic/gs-mgmt-debug:latest
+              imagePullPolicy: IfNotPresent
+              command: ['sh', '-c', 'while true; do gscli -c "transponder; show"; sleep 2; done']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: gs-mgmt-np2
+    labels:
+        app: gs-mgmt
+spec:
+    selector:
+        matchLabels:
+            app: gs-mgmt-np2
+    template:
+        metadata:
+            labels:
+                app: gs-mgmt-np2
+        spec:
+            hostPID: true
+            serviceAccountName: gs-mgmt
+            initContainers:
+            - name: wait-prep
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=complete', 'job/prep-gs-mgmt']
+            containers:
+            - name: netopeer2
+              image: docker.io/microsonic/gs-mgmt-netopeer2:latest
+              imagePullPolicy: IfNotPresent
+              command: ['netopeer2-server', '-d', '-v', '2']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: gs-mgmt-tai
+    labels:
+        app: gs-mgmt
+spec:
+    selector:
+        matchLabels:
+            app: gs-mgmt-tai
+    template:
+        metadata:
+            labels:
+                app: gs-mgmt-tai
+        spec:
+            hostPID: true
+            serviceAccountName: gs-mgmt
+            initContainers:
+            - name: wait-prep
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=complete', 'job/prep-gs-mgmt']
             containers:
             - name: tai
-              image: gs-mgmt-debug:latest
+              image: docker.io/microsonic/gs-mgmt-debug:latest
               imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'gssouthd-tai --taish-server $TAISH_SERVER_SERVICE_HOST:$TAISH_SERVER_SERVICE_PORT --verbose']
               volumeMounts:
@@ -35,8 +199,41 @@ spec:
                 mountPath: /dev/shm
               - name: sysrepo
                 mountPath: /var/lib/sysrepo
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: gs-mgmt-onlp
+    labels:
+        app: gs-mgmt
+spec:
+    selector:
+        matchLabels:
+            app: gs-mgmt-onlp
+    template:
+        metadata:
+            labels:
+                app: gs-mgmt-onlp
+        spec:
+            hostPID: true
+            serviceAccountName: gs-mgmt
+            initContainers:
+            - name: wait-prep
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=complete', 'job/prep-gs-mgmt']
+            containers:
             - name: onlp
-              image: gs-mgmt-debug:latest
+              image: docker.io/microsonic/gs-mgmt-debug:latest
               imagePullPolicy: IfNotPresent
               command: ['gssouthd-onlp']
               volumeMounts:
@@ -48,27 +245,26 @@ spec:
                 mountPath: /etc/onl/
               - name: host-lib
                 mountPath: /lib/x86_64-linux-gnu/libonlp-platform.so
+              - name: host-i2c-lib
+                mountPath: /lib/x86_64-linux-gnu/libi2c.so.0
               securityContext:
                 capabilities:
-                  add: ["IPC_OWNER", "IPC_LOCK"]
-            - name: cli
-              image: gs-mgmt-debug:latest
-              imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'while [ true ]; do echo gscli; sleep 10; done']
-              volumeMounts:
-              - name: shm
-                mountPath: /dev/shm
-              - name: sysrepo
-                mountPath: /var/lib/sysrepo
+                  add:
+                  - IPC_OWNER
+                  - IPC_LOCK
             volumes:
             - name: shm
-              emptyDir:
-                  medium: Memory
+              hostPath:
+                  path: /dev/shm
             - name: sysrepo
-              emptyDir: {}
+              hostPath:
+                  path: /var/lib/sysrepo
             - name: onl
               hostPath:
                 path: /etc/onl
             - name: host-lib
               hostPath:
                 path: /lib/x86_64-linux-gnu/libonlp-platform.so
+            - name: host-i2c-lib
+              hostPath:
+                path: /usr/lib/x86_64-linux-gnu/libi2c.so.0.1.1
