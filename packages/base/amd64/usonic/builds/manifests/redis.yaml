@@ -7,8 +7,8 @@ metadata:
 spec:
     containers:
     - name: redis
-      image: docker.io/library/usonic-debug:201811
-      imagePullPolicy: Never
+      image: docker.io/microsonic/usonic-debug:201904
+      imagePullPolicy: IfNotPresent
       command: ["redis-server", "/etc/redis/redis.conf"]
       volumeMounts:
       - name: redis-sock
