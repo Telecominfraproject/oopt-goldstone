@@ -8,6 +8,7 @@ dependmodules.x
 *.sqsh
 *.pyc
 *.pyo
+*.ko
 
 # Package cache and lock files
 .lock
