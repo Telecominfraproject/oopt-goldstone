@@ -1,6 +1,7 @@
 [Unit]
 Description=Goldstone Management Translate OpenConfig Daemon
-After=gs-mgmt-south.target
+After=gs-yang.service gs-mgmt-south.target
+Requires=gs-yang.service
 PartOf=gs-mgmt-xlate.target gs-mgmt.target
 
 [Service]
