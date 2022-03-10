@@ -28,3 +28,4 @@
 - gs-snmp:amd64
 - gs-xlate-oc:amd64
 - python3.10:amd64
+- gs-north-gnmi:amd64

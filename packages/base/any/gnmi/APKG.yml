@@ -1,0 +1,15 @@
+packages:
+  - name: gs-north-gnmi
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone gNMI server
+    after-install: $X1/packages/base/any/gnmi/after-install.sh
+    before-remove: $X1/packages/base/any/gnmi/before-remove.sh
+    depends:
+    - k3s
+    - gs-mgmt
+    files:
+        builds/gs-north-gnmi-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/manifests: /var/lib/gs-north-gnmi/k8s
+        $X1/packages/base/any/gnmi/builds/gs-north-gnmi.service: /etc/systemd/system/

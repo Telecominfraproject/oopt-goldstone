@@ -1,0 +1,1 @@
+!include $X1/packages/base/any/gnmi/APKG.yml ARCH=arm64

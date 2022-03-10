@@ -10,6 +10,7 @@ APPS = [
     "north-notif",
     "north-netconf",
     "north-snmp",
+    "north-gnmi",
     "south-sonic",
     "south-gearbox",
     "south-dpll",

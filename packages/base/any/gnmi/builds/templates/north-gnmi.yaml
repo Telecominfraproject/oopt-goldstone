@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: north-gnmi
+    labels:
+        gs-mgmt: north-gnmi
+spec:
+    type: LoadBalancer
+    selector:
+        app: north-gnmi
+    ports:
+    - protocol: TCP
+      port: 51051
+      targetPort: 51051
+      name: gnmi-secure
+    - protocol: TCP
+      port: 51052
+      targetPort: 51052
+      name: gnmi-insecure
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: north-gnmi
+    labels:
+        app: gs-mgmt
+        gs-mgmt: north-gnmi
+spec:
+    selector:
+        matchLabels:
+            app: north-gnmi
+    template:
+        metadata:
+            labels:
+                app: north-gnmi
+        spec:
+            containers:
+            - name: gnmi
+              image: MGMT_IMAGE_REPO/north-gnmi:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
+              command: ['gsnorthd-gnmi']
+              args: ['--verbose', '--secure-port', '51051', '--insecure-port', '51052', '$(SUPPORTED_MODELS_FILE)']
+              # NOTE: Enable if you want to use TLS for gNMI.
+              #args: ['--verbose', '--secure-port', '51051', '--insecure-port', '51052', '-k', '$(GNMI_SERVER_KEY)', '-c', '$(GNMI_SERVER_CERTIFICATE)', '$(SUPPORTED_MODELS_FILE)']
+              env:
+              - name: SUPPORTED_MODELS_FILE
+                value: /current/gnmi-supported-models.json
+              #- name: GNMI_SERVER_KEY
+              #  value: /current/gnmi-server.key
+              #- name: GNMI_SERVER_CERTIFICATE
+              #  value: /current/gnmi-server.crt
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              - name: current
+                mountPath: /current
+              livenessProbe:
+                tcpSocket:
+                  port: insecure-port
+                failureThreshold: 2
+                periodSeconds: 10
+              startupProbe:
+                tcpSocket:
+                  port: insecure-port
+                failureThreshold: 120
+                periodSeconds: 1
+              ports:
+              - name: secure-port
+                containerPort: 51051
+              - name: insecure-port
+                containerPort: 51052
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+            - name: current
+              hostPath:
+                  path: /var/lib/goldstone/device/current
