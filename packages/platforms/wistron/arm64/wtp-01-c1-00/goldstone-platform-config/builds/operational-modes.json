@@ -1,0 +1,77 @@
+[
+    {
+        "openconfig": {
+            "mode-id": 100,
+            "vendor-id": "example vendor"
+        },
+        "description": "100G, DP-QPSK, SC-FEC, OTU4-LR, 28.0GHz",
+        "line-rate": "100g",
+        "modulation-format": "dp-qpsk",
+        "fec-type": "sc-fec",
+        "client-signal-mapping-type": "otu4-lr"
+    },
+    {
+        "openconfig": {
+            "mode-id": 101,
+            "vendor-id": "example vendor"
+        },
+        "description": "100G, DP-QPSK, oFEC, FlexO-LR, 31.6GHz",
+        "line-rate": "100g",
+        "modulation-format": "dp-qpsk",
+        "fec-type": "ofec",
+        "client-signal-mapping-type": "flexo-lr"
+    },
+    {
+        "openconfig": {
+            "mode-id": 200,
+            "vendor-id": "example vendor"
+        },
+        "description": "200G, DP-16QAM, oFEC, FlexO-LR, 31.6GHz",
+        "line-rate": "200g",
+        "modulation-format": "dp-16-qam",
+        "fec-type": "ofec",
+        "client-signal-mapping-type": "flexo-lr"
+    },
+    {
+        "openconfig": {
+            "mode-id": 201,
+            "vendor-id": "example vendor"
+        },
+        "description": "200G, DP-QPSK, oFEC, FlexO-LR, 63.1GHz",
+        "line-rate": "200g",
+        "modulation-format": "dp-qpsk",
+        "fec-type": "ofec",
+        "client-signal-mapping-type": "flexo-lr"
+    },
+    {
+        "openconfig": {
+            "mode-id": 300,
+            "vendor-id": "example vendor"
+        },
+        "description": "300G, DP-8QAM, oFEC, FlexO-LR, 63.1GHz",
+        "line-rate": "300g",
+        "modulation-format": "dp-8-qam",
+        "fec-type": "ofec",
+        "client-signal-mapping-type": "flexo-lr"
+    },
+    {
+        "openconfig": {
+            "mode-id": 400,
+            "vendor-id": "example vendor"
+        },
+        "description": "400G, DP-16QAM, oFEC, FlexO-LR, 63.1GHz",
+        "line-rate": "400g",
+        "modulation-format": "dp-16-qam",
+        "fec-type": "ofec",
+        "client-signal-mapping-type": "flexo-lr"
+    },
+    {
+        "openroadm": {
+            "profile-name": "ORBKD-W-400G-1000X"
+        },
+        "description": "Open ROADM 400G bookend",
+        "line-rate": "400g",
+        "modulation-format": "dp-16-qam-ps",
+        "fec-type": "ofec"
+    }
+]
