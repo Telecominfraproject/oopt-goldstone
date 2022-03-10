@@ -18,6 +18,7 @@ packages:
         builds/tai: /var/lib/goldstone/device/$PLATFORM/tai
         builds/platform.json: /var/lib/goldstone/device/$PLATFORM/platform.json
         builds/operational-modes.json: /var/lib/goldstone/device/$PLATFORM/operational-modes.json
+        builds/gnmi-supported-models.json: /var/lib/goldstone/device/$PLATFORM/gnmi-supported-models.json
         builds/init.sh: /var/lib/goldstone/device/$PLATFORM/init.sh
         builds/tai-gearbox: /var/lib/goldstone/device/$PLATFORM/tai-gearbox
         builds/30.eeprom: /etc/boot.d/30.eeprom
