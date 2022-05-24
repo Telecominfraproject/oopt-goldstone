@@ -16,6 +16,8 @@ packages:
         builds/platform.json: /var/lib/goldstone/device/$PLATFORM/platform.json
         builds/init.sh: /var/lib/goldstone/device/$PLATFORM/init.sh
         builds/blacklist.conf: /etc/modprobe.d/$PLATFORM.conf
+        builds/operational-modes.json: /var/lib/goldstone/device/$PLATFORM/operational-modes.json
+        builds/gnmi-supported-models.json: /var/lib/goldstone/device/$PLATFORM/gnmi-supported-models.json
         builds/diag/dist: /var/lib/galileo/wheels/
         builds/diag/galileo1_cfp2piu_driver_manage.sh: /usr/bin/galileo1_cfp2piu_driver_manage.sh
     after-install: $__DIR__/after-install.sh

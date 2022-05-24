@@ -1,0 +1,69 @@
+{
+    "supported_models": [
+        {
+            "name": "openconfig-interfaces",
+            "organization": "OpenConfig working group",
+            "version": "2021-04-06"
+        },
+        {
+            "name": "openconfig-if-ethernet",
+            "organization": "OpenConfig working group",
+            "version": "2021-07-07"
+        },
+        {
+            "name": "openconfig-platform",
+            "organization": "OpenConfig working group",
+            "version": "2021-01-18"
+        },
+        {
+            "name": "openconfig-platform-types",
+            "organization": "OpenConfig working group",
+            "version": "2021-01-18"
+        },
+        {
+            "name": "openconfig-platform-port",
+            "organization": "OpenConfig working group",
+            "version": "2021-06-16"
+        },
+        {
+            "name": "openconfig-platform-transceiver",
+            "organization": "OpenConfig working group",
+            "version": "2021-02-23"
+        },
+        {
+            "name": "openconfig-platform-fan",
+            "organization": "OpenConfig working group",
+            "version": "2018-11-21"
+        },
+        {
+            "name": "openconfig-platform-psu",
+            "organization": "OpenConfig working group",
+            "version": "2018-11-21"
+        },
+        {
+            "name": "openconfig-terminal-device",
+            "organization": "OpenConfig working group",
+            "version": "2021-02-23"
+        },
+        {
+            "name": "openconfig-transport-line-common",
+            "organization": "OpenConfig working group",
+            "version": "2019-06-03"
+        },
+        {
+            "name": "openconfig-transport-types",
+            "organization": "OpenConfig working group",
+            "version": "2021-03-22"
+        },
+        {
+            "name": "openconfig-types",
+            "organization": "OpenConfig working group",
+            "version": "2019-04-16"
+        },
+        {
+            "name": "openconfig-yang-types",
+            "organization": "OpenConfig working group",
+            "version": "2021-03-02"
+        }
+    ]
+}
