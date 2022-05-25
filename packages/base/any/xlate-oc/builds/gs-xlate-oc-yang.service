@@ -4,7 +4,9 @@ Before=gs-yang.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/gs-yang.py --install xlate-oc
+# --search-dirs option is tentatively given to explicitly install openconfig modules
+# TODO: investigate why --search-dirs option is needed to successfully install openconfig modules
+ExecStart=/usr/bin/gs-yang.py --install xlate-oc --search-dirs /var/lib/goldstone/yang/ietf /var/lib/goldstone/yang/oc
 RemainAfterExit=true
 StandardOutput=journal
 
