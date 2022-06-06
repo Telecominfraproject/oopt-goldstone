@@ -1,0 +1,17 @@
+[Unit]
+Description=Goldstone Management Telemetry Daemon
+After=gs-yang.service gs-mgmt-south.target
+Requires=gs-yang.service
+PartOf=gs-mgmt-system.target gs-mgmt.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sh -c 'while [ true ]; do ( kubectl get nodes | grep " Ready" ) && exit 0; sleep 1; done'
+ExecStart=/usr/bin/gs-mgmt.py start system-telemetry --manifest-dir /var/lib/gs-system-telemetry/k8s
+ExecStop=-/usr/bin/gs-mgmt.py stop system-telemetry --manifest-dir /var/lib/gs-system-telemetry/k8s
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=gs-mgmt-system.target
+Also=gs-system-telemetry-yang.service

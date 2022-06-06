@@ -1,0 +1,16 @@
+packages:
+  - name: gs-system-telemetry
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone telemetry service
+    after-install: $X1/packages/base/any/telemetry/after-install.sh
+    before-remove: $X1/packages/base/any/telemetry/before-remove.sh
+    depends:
+      - k3s
+      - gs-mgmt
+    files:
+      builds/gs-system-telemetry-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+      builds/manifests: /var/lib/gs-system-telemetry/k8s
+      $X1/packages/base/any/telemetry/builds/gs-system-telemetry.service: /etc/systemd/system/
+      $X1/packages/base/any/telemetry/builds/gs-system-telemetry-yang.service: /etc/systemd/system/

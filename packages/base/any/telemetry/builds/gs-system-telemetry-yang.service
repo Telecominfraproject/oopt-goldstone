@@ -1,0 +1,14 @@
+[Unit]
+Description=Goldstone Management Telemetry Daemon YANG model setup
+Before=gs-yang.service
+
+[Service]
+Type=oneshot
+# --search-dirs option is tentatively given to explicitly install openconfig modules
+# TODO: investigate why --search-dirs option is needed to successfully install openconfig modules
+ExecStart=/usr/bin/gs-yang.py --install system-telemetry --search-dirs /var/lib/goldstone/yang/gs /var/lib/goldstone/yang/oc
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -17,6 +17,7 @@ APPS = [
     "south-tai",
     "south-onlp",
     "xlate-oc",
+    "system-telemetry",
 ]
 
 

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: system-telemetry
+    labels:
+        app: gs-mgmt
+        gs-mgmt: system-telemetry
+spec:
+    selector:
+        matchLabels:
+            app: system-telemetry
+    template:
+        metadata:
+            labels:
+                app: system-telemetry
+        spec:
+            containers:
+            - name: telemetry
+              image: MGMT_IMAGE_REPO/system-telemetry:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
+              command: ['gssystemd-telemetry']
+              args: ['--verbose']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 10
+                periodSeconds: 5
+                timeoutSeconds: 5
+              startupProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 30
+                periodSeconds: 10
+              ports:
+              - name: liveness-port
+                containerPort: 8080
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
