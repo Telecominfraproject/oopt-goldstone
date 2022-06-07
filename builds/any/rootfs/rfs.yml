@@ -6,7 +6,7 @@ Packages: &Packages
   - !script  $ONL/tools/onl-platform-pkgs.py ${PLATFORM_LIST}
   - !script  $X1/tools/goldstone-platform-pkgs.py ${PLATFORM_LIST}
   - !include $X1/builds/any/rootfs/all-packages.yml
-  - !include $X1/builds/any/rootfs/${ARCH}-packages.yml
+  - !include $X1/builds/$ARCH/rootfs/arch-packages.yml
 
 Multistrap:
   General:
@@ -45,6 +45,7 @@ Configure:
     - $ONL/builds/any/rootfs/${ONL_DEBIAN_SUITE}/common/overlay
     - $ONL/builds/any/rootfs/${ONL_DEBIAN_SUITE}/${INIT}/overlay
     - $X1/builds/any/rootfs/overlay
+    - $X1/builds/${ARCH}/rootfs/overlay
 
   update-rc.d:
     - 'onlpd defaults'
@@ -69,12 +70,18 @@ Configure:
     console: True
     PermitRootLogin: 'yes'
 
+  groups:
+    gsmgmt:
+        force: true
+
   users:
     root:
       password: x1
     admin:
       password: admin
-      shell: /usr/bin/gscli
+      shell: /usr/local/bin/gscli
+      groups:
+      - gsmgmt
 
   manifests:
     '/etc/onl/rootfs/manifest.json' :
@@ -103,3 +110,5 @@ Configure:
     - 'sudo mkdir -p __rfs__/var/tmp'
     - 'sudo mkdir -p __rfs__/host/warmboot'
     - 'sudo mkdir -p __rfs__/var/log/swss'
+    - 'sudo chroot __rfs__ update-alternatives --set iptables /usr/sbin/iptables-legacy'
+    - 'if [ ${ARCH} = amd64 ]; then sudo chroot __rfs__ systemctl enable ipmievd.service; fi'

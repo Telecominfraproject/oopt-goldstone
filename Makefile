@@ -1,5 +1,3 @@
-all: autobuild
-
 ifndef GOLDSTONE_BUILDER_IMAGE
     GOLDSTONE_BUILDER_IMAGE = gs-builder
 endif
@@ -51,12 +49,19 @@ BUILDER_OPTS = \
   --isolate \
   # THIS LINE INTENTIONALLY LEFT BLANK
 
-ARCH = amd64
+ALL_ARCHES = arm64 amd64
+
+# Build rule for each architecture.
+define build_arch_template
+$(1) :
+	$(MAKE) -C builds/$(1)
+endef
+$(foreach a,$(ALL_ARCHES),$(eval $(call build_arch_template,$(a))))
 
 all: builder docker
 
-autobuild:
-	$(MAKE) -C builds/$(ARCH)
+
+autobuild: $(ALL_ARCHES)
 
 docker-check:
 	@which docker > /dev/null || (echo "*** Docker appears to be missing. Please install docker in order to build Goldstone." && exit 1)
@@ -67,6 +72,8 @@ docker-debug: docker-check
 	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/debug.sh
 
 builder:
+	docker pull --platform=linux/amd64 python:3-buster
+	docker tag python:3-buster python:3-buster-amd64
 	cd docker/images/builder && docker build -t $(GOLDSTONE_BUILDER_IMAGE) .
 
 docker: docker-check

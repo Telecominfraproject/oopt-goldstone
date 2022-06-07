@@ -22,10 +22,6 @@ ifndef RFS_DIR
 RFS_DIR := $(RFS_WORKDIR)/rootfs-$(ARCH).d
 endif
 
-ifndef RFS_CPIO
-RFS_CPIO := $(RFS_WORKDIR)/rootfs-$(ARCH).cpio.gz
-endif
-
 ifndef RFS_SQUASH
 RFS_SQUASH := $(RFS_WORKDIR)/rootfs-$(ARCH).sqsh
 endif

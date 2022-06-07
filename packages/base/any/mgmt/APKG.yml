@@ -1,0 +1,112 @@
+packages:
+  - name: libyang1
+    arch: $ARCH 
+    external: $__DIR__/builds/debs/libyang1_$ARCH.deb
+  - name: sysrepo
+    arch: $ARCH
+    external: $__DIR__/builds/debs/sysrepo_$ARCH.deb
+  - name: libtac2
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libtac2_$ARCH.deb
+  - name: libtac2-bin
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libtac2-bin_$ARCH.deb
+  - name: libpam-tacplus
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libpam-tacplus_$ARCH.deb
+  - name: libnss-tacplus
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libnss-tacplus_$ARCH.deb
+  - name: libyang-python
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: libyang python wrapper
+    depends:
+    - libyang1
+    - libffi-dev
+    files:
+        builds/wheels/libyang: /var/lib/goldstone/wheels/libyang
+    after-install: $X1/packages/base/any/mgmt/libyang-python-after-install.sh
+    before-remove: $X1/packages/base/any/mgmt/libyang-python-before-remove.sh
+  - name: sysrepo-python
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: sysrepo python wrapper
+    depends:
+    - sysrepo
+    - libyang-python
+    files:
+        builds/wheels/sysrepo: /var/lib/goldstone/wheels/sysrepo
+    after-install: $X1/packages/base/any/mgmt/sysrepo-python-after-install.sh
+    before-remove: $X1/packages/base/any/mgmt/sysrepo-python-before-remove.sh
+  - name: gsyang
+    arch: all
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone YANG models
+    depends:
+    - sysrepo
+    files:
+        builds/yang: /var/lib/goldstone/yang
+        builds/gs-yang.py: /usr/bin/
+        $X1/packages/base/any/mgmt/builds/units/gs-yang.service: /etc/systemd/system/
+    after-install: $X1/packages/base/any/mgmt/gsyang-after-install.sh
+    before-remove: $X1/packages/base/any/mgmt/gsyang-before-remove.sh
+  - name: gscli
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone CLI
+    depends:
+    - sysrepo-python
+    files:
+        builds/wheels/cli: /var/lib/goldstone/wheels/cli
+        builds/wheels/lib: /var/lib/goldstone/wheels/lib
+    after-install: $X1/packages/base/any/mgmt/gscli-after-install.sh
+    before-remove: $X1/packages/base/any/mgmt/gscli-before-remove.sh
+  - name: gssystem
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone South System Deamon
+    depends:
+    - sysrepo-python
+    - dbus
+    files:
+        builds/wheels/system: /var/lib/goldstone/wheels/system
+        $X1/packages/base/any/mgmt/builds/units/gs-south-system.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-system-yang.service: /etc/systemd/system/
+    after-install: $X1/packages/base/any/mgmt/gssouth-systemd-after-install.sh
+    before-remove: $X1/packages/base/any/mgmt/gssouth-systemd-before-remove.sh
+  - name: gs-mgmt
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone Management Daemons
+    depends:
+    - k3s
+    files:
+        builds/mgmt-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/k8s-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/manifests:  /var/lib/goldstone/k8s
+        $X1/packages/base/any/mgmt/builds/manifests:  /var/lib/goldstone/k8s/base
+        $X1/packages/base/any/mgmt/builds/gs-mgmt.py: /usr/bin/
+        $X1/packages/base/any/mgmt/builds/units/gs-mgmt.target: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-mgmt-south.target: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-mgmt-north.target: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-mgmt-xlate.target: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-gearbox.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-gearbox-yang.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-dpll.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-dpll-yang.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-sonic.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-sonic-yang.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-tai.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-tai-yang.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-onlp.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-onlp-yang.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-north-notif.service: /etc/systemd/system/
+    after-install: $X1/packages/base/any/mgmt/gsmgmt-after-install.sh
+    before-remove: $X1/packages/base/any/mgmt/gsmgmt-before-remove.sh

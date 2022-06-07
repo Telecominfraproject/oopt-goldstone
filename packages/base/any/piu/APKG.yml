@@ -6,9 +6,6 @@ packages:
     summary: CFP2 PIU kernel module
     arch: $ARCH
     version: 0.1
-    copyright: Copyright 2020 NTT Electronics America
-    maintainer: ishida@nel-america.com
-    changelog: None
-
+    maintainer: goldstone-nos@googlegroups.com
     files:
       builds/lib: lib

@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-gearbox
+spec:
+    template:
+        spec:
+            containers:
+            - name: gearbox
+              image: MGMT_IMAGE_REPO/south-gearbox:IMAGE_TAG

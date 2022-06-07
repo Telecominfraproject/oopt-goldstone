@@ -1,0 +1,22 @@
+variables:
+    ARCH: arm64
+    BASENAME: arm64-wistron-wtp-01-c1-00
+    REVISION: r0
+    PLATFORM: $BASENAME-$REVISION
+
+packages:
+  - name: goldstone-platform-config-$PLATFORM
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone config file for $PLATFORM
+    depends:
+    - usbutils
+    - smartmontools
+    files:
+        builds/blacklist.conf: /etc/modprobe.d/$PLATFORM.conf
+        builds/tai: /var/lib/goldstone/device/$PLATFORM/tai
+        builds/platform.json: /var/lib/goldstone/device/$PLATFORM/platform.json
+        builds/init.sh: /var/lib/goldstone/device/$PLATFORM/init.sh
+        builds/tai-gearbox: /var/lib/goldstone/device/$PLATFORM/tai-gearbox
+        builds/30.eeprom: /etc/boot.d/30.eeprom

@@ -1,0 +1,1 @@
+!include $X1/builds/any/installer/APKG.yml ARCH=arm64 BOOTMODE=installed

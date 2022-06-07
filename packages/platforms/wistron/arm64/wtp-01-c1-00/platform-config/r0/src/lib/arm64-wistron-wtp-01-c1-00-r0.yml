@@ -1,0 +1,60 @@
+---
+
+######################################################################
+#
+# platform-config for WTP-01-C1-00
+#
+######################################################################
+
+arm64-wistron-wtp-01-c1-00-r0:
+
+  flat_image_tree:
+    kernel:
+      =: kernel-5.4-lts-arm64-all.bin.gz
+      package: goldstone-kernel-5.4-lts-arm64-all:arm64
+    dtb:
+      =: wtp-01-c1-00.dtb
+      package: goldstone-kernel-5.4-lts-arm64-all:arm64
+    itb:
+      <<: *arm64-itb
+
+  loader:
+    device: /dev/nvme0n1
+    nos_bootcmds:
+    - nvme scan
+    # TODO fix hardcoding 0:2
+    - load nvme 0:2 $load_addr $onl_itb
+    # boot_onie env is set by onl-onie-boot-mode
+    - "env exists boot_onie || bootm $load_addr#$onl_platform"
+    # clear boot_onie env so that we can boot into NOS
+    - setenv boot_onie
+    - saveenv
+
+    label: gpt
+
+    setenv:
+        # preset bootargs
+        # console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,mmio,0x21c0500 ramdisk_size=0x2000000 default_hugepagesz=2m hugepagesz=2m hugepages=256 video=1920x1080-32@60 cma=256M
+    - bootargs: >-
+        console=ttyS0,115200
+        onl_platform=$onl_platform
+
+    environment:
+    - device: /dev/mmcblk0
+      env_offset: 0x500000
+      env_size: 0x2000
+      sector_size: 0x40000
+
+  installer:
+  - ONL-BOOT:
+      =: 128MiB
+      format: ext4
+  - ONL-CONFIG:
+      =: 128MiB
+      format: ext4
+  - ONL-IMAGES:
+      =: 2GiB
+      format: ext4
+  - ONL-DATA:
+      =: 100%
+      format: ext4

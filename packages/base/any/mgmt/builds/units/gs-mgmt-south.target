@@ -1,0 +1,5 @@
+[Unit]
+Description=Goldstone Management South Daemons
+
+[Install]
+WantedBy=gs-mgmt.target

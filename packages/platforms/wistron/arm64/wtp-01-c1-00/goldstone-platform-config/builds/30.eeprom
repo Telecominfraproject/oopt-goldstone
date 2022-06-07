@@ -1,0 +1,7 @@
+REG=$(i2cget -y 2000000.i2c 0x38 0)
+
+if [ $(( REG & 0x0C )) = 0 ]; then
+  echo 24c02 0x53 > /sys/devices/platform/soc/2000000.i2c/i2c-0/new_device
+else
+  echo 24c64 0x53 > /sys/devices/platform/soc/2000000.i2c/i2c-0/new_device
+fi

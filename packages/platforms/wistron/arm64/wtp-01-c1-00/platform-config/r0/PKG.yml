@@ -1,0 +1,1 @@
+!include $ONL_TEMPLATES/platform-config-platform.yml ARCH=arm64 VENDOR=wistron BASENAME=arm64-wistron-wtp-01-c1-00 REVISION=r0

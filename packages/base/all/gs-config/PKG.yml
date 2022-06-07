@@ -2,13 +2,7 @@ packages:
   - name: gs-config
     arch: all
     version: 1.0.0
-    copyright: Copyright 2020 Wataru Ishida
-    maintainer: wataru.ishid@gmail.com
-    changelog: Initial
-    support:   wataru.ishid@gmail.com
+    maintainer: goldstone-nos@googlegroups.com
     summary: Goldstone config file
-    after-install: $__DIR__/after-install.sh
-    before-remove: $__DIR__/before-remove.sh
     files:
-        builds/gs-config.service: /etc/systemd/system/
-        builds/gs_config.sh: /usr/bin/
+        builds/80.gs-platform-baseconf: /etc/boot.d/

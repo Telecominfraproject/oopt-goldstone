@@ -1,0 +1,9 @@
+bases:
+- base
+
+patches:
+- north-notif.yaml
+- south-onlp.yaml
+- south-gearbox.yaml
+- south-dpll.yaml
+- south-tai.yaml

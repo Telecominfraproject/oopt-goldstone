@@ -7,7 +7,7 @@ obj-m := $(LINUX_KERNEL_PIU_NAME).o
 #
 # These are the sources that must be built into this module
 #
-SOURCES := $(THIS_DIR)/piu.c
+SOURCES := $(addprefix $(THIS_DIR)/,piu.c aco.c dco.c)
 
 #
 # The kernel build system requires paths relative to the module build directory.

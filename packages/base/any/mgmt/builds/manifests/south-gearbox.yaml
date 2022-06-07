@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-gearbox
+    labels:
+        app: gs-mgmt
+        gs-mgmt: south-gearbox
+spec:
+    selector:
+        matchLabels:
+            app: south-gearbox
+    template:
+        metadata:
+            labels:
+                app: south-gearbox
+        spec:
+            containers:
+            - name: gearbox
+              image: ghcr.io/oopt-goldstone/mgmt/south-gearbox:latest
+              imagePullPolicy: IfNotPresent
+              command: ['gssouthd-gearbox']
+              args: ['--taish-server', "$(TAI_GEARBOX_SERVICE_HOST):$(TAI_GEARBOX_SERVICE_PORT)", "--verbose", "$(PLATFORM_FILE)"]
+              env:
+              - name: PLATFORM_FILE
+                value: /current/platform.json
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              - name: current
+                mountPath: /current
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 2
+                periodSeconds: 10
+              startupProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 30
+                periodSeconds: 10
+              ports:
+              - name: liveness-port
+                containerPort: 8080
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+            - name: current
+              hostPath:
+                  path: /var/lib/goldstone/device/current

@@ -3,17 +3,14 @@ variables:
 
 prerequisites:
   broken: true
-  packages: [ "x1-rootfs:$ARCH" ]
+  packages: [ "goldstone-rootfs:$ARCH" ]
 
 packages:
-  - name: x1-swi
+  - name: goldstone-swi
     summary: Goldstone Network OS Switch Image (All $ARCH) Platforms)
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
-    copyright: Copyright 2018 Big Switch Networks
-    maintainer: support@bigswitch.com
-    changelog: Initial
-    support:   support@bigswitch.com
+    maintainer: goldstone-nos@googlegroups.com
 
     files:
       builds/$ONL_DEBIAN_SUITE/*.swi          : $$PKG_INSTALL/

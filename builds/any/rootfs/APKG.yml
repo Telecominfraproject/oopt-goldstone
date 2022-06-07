@@ -2,16 +2,12 @@ variables:
   !include $X1/make/versions/version-goldstone.yml
 
 packages:
-  - name: x1-rootfs
+  - name: goldstone-rootfs
     summary: Goldstone Network OS Root Filesystem
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
-    copyright: Copyright 2018 Big Switch Networks
-    maintainer: support@bigswitch.com
-    changelog: Initial
-    support:   support@bigswitch.com
+    maintainer: goldstone-nos@googlegroups.com
 
     files:
-      builds/$ONL_DEBIAN_SUITE/rootfs-$ARCH.cpio.gz : $$PKG_INSTALL/
       builds/$ONL_DEBIAN_SUITE/rootfs-$ARCH.sqsh : $$PKG_INSTALL/
       builds/$ONL_DEBIAN_SUITE/manifest.json : $$PKG_INSTALL/

@@ -1,0 +1,13 @@
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+ARCH := arm64
+BASENAME := arm64-wistron-wtp-01-c1-00
+NAME := led psu
+
+SOURCES := $(foreach a,$(NAME),$(BASENAME)-$(a).c)
+
+obj-m := $(foreach a,$(NAME),$(BASENAME)-$(a).o)
+
+ccflags-y := -I$(X1)/sm/linux/drivers/net/ethernet
+
+# vim: ft=make

@@ -1,0 +1,8 @@
+bases:
+- base
+
+patches:
+- north-notif.yaml
+- south-onlp.yaml
+- south-sonic.yaml
+- south-tai.yaml

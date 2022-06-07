@@ -2,18 +2,18 @@ ifndef ARCH
 $(error $$ARCH not set)
 endif
 
-ifndef BOOTMODE
-$(error $$BOOTMODE not set)
+ifneq ($(BOOTMODE), INSTALLED)
+$(error $$BOOTMODE is not INSTALLED but $BOOTMOT)
 endif
 
 # Hardcoded to match ONL File naming conventions.
 include $(X1)/make/versions/version-goldstone.mk
-INSTALLER_NAME=$(FNAME_PRODUCT_VERSION)_ONL-OS_$(FNAME_BUILD_ID)_$(UARCH)_$(BOOTMODE)_INSTALLER
+INSTALLER_NAME=$(FNAME_PRODUCT_VERSION)_$(FNAME_BUILD_ID)_$(UARCH)_INSTALLER
 
 MKINSTALLER_OPTS := \
   --arch $(ARCH) \
   --boot-config boot-config \
-  --swi x1-swi:$(ARCH) \
+  --swi goldstone-swi:$(ARCH) \
   --add-file zerotouch.json \
   --onl-version "$(VERSION_STRING)" \
   # THIS LINE INTENTIONALLY LEFT BLANK

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-onlp
+    labels:
+        app: gs-mgmt
+        gs-mgmt: south-onlp
+spec:
+    selector:
+        matchLabels:
+            app: south-onlp
+    template:
+        metadata:
+            labels:
+                app: south-onlp
+        spec:
+            containers:
+            - name: onlp
+              image: ghcr.io/oopt-goldstone/mgmt/south-onlp:latest
+              imagePullPolicy: IfNotPresent
+              command: ['gssouthd-onlp']
+              args: ['--verbose']
+              env:
+              - name: PYTHONPATH
+                value: /usr/lib/python3/dist-packages
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              - name: onl
+                mountPath: /etc/onl/
+              - name: sys
+                mountPath: /sys
+              securityContext:
+                privileged: true
+                capabilities:
+                  add:
+                  - IPC_OWNER
+                  - IPC_LOCK
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 5
+                periodSeconds: 10
+                timeoutSeconds: 5
+              startupProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 120
+                periodSeconds: 1
+              ports:
+              - name: liveness-port
+                containerPort: 8080
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+            - name: onl
+              hostPath:
+                path: /etc/onl
+            - name: sys
+              hostPath:
+                path: /sys

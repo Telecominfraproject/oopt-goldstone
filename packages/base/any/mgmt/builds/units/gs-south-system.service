@@ -1,0 +1,14 @@
+[Unit]
+Description=Goldstone System South Daemon 
+After=gs-yang.service
+Requires=gs-yang.service
+PartOf=gs-mgmt-south.target gs-mgmt.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/gssouthd-system -v
+StandardOutput=journal
+
+[Install]
+WantedBy=gs-mgmt-south.target
+Also=gs-south-system-yang.service

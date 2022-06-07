@@ -2,6 +2,4 @@
 
 set -eux
 
-systemctl enable load-usonic-config.service
-
-mkdir -p /var/lib/usonic/redis
+systemctl enable usonic.service

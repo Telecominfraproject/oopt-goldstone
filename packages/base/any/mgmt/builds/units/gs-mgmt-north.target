@@ -1,0 +1,5 @@
+[Unit]
+Description=Goldstone Management North Daemons
+
+[Install]
+WantedBy=gs-mgmt.target

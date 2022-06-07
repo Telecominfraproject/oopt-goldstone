@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-onlp
+spec:
+    template:
+        spec:
+            containers:
+            - name: onlp
+              image: MGMT_IMAGE_REPO/south-onlp:IMAGE_TAG
+              volumeMounts:
+              - name: host-lib
+                mountPath: /lib/x86_64-linux-gnu/libonlp-platform.so
+              - name: host-i2c-lib
+                mountPath: /lib/x86_64-linux-gnu/libi2c.so.0
+            volumes:
+            - name: host-lib
+              hostPath:
+                path: /lib/x86_64-linux-gnu/libonlp-platform.so
+            - name: host-i2c-lib
+              hostPath:
+                path: /usr/lib/x86_64-linux-gnu/libi2c.so.0

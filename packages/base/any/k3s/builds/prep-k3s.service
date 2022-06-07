@@ -1,0 +1,14 @@
+[Unit]
+Description=Prepare Lightweight Kubernetes
+Before=k3s.service
+
+[Service]
+Type=oneshot
+ExecStart=rm -rf /var/lib/rancher/k3s/server
+ExecStop=k3s-gs-killall.sh
+ExecStopPost=rm -rf /var/lib/rancher/k3s/server
+RemainAfterExit=true
+StandardOutput=jornal
+
+[Install]
+WantedBy=multi-user.target

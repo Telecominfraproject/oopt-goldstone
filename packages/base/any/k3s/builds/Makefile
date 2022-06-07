@@ -1,14 +1,7 @@
-K3S_VERSION = v1.18.3
-
-all: k3s-airgap-images-$(ARCH).tar k3s install.sh
-
-k3s-airgap-images-$(ARCH).tar:
-	wget -O $@ https://github.com/rancher/k3s/releases/download/$(K3S_VERSION)%2Bk3s1/k3s-airgap-images-$(ARCH).tar
+all: k3s k3s-airgap-images-$(ARCH).tar.gz
 
 k3s:
-	wget -O $@ https://github.com/rancher/k3s/releases/download/$(K3S_VERSION)%2Bk3s1/k3s
-	chmod +x $@
+	oras pull ghcr.io/oopt-goldstone/k3s:1.22.2@sha256:$(K3S_DIGEST)
+	tar xvf k3s.tar
 
-install.sh:
-	wget -O $@ https://raw.githubusercontent.com/rancher/k3s/master/install.sh
-	chmod +x $@
+k3s-airgap-images-$(ARCH).tar.gz: k3s

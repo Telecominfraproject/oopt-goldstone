@@ -1,1 +1,7 @@
 *.tar
+*.deb
+*.whl
+*.yang
+manifests
+yang
+gs-yang.py

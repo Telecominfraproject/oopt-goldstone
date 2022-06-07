@@ -1,0 +1,10 @@
+packages:
+  - name: stern
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: stern
+    depends:
+    - k3s
+    files:
+        builds/stern:  /usr/local/bin/stern

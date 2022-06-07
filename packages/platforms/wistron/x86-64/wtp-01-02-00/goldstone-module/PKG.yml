@@ -1,0 +1,12 @@
+variables:
+    ARCH: amd64
+    BASENAME: x86-64-wistron-wtp-01-02-00
+    REVISION: r0
+    PLATFORM: $BASENAME-$REVISION
+
+packages:
+  - name: goldstone-module-$PLATFORM
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone module for $PLATFORM

@@ -1,0 +1,133 @@
+From 222e05d5a4974f3fafb46c73d0340c383a6dd4b3 Mon Sep 17 00:00:00 2001
+From: Wataru Ishida <wataru.ishid@gmail.com>
+Date: Tue, 7 Sep 2021 03:49:40 +0000
+Subject: [PATCH] enetc: remove printk
+
+Signed-off-by: Wataru Ishida <wataru.ishid@gmail.com>
+---
+ .../freescale/enetc/enetc_chardev_mdio.c      | 32 +++++++++----------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/net/ethernet/freescale/enetc/enetc_chardev_mdio.c b/drivers/net/ethernet/freescale/enetc/enetc_chardev_mdio.c
+index c9fc38c6c1fe..220158c9f3ef 100644
+--- a/drivers/net/ethernet/freescale/enetc/enetc_chardev_mdio.c
++++ b/drivers/net/ethernet/freescale/enetc/enetc_chardev_mdio.c
+@@ -62,7 +62,7 @@ static struct class *enetc_mdio_class = NULL;
+ static int char_mdio_dev_open(struct inode* inode,
+ 	struct file* file)
+ {
+-	printk("open operation invoked \n");
++//	printk("open operation invoked \n");
+ 	return SUCCESS;
+ }
+ 
+@@ -76,7 +76,7 @@ static int char_mdio_dev_open(struct inode* inode,
+ static int char_mdio_dev_release(struct inode* inode,
+ 	struct file* file)
+ {
+-	printk("close operation invoked \n");
++//	printk("close operation invoked \n");
+ 	return SUCCESS;
+ }
+ 
+@@ -111,7 +111,7 @@ static long char_mdio_dev_ioctl(struct file* f, u32 cmd, unsigned long arg)
+ 	switch (cmd)
+ 	{
+ 	case ENETC_MDIO_WRITE:
+-		printk("in ENETC_MDIO_WRITE \n");
++		//printk("in ENETC_MDIO_WRITE \n");
+ 		
+ 		mutex_lock(&mdio_demo->mdio_lock);
+ 		//printk("mdio write start... \n");
+@@ -122,7 +122,7 @@ static long char_mdio_dev_ioctl(struct file* f, u32 cmd, unsigned long arg)
+ 		
+ 		break;
+ 	case ENETC_MDIO_READ:
+-		printk("in ENETC_MDIO_READ \n");
++		//printk("in ENETC_MDIO_READ \n");
+ 		
+ 		mutex_lock(&mdio_demo->mdio_lock);
+ 		//printk("mdio read start... \n");
+@@ -131,13 +131,13 @@ static long char_mdio_dev_ioctl(struct file* f, u32 cmd, unsigned long arg)
+ 		mutex_unlock(&mdio_demo->mdio_lock);
+ 		//printk("mutex_unlock \n");
+ 
+-		printk("in ENETC_MDIO_READ read value    = %4x \n", local_cf.value);
++		// printk("in ENETC_MDIO_READ read value    = %4x \n", local_cf.value);
+ 		ret = copy_to_user((struct config_mdio*)arg, &local_cf, sizeof(struct config_mdio));
+ 		//printk(KERN_INFO "ret = %d\n", ret);
+ 
+ 		break;
+ 	case ENETC_MDIO_CONFIG:
+-		printk("in ENETC_MDIO_CONFIG \n");
++		// printk("in ENETC_MDIO_CONFIG \n");
+ 		is_disable_mdio_vsc8504 = local_cf.is_disable_mdio;
+ 		break;
+ 	}
+@@ -170,18 +170,18 @@ static __init int mdiodrv_init(void)
+ {
+ 	int ret,count=1;
+ 
+-	printk("Module Inserted \n");
++	// printk("Module Inserted \n");
+ 
+ 	/* Request dynamic allocation of a device major number */
+ 	if(alloc_chrdev_region (&enetc_mdio_dev, 0, count, MDIO_DEV_NAME) < 0) {
+-    printk (KERN_ERR "failed to reserve major/minor range\n");
++//    printk (KERN_ERR "failed to reserve major/minor range\n");
+     return -1;
+ 		}
+ 
+-	printk("ENETC_MDIO_DEV:  Got Major %d\n", MAJOR(enetc_mdio_dev));
++//	printk("ENETC_MDIO_DEV:  Got Major %d\n", MAJOR(enetc_mdio_dev));
+ 
+ 	if (!(enetc_mdio_cdev = cdev_alloc ())) {
+-    printk (KERN_ERR "cdev_alloc() failed\n");
++//    printk (KERN_ERR "cdev_alloc() failed\n");
+     unregister_chrdev_region (enetc_mdio_dev, count);
+     return -1;
+ 	}
+@@ -191,7 +191,7 @@ static __init int mdiodrv_init(void)
+ 	/* Connect the majot/mionr number to the cdev */
+ 	ret=cdev_add(enetc_mdio_cdev,enetc_mdio_dev,count);
+ 	if( ret < 0 ) {
+-		printk("Error registering device driver\n");
++//		printk("Error registering device driver\n");
+ 		cdev_del(enetc_mdio_cdev);
+ 		unregister_chrdev_region(enetc_mdio_dev, count);
+ 		return -1;
+@@ -202,10 +202,10 @@ static __init int mdiodrv_init(void)
+ 	/* Send uevents to udev, So it will create /dev nodes */
+ 	device_create(enetc_mdio_class, NULL, enetc_mdio_dev, "%s", MDIO_DEV_NAME);
+ 
+-	printk("Successfully created /dev/ENETC_MDIO_DEV\n");
++//	printk("Successfully created /dev/ENETC_MDIO_DEV\n");
+ 
+-	printk("\nDevice Registered: %s\n", MDIO_DEV_NAME);
+-	printk(KERN_INFO "Major number = %d, Minor number = %d\n", MAJOR(enetc_mdio_dev), MINOR(enetc_mdio_dev));
++//	printk("\nDevice Registered: %s\n", MDIO_DEV_NAME);
++//	printk(KERN_INFO "Major number = %d, Minor number = %d\n", MAJOR(enetc_mdio_dev), MINOR(enetc_mdio_dev));
+ 
+ 	return 0;
+ }
+@@ -218,7 +218,7 @@ static __init int mdiodrv_init(void)
+ 
+ static __exit void  mdiodrv_cleanup(void)
+ {
+-	printk("Module Deleted \n");
++//	printk("Module Deleted \n");
+ 	/* Remove the cdev */
+ 	cdev_del(enetc_mdio_cdev);
+ 	/* Release the major number */
+@@ -227,7 +227,7 @@ static __exit void  mdiodrv_cleanup(void)
+ 	device_destroy(enetc_mdio_class, enetc_mdio_dev);
+ 	class_destroy(enetc_mdio_class);
+ 
+-	printk("\n Driver unregistered \n");
++//	printk("\n Driver unregistered \n");
+ }
+ 
+ module_init(mdiodrv_init);
+-- 
+2.25.1
+

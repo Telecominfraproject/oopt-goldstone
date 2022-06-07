@@ -1,0 +1,16 @@
+[Unit]
+Description=Goldstone Management North Notification Daemon
+After=gs-yang.service gs-mgmt-south.target
+Requires=gs-yang.service
+PartOf=gs-mgmt-north.target gs-mgmt.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sh -c 'while [ true ]; do ( kubectl get nodes | grep " Ready" ) && exit 0; sleep 1; done'
+ExecStart=/usr/bin/gs-mgmt.py start north-notif
+ExecStop=-/usr/bin/gs-mgmt.py stop north-notif
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=gs-mgmt-north.target

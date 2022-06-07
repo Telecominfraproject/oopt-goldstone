@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: snmpd-config
+  labels:
+    gs-mgmt: north-snmp
+data:
+    snmpd.conf: | 
+        rwuser  admin noauth 
+        rouser  user noauth 
+        rwcommunity  admin  
+        rocommunity  user  
+        master agentx
+        agentxsocket tcp:localhost:3161
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: north-snmp
+  labels:
+    gs-mgmt: north-snmp
+spec:
+  type: LoadBalancer
+  selector:
+    app: north-snmp
+  ports:
+    - port: 161
+      targetPort: 161
+      protocol: UDP
+      name: snmp
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: north-snmp
+    labels:
+        app: gs-mgmt
+        gs-mgmt: north-snmp
+spec:
+    selector:
+        matchLabels:
+            app: north-snmp
+    template:
+        metadata:
+            labels:
+                app: north-snmp
+        spec:
+            containers:
+            - name: snmpd
+              image: MGMT_IMAGE_REPO/snmpd:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
+              ports:
+              - containerPort: 161
+              command: ['snmpd', '-f', '-C', '-c', '/etc/snmp/snmpd.conf']
+              volumeMounts:
+              - name: snmpd-config
+                mountPath: /etc/snmp
+            - name: agentx
+              image: MGMT_IMAGE_REPO/north-snmp:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
+              command: ['gsnorthd-snmp', '-v']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+            - name: snmpd-config
+              configMap:
+                name: snmpd-config

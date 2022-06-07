@@ -1,19 +1,18 @@
 packages:
-  - name: x1-usonic
+  - name: gs-usonic
     arch: amd64
     version: 1.0.0
-    copyright: Copyright 2020 Wataru Ishida
-    maintainer: wataru.ishid@gmail.com
-    changelog: Initial
-    support:   wataru.ishid@gmail.com
+    maintainer: goldstone-nos@googlegroups.com
     summary: usonic
     after-install: $__DIR__/after-install.sh
-    after-remove: $__DIR__/after-remove.sh
     before-remove: $__DIR__/before-remove.sh
     depends:
     - k3s
+    - jq
     files:
         builds/usonic-amd64.tar: /var/lib/rancher/k3s/agent/images/
-        builds/manifests:  /var/lib/rancher/k3s/server/manifests/usonic
-        builds/load-usonic-config.service: /etc/systemd/system/
-        builds/load_usonic_config.sh: /usr/bin/
+        builds/manifests:  /var/lib/usonic/k8s
+        builds/usonic.service: /etc/systemd/system/
+        builds/usonic.sh: /usr/bin/
+        builds/bcm.sh: /etc/profile.d/
+        builds/libsai.so: /var/lib/usonic/lib/

@@ -1,0 +1,1294 @@
+From 6deb660293164d2cf87745b2733bd0d1fc1c0fec Mon Sep 17 00:00:00 2001
+From: Wataru Ishida <wataru.ishid@gmail.com>
+Date: Sun, 11 Jul 2021 02:03:57 +0000
+Subject: [PATCH] add DTS for GFT
+
+Signed-off-by: Wataru Ishida <wataru.ishid@gmail.com>
+---
+ arch/arm64/boot/dts/wistron/Makefile         |    6 +
+ arch/arm64/boot/dts/wistron/wtp-01-c1-00.dts | 1260 ++++++++++++++++++
+ 2 files changed, 1266 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/wistron/Makefile
+ create mode 100644 arch/arm64/boot/dts/wistron/wtp-01-c1-00.dts
+
+diff --git a/arch/arm64/boot/dts/wistron/Makefile b/arch/arm64/boot/dts/wistron/Makefile
+new file mode 100644
+index 000000000000..13c5fd005e18
+--- /dev/null
++++ b/arch/arm64/boot/dts/wistron/Makefile
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# required for overlay support
++DTC_FLAGS_wtp-01-c1-00 := -@
++
++dtb-$(CONFIG_ARCH_LAYERSCAPE) += wtp-01-c1-00.dtb
+diff --git a/arch/arm64/boot/dts/wistron/wtp-01-c1-00.dts b/arch/arm64/boot/dts/wistron/wtp-01-c1-00.dts
+new file mode 100644
+index 000000000000..5982656e97d3
+--- /dev/null
++++ b/arch/arm64/boot/dts/wistron/wtp-01-c1-00.dts
+@@ -0,0 +1,1260 @@
++/dts-v1/;
++
++/ {
++	compatible = "fsl,ls1028a-rdb\0fsl,ls1028a";
++	interrupt-parent = <0x01>;
++	#address-cells = <0x02>;
++	#size-cells = <0x02>;
++	model = "LS1028A RDB Board";
++
++	psci {
++		status = "okay";
++		method = "smc";
++		compatible = "arm,psci-1.0\0arm,psci-0.2";
++	};
++
++	aliases {
++		rtc1 = "/soc/timer@2810000";
++		crypto = "/soc/crypto@8000000";
++		serial0 = "/soc/serial@21c0500";
++		serial1 = "/soc/serial@21c0600";
++	};
++
++	cpus {
++		#address-cells = <0x01>;
++		#size-cells = <0x00>;
++
++		cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x00>;
++			enable-method = "psci";
++			clocks = <0x02 0x01 0x00>;
++			next-level-cache = <0x03>;
++			cpu-idle-states = <0x04>;
++			#cooling-cells = <0x02>;
++			phandle = <0x0c>;
++		};
++
++		cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x01>;
++			enable-method = "psci";
++			clocks = <0x02 0x01 0x00>;
++			next-level-cache = <0x03>;
++			cpu-idle-states = <0x04>;
++			#cooling-cells = <0x02>;
++			phandle = <0x0d>;
++		};
++
++		l2-cache {
++			compatible = "cache";
++			phandle = <0x03>;
++		};
++	};
++
++	idle-states {
++		entry-method = "arm,psci";
++
++		cpu-pw20 {
++			compatible = "arm,idle-state";
++			idle-state-name = "PW20";
++			arm,psci-suspend-param = <0x00>;
++			entry-latency-us = <0x7d0>;
++			exit-latency-us = <0x7d0>;
++			min-residency-us = <0x1770>;
++			phandle = <0x04>;
++		};
++	};
++
++	rtc-clk {
++		compatible = "fixed-clock";
++		#clock-cells = <0x00>;
++		clock-frequency = <0x8000>;
++		clock-output-names = "rtc_clk";
++		phandle = <0x15>;
++	};
++
++	clock-sysclk {
++		compatible = "fixed-clock";
++		#clock-cells = <0x00>;
++		clock-frequency = <0x5f5e100>;
++		clock-output-names = "sysclk";
++		phandle = <0x07>;
++	};
++
++	clock-osc-27m {
++		compatible = "fixed-clock";
++		#clock-cells = <0x00>;
++		clock-frequency = <0x19bfcc0>;
++		clock-output-names = "phy_27m";
++		phandle = <0x05>;
++	};
++
++	clock-controller@f1f0000 {
++		compatible = "fsl,ls1028a-plldig";
++		reg = <0x00 0xf1f0000 0x00 0xffff>;
++		#clock-cells = <0x00>;
++		clocks = <0x05>;
++		phandle = <0x17>;
++	};
++
++	reboot {
++		compatible = "syscon-reboot";
++		regmap = <0x06>;
++		offset = <0xb0>;
++		mask = <0x02>;
++	};
++
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts = <0x01 0x0d 0x308 0x01 0x0e 0x308 0x01 0x0b 0x308 0x01 0x0a 0x308>;
++	};
++
++	pmu {
++		compatible = "arm,cortex-a72-pmu";
++		interrupts = <0x01 0x07 0x04>;
++	};
++
++	interrupt-controller@6000000 {
++		compatible = "arm,gic-v3";
++		#address-cells = <0x02>;
++		#size-cells = <0x02>;
++		ranges;
++		reg = <0x00 0x6000000 0x00 0x10000 0x00 0x6040000 0x00 0x40000>;
++		#interrupt-cells = <0x03>;
++		interrupt-controller;
++		interrupts = <0x01 0x09 0xf08>;
++		phandle = <0x01>;
++
++		gic-its@6020000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x00 0x6020000 0x00 0x20000>;
++			phandle = <0x10>;
++		};
++	};
++
++	soc {
++		compatible = "simple-bus";
++		#address-cells = <0x02>;
++		#size-cells = <0x02>;
++		ranges;
++
++		memory-controller@1080000 {
++			compatible = "fsl,qoriq-memory-controller";
++			reg = <0x00 0x1080000 0x00 0x1000>;
++			interrupts = <0x00 0x90 0x04>;
++			big-endian;
++		};
++
++		syscon@1e00000 {
++			compatible = "fsl,ls1028a-dcfg\0syscon";
++			reg = <0x00 0x1e00000 0x00 0x10000>;
++			little-endian;
++		};
++
++		syscon@1e60000 {
++			compatible = "syscon";
++			reg = <0x00 0x1e60000 0x00 0x10000>;
++			little-endian;
++			phandle = <0x06>;
++		};
++
++		syscon@1fc0000 {
++			compatible = "fsl,ls1028a-scfg\0syscon";
++			reg = <0x00 0x1fc0000 0x00 0x10000>;
++			big-endian;
++		};
++
++		clock-controller@1300000 {
++			compatible = "fsl,ls1028a-clockgen";
++			reg = <0x00 0x1300000 0x00 0xa0000>;
++			#clock-cells = <0x02>;
++			clocks = <0x07>;
++			phandle = <0x02>;
++		};
++
++		spi@20c0000 {
++			compatible = "nxp,lx2160a-fspi";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x20c0000 0x00 0x10000 0x00 0x20000000 0x00 0x10000000>;
++			reg-names = "fspi_base\0fspi_mmap";
++			interrupts = <0x00 0x19 0x04>;
++			clocks = <0x02 0x04 0x03 0x02 0x04 0x03>;
++			clock-names = "fspi_en\0fspi";
++			status = "okay";
++
++			flash@0 {
++				compatible = "spansion,m25p80";
++				#address-cells = <0x01>;
++				#size-cells = <0x01>;
++				m25p,fast-read;
++				spi-max-frequency = <0x1312d00>;
++				reg = <0x00>;
++				spi-rx-bus-width = <0x08>;
++				spi-tx-bus-width = <0x01>;
++			};
++		};
++
++		i2c@2000000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2000000 0x00 0x10000>;
++			interrupts = <0x00 0x22 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "okay";
++
++			i2c-mux@70 {
++				compatible = "nxp,pca9548";
++				reg = <0x70>;
++				#address-cells = <0x01>;
++				#size-cells = <0x00>;
++				i2c-mux-idle-disconnect;
++
++				i2c@0 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x00>;
++				};
++
++				i2c@1 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x01>;
++				};
++
++				i2c@2 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x02>;
++				};
++
++				i2c@3 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x03>;
++				};
++
++				i2c@4 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x04>;
++				};
++
++				i2c@5 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x05>;
++				};
++
++				i2c@6 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x06>;
++				};
++
++				i2c@7 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x07>;
++				};
++			};
++
++			i2c-mux@71 {
++				compatible = "nxp,pca9548";
++				reg = <0x71>;
++				#address-cells = <0x01>;
++				#size-cells = <0x00>;
++				i2c-mux-idle-disconnect;
++
++				i2c@0 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x00>;
++				};
++
++				i2c@1 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x01>;
++				};
++
++				i2c@2 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x02>;
++				};
++
++				i2c@3 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x03>;
++				};
++
++				i2c@4 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x04>;
++				};
++
++				i2c@5 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x05>;
++				};
++
++				i2c@6 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x06>;
++				};
++
++				i2c@7 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x07>;
++				};
++			};
++
++			i2c-mux@73 {
++				compatible = "nxp,pca9543";
++				reg = <0x73>;
++				#address-cells = <0x01>;
++				#size-cells = <0x00>;
++				i2c-mux-idle-disconnect;
++
++				i2c@0 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x00>;
++				};
++
++				i2c@1 {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++					reg = <0x01>;
++				};
++			};
++
++			tmp75@48 {
++				compatible = "ti,tmp75";
++				reg = <0x48>;
++			};
++
++			tmp75@49 {
++				compatible = "ti,tmp75";
++				reg = <0x49>;
++			};
++
++			tmp75@4a {
++				compatible = "ti,tmp75";
++				reg = <0x4a>;
++			};
++
++			temp-sensor@18 {
++				compatible = "national,lm95245";
++				reg = <0x18>;
++			};
++
++			temp-sensor@29 {
++				compatible = "national,lm95245";
++				reg = <0x29>;
++			};
++
++			temp-sensor@4c {
++				compatible = "nxp,sa56004";
++				reg = <0x4c>;
++				vcc-supply = <0x08>;
++			};
++		};
++
++		i2c@2010000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2010000 0x00 0x10000>;
++			interrupts = <0x00 0x22 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "okay";
++		};
++
++		i2c@2020000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2020000 0x00 0x10000>;
++			interrupts = <0x00 0x23 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "disabled";
++		};
++
++		i2c@2030000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2030000 0x00 0x10000>;
++			interrupts = <0x00 0x23 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "disabled";
++		};
++
++		i2c@2040000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2040000 0x00 0x10000>;
++			interrupts = <0x00 0x4a 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "disabled";
++		};
++
++		i2c@2050000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2050000 0x00 0x10000>;
++			interrupts = <0x00 0x4a 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "disabled";
++		};
++
++		i2c@2060000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2060000 0x00 0x10000>;
++			interrupts = <0x00 0x4b 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "disabled";
++		};
++
++		i2c@2070000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2070000 0x00 0x10000>;
++			interrupts = <0x00 0x4b 0x04>;
++			clocks = <0x02 0x04 0x03>;
++			status = "disabled";
++		};
++
++		spi@2100000 {
++			compatible = "fsl,ls1028a-dspi\0fsl,ls1021a-v1.0-dspi";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2100000 0x00 0x10000>;
++			interrupts = <0x00 0x1a 0x04>;
++			clock-names = "dspi";
++			clocks = <0x02 0x04 0x01>;
++			spi-num-chipselects = <0x04>;
++			little-endian;
++			status = "disabled";
++		};
++
++		spi@2110000 {
++			compatible = "fsl,ls1028a-dspi\0fsl,ls1021a-v1.0-dspi";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2110000 0x00 0x10000>;
++			interrupts = <0x00 0x1a 0x04>;
++			clock-names = "dspi";
++			clocks = <0x02 0x04 0x01>;
++			spi-num-chipselects = <0x04>;
++			little-endian;
++			status = "disabled";
++		};
++
++		spi@2120000 {
++			compatible = "fsl,ls1028a-dspi\0fsl,ls1021a-v1.0-dspi";
++			#address-cells = <0x01>;
++			#size-cells = <0x00>;
++			reg = <0x00 0x2120000 0x00 0x10000>;
++			interrupts = <0x00 0x1a 0x04>;
++			clock-names = "dspi";
++			clocks = <0x02 0x04 0x01>;
++			spi-num-chipselects = <0x03>;
++			little-endian;
++			status = "disabled";
++		};
++
++		mmc@2140000 {
++			iommus = <0x0f 0x03>;
++			compatible = "fsl,ls1028a-esdhc\0fsl,esdhc";
++			reg = <0x00 0x2140000 0x00 0x10000>;
++			interrupts = <0x00 0x1c 0x04>;
++			clock-frequency = <0xbebc200>;
++			clocks = <0x02 0x02 0x01>;
++			voltage-ranges = <0x708 0x708 0xce4 0xce4>;
++			sdhci,auto-cmd12;
++			little-endian;
++			bus-width = <0x04>;
++			status = "disabled";
++			sd-uhs-sdr104;
++			sd-uhs-sdr50;
++			sd-uhs-sdr25;
++			sd-uhs-sdr12;
++		};
++
++		mmc@2150000 {
++			iommus = <0x0f 0x45>;
++			compatible = "fsl,ls1028a-esdhc\0fsl,esdhc";
++			reg = <0x00 0x2150000 0x00 0x10000>;
++			interrupts = <0x00 0x3f 0x04>;
++			clock-frequency = <0xbebc200>;
++			clocks = <0x02 0x02 0x01>;
++			voltage-ranges = <0x708 0x708 0xce4 0xce4>;
++			sdhci,auto-cmd12;
++			broken-cd;
++			little-endian;
++			bus-width = <0x08>;
++			status = "okay";
++			mmc-hs200-1_8v;
++			mmc-hs400-1_8v;
++		};
++
++		can@2180000 {
++			compatible = "fsl,ls1028ar1-flexcan\0fsl,lx2160ar1-flexcan";
++			reg = <0x00 0x2180000 0x00 0x10000>;
++			interrupts = <0x00 0x15 0x04>;
++			clocks = <0x07 0x02 0x04 0x01>;
++			clock-names = "ipg\0per";
++			status = "okay";
++
++			can-transceiver {
++				max-bitrate = <0x4c4b40>;
++			};
++		};
++
++		can@2190000 {
++			compatible = "fsl,ls1028ar1-flexcan\0fsl,lx2160ar1-flexcan";
++			reg = <0x00 0x2190000 0x00 0x10000>;
++			interrupts = <0x00 0x16 0x04>;
++			clocks = <0x07 0x02 0x04 0x01>;
++			clock-names = "ipg\0per";
++			status = "disabled";
++		};
++
++		serial@21c0500 {
++			clock-frequency = <0xbebc200>;
++			compatible = "fsl,ns16550\0ns16550a";
++			reg = <0x00 0x21c0500 0x00 0x100>;
++			interrupts = <0x00 0x20 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			status = "okay";
++		};
++
++		serial@21c0600 {
++			clock-frequency = <0xbebc200>;
++			compatible = "fsl,ns16550\0ns16550a";
++			reg = <0x00 0x21c0600 0x00 0x100>;
++			interrupts = <0x00 0x20 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			status = "okay";
++		};
++
++		serial@2260000 {
++			compatible = "fsl,ls1028a-lpuart";
++			reg = <0x00 0x2260000 0x00 0x1000>;
++			interrupts = <0x00 0xe8 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			clock-names = "ipg";
++			status = "disabled";
++		};
++
++		serial@2270000 {
++			compatible = "fsl,ls1028a-lpuart";
++			reg = <0x00 0x2270000 0x00 0x1000>;
++			interrupts = <0x00 0xe9 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			clock-names = "ipg";
++			status = "disabled";
++		};
++
++		serial@2280000 {
++			compatible = "fsl,ls1028a-lpuart";
++			reg = <0x00 0x2280000 0x00 0x1000>;
++			interrupts = <0x00 0xea 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			clock-names = "ipg";
++			status = "disabled";
++		};
++
++		serial@2290000 {
++			compatible = "fsl,ls1028a-lpuart";
++			reg = <0x00 0x2290000 0x00 0x1000>;
++			interrupts = <0x00 0xeb 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			clock-names = "ipg";
++			status = "disabled";
++		};
++
++		serial@22a0000 {
++			compatible = "fsl,ls1028a-lpuart";
++			reg = <0x00 0x22a0000 0x00 0x1000>;
++			interrupts = <0x00 0xec 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			clock-names = "ipg";
++			status = "disabled";
++		};
++
++		serial@22b0000 {
++			compatible = "fsl,ls1028a-lpuart";
++			reg = <0x00 0x22b0000 0x00 0x1000>;
++			interrupts = <0x00 0xed 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			clock-names = "ipg";
++			status = "disabled";
++		};
++
++		dma-controller@22c0000 {
++			#dma-cells = <0x02>;
++			compatible = "fsl,ls1028a-edma";
++			reg = <0x00 0x22c0000 0x00 0x10000 0x00 0x22d0000 0x00 0x10000 0x00 0x22e0000 0x00 0x10000>;
++			interrupts = <0x00 0x38 0x04 0x00 0x38 0x04>;
++			interrupt-names = "edma-tx\0edma-err";
++			dma-channels = <0x20>;
++			clock-names = "dmamux0\0dmamux1";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01>;
++			phandle = <0x09>;
++		};
++
++		gpio@2300000 {
++			compatible = "fsl,ls1028a-gpio\0fsl,qoriq-gpio";
++			reg = <0x00 0x2300000 0x00 0x10000>;
++			interrupts = <0x00 0x24 0x04>;
++			gpio-controller;
++			#gpio-cells = <0x02>;
++			interrupt-controller;
++			#interrupt-cells = <0x02>;
++			little-endian;
++		};
++
++		gpio@2310000 {
++			compatible = "fsl,ls1028a-gpio\0fsl,qoriq-gpio";
++			reg = <0x00 0x2310000 0x00 0x10000>;
++			interrupts = <0x00 0x24 0x04>;
++			gpio-controller;
++			#gpio-cells = <0x02>;
++			interrupt-controller;
++			#interrupt-cells = <0x02>;
++			little-endian;
++		};
++
++		gpio@2320000 {
++			compatible = "fsl,ls1028a-gpio\0fsl,qoriq-gpio";
++			reg = <0x00 0x2320000 0x00 0x10000>;
++			interrupts = <0x00 0x25 0x04>;
++			gpio-controller;
++			#gpio-cells = <0x02>;
++			interrupt-controller;
++			#interrupt-cells = <0x02>;
++			little-endian;
++		};
++
++		usb@3100000 {
++			iommus = <0x0f 0x01>;
++			compatible = "fsl,ls1028a-dwc3\0snps,dwc3";
++			reg = <0x00 0x3100000 0x00 0x10000>;
++			interrupts = <0x00 0x50 0x04>;
++			dr_mode = "host";
++			snps,dis_rxdet_inp3_quirk;
++			snps,quirk-frame-length-adjustment = <0x20>;
++			snps,incr-burst-type-adjustment = <0x01 0x04 0x08 0x10>;
++			dma-coherent;
++		};
++
++		usb@3110000 {
++			iommus = <0x0f 0x02>;
++			compatible = "fsl,ls1028a-dwc3\0snps,dwc3";
++			reg = <0x00 0x3110000 0x00 0x10000>;
++			interrupts = <0x00 0x51 0x04>;
++			dr_mode = "otg";
++			snps,dis_rxdet_inp3_quirk;
++			snps,quirk-frame-length-adjustment = <0x20>;
++			snps,incr-burst-type-adjustment = <0x01 0x04 0x08 0x10>;
++			dma-coherent;
++		};
++
++		sata@3200000 {
++			iommus = <0x0f 0x04>;
++			compatible = "fsl,ls1028a-ahci";
++			reg = <0x00 0x3200000 0x00 0x10000 0x07 0x100520 0x00 0x04>;
++			reg-names = "ahci\0sata-ecc";
++			interrupts = <0x00 0x85 0x04>;
++			clocks = <0x02 0x04 0x01>;
++			status = "okay";
++		};
++
++		iommu@5000000 {
++			compatible = "arm,mmu-500";
++			reg = <0x00 0x5000000 0x00 0x800000>;
++			#global-interrupts = <0x08>;
++			#iommu-cells = <0x01>;
++			stream-match-mask = <0x7c00>;
++			interrupts = <0x00 0x0d 0x04 0x00 0x0e 0x04 0x00 0x0f 0x04 0x00 0x10 0x04 0x00 0xd3 0x04 0x00 0xd4 0x04 0x00 0xd5 0x04 0x00 0xd6 0x04 0x00 0x92 0x04 0x00 0x93 0x04 0x00 0x94 0x04 0x00 0x95 0x04 0x00 0x96 0x04 0x00 0x97 0x04 0x00 0x98 0x04 0x00 0x99 0x04 0x00 0x9a 0x04 0x00 0x9b 0x04 0x00 0x9c 0x04 0x00 0x9d 0x04 0x00 0x9e 0x04 0x00 0x9f 0x04 0x00 0xa0 0x04 0x00 0xa1 0x04 0x00 0xa2 0x04 0x00 0xa3 0x04 0x00 0xa4 0x04 0x00 0xa5 0x04 0x00 0xa6 0x04 0x00 0xa7 0x04 0x00 0xa8 0x04 0x00 0xa9 0x04 0x00 0xaa 0x04 0x00 0xab 0x04 0x00 0xac 0x04 0x00 0xad 0x04 0x00 0xae 0x04 0x00 0xaf 0x04 0x00 0xb0 0x04 0x00 0xb1 0x04 0x00 0xb2 0x04 0x00 0xb3 0x04 0x00 0xb4 0x04 0x00 0xb5 0x04 0x00 0xb6 0x04 0x00 0xb7 0x04 0x00 0xb8 0x04 0x00 0xb9 0x04 0x00 0xba 0x04 0x00 0xbb 0x04 0x00 0xbc 0x04 0x00 0xbd 0x04 0x00 0xbe 0x04 0x00 0xbf 0x04 0x00 0xc0 0x04 0x00 0xc1 0x04 0x00 0xc2 0x04 0x00 0xc3 0x04 0x00 0xc4 0x04 0x00 0xc5 0x04 0x00 0xc6 0x04 0x00 0xc7 0x04 0x00 0xc8 0x04 0x00 0xc9 0x04 0x00 0xca 0x04 0x00 0xcb 0x04 0x00 0xcc 0x04 0x00 0xcd 0x04 0x00 0xce 0x04 0x00 0xcf 0x04 0x00 0xd0 0x04 0x00 0xd1 0x04>;
++			phandle = <0x0f>;
++		};
++
++		crypto@8000000 {
++			compatible = "fsl,sec-v5.0\0fsl,sec-v4.0";
++			fsl,sec-era = <0x0a>;
++			#address-cells = <0x01>;
++			#size-cells = <0x01>;
++			ranges = <0x00 0x00 0x8000000 0x100000>;
++			reg = <0x00 0x8000000 0x00 0x100000>;
++			interrupts = <0x00 0x8b 0x04>;
++			dma-coherent;
++
++			jr@10000 {
++				iommus = <0x0f 0x41>;
++				compatible = "fsl,sec-v5.0-job-ring\0fsl,sec-v4.0-job-ring";
++				reg = <0x10000 0x10000>;
++				interrupts = <0x00 0x8c 0x04>;
++			};
++
++			jr@20000 {
++				iommus = <0x0f 0x42>;
++				compatible = "fsl,sec-v5.0-job-ring\0fsl,sec-v4.0-job-ring";
++				reg = <0x20000 0x10000>;
++				interrupts = <0x00 0x8d 0x04>;
++			};
++
++			jr@30000 {
++				iommus = <0x0f 0x43>;
++				compatible = "fsl,sec-v5.0-job-ring\0fsl,sec-v4.0-job-ring";
++				reg = <0x30000 0x10000>;
++				interrupts = <0x00 0x8e 0x04>;
++			};
++		};
++
++		dma-controller@8380000 {
++			iommus = <0x0f 0x05>;
++			compatible = "fsl,ls1028a-qdma\0fsl,ls1021a-qdma";
++			reg = <0x00 0x8380000 0x00 0x1000 0x00 0x8390000 0x00 0x10000 0x00 0x83a0000 0x00 0x40000>;
++			interrupts = <0x00 0x2b 0x04 0x00 0xfb 0x04 0x00 0xfc 0x04 0x00 0xfd 0x04 0x00 0xfe 0x04>;
++			interrupt-names = "qdma-error\0qdma-queue0\0qdma-queue1\0qdma-queue2\0qdma-queue3";
++			dma-channels = <0x08>;
++			block-number = <0x01>;
++			block-offset = <0x10000>;
++			fsl,dma-queues = <0x02>;
++			status-sizes = <0x40>;
++			queue-sizes = <0x40 0x40>;
++		};
++
++		watchdog@c000000 {
++			compatible = "arm,sp805\0arm,primecell";
++			reg = <0x00 0xc000000 0x00 0x1000>;
++			clocks = <0x02 0x04 0x0f 0x02 0x04 0x0f>;
++			clock-names = "apb_pclk\0wdog_clk";
++		};
++
++		watchdog@c010000 {
++			compatible = "arm,sp805\0arm,primecell";
++			reg = <0x00 0xc010000 0x00 0x1000>;
++			clocks = <0x02 0x04 0x0f 0x02 0x04 0x0f>;
++			clock-names = "apb_pclk\0wdog_clk";
++		};
++
++		gpu@f0c0000 {
++			iommus = <0x0f 0x47>;
++			compatible = "fsl,ls1028a-gpu";
++			reg = <0x00 0xf0c0000 0x00 0x10000 0x00 0x80000000 0x00 0x80000000 0x00 0x00 0x00 0x3000000>;
++			reg-names = "base\0phys_baseaddr\0contiguous_mem";
++			interrupts = <0x00 0xdc 0x04>;
++		};
++
++		audio-controller@f100000 {
++			#sound-dai-cells = <0x00>;
++			compatible = "fsl,vf610-sai";
++			reg = <0x00 0xf100000 0x00 0x10000>;
++			interrupts = <0x00 0x52 0x04>;
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01>;
++			clock-names = "bus\0mclk0\0mclk1\0mclk2\0mclk3";
++			dma-names = "tx\0rx";
++			dmas = <0x09 0x01 0x04 0x09 0x01 0x03>;
++			status = "disabled";
++		};
++
++		audio-controller@f110000 {
++			#sound-dai-cells = <0x00>;
++			compatible = "fsl,vf610-sai";
++			reg = <0x00 0xf110000 0x00 0x10000>;
++			interrupts = <0x00 0x52 0x04>;
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01>;
++			clock-names = "bus\0mclk0\0mclk1\0mclk2\0mclk3";
++			dma-names = "tx\0rx";
++			dmas = <0x09 0x01 0x06 0x09 0x01 0x05>;
++			status = "disabled";
++		};
++
++		audio-controller@f130000 {
++			#sound-dai-cells = <0x00>;
++			compatible = "fsl,vf610-sai";
++			reg = <0x00 0xf130000 0x00 0x10000>;
++			interrupts = <0x00 0x53 0x04>;
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01 0x02 0x04 0x01>;
++			clock-names = "bus\0mclk0\0mclk1\0mclk2\0mclk3";
++			dma-names = "tx\0rx";
++			dmas = <0x09 0x01 0x0a 0x09 0x01 0x09>;
++			status = "okay";
++		};
++
++		tmu@1f00000 {
++			compatible = "fsl,qoriq-tmu";
++			reg = <0x00 0x1f80000 0x00 0x10000>;
++			interrupts = <0x00 0x17 0x04>;
++			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x70061>;
++			fsl,tmu-calibration = <0x00 0x24 0x01 0x2b 0x02 0x31 0x03 0x38 0x04 0x3f 0x05 0x45 0x06 0x4c 0x07 0x53 0x08 0x59 0x09 0x60 0x0a 0x66 0x0b 0x6d 0x10000 0x1c 0x10001 0x24 0x10002 0x2c 0x10003 0x35 0x10004 0x3d 0x10005 0x45 0x10006 0x4d 0x10007 0x55 0x10008 0x5e 0x10009 0x66 0x1000a 0x6e 0x20000 0x18 0x20001 0x22 0x20002 0x2d 0x20003 0x38 0x20004 0x43 0x20005 0x4d 0x20006 0x58 0x20007 0x63 0x20008 0x6e 0x30000 0x10 0x30001 0x1c 0x30002 0x29 0x30003 0x36 0x30004 0x42 0x30005 0x4f 0x30006 0x5b 0x30007 0x68>;
++			little-endian;
++			#thermal-sensor-cells = <0x01>;
++			phandle = <0x0a>;
++		};
++
++		thermal-zones {
++
++			core-cluster {
++				polling-delay-passive = <0x3e8>;
++				polling-delay = <0x1388>;
++				thermal-sensors = <0x0a 0x00>;
++
++				trips {
++
++					core-cluster-alert {
++						temperature = <0x14c08>;
++						hysteresis = <0x7d0>;
++						type = "passive";
++						phandle = <0x0b>;
++					};
++
++					core-cluster-crit {
++						temperature = <0x17318>;
++						hysteresis = <0x7d0>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++
++					map0 {
++						trip = <0x0b>;
++						cooling-device = <0x0c 0xffffffff 0xffffffff 0x0d 0xffffffff 0xffffffff>;
++					};
++				};
++			};
++
++			ddr-controller {
++				polling-delay-passive = <0x3e8>;
++				polling-delay = <0x1388>;
++				thermal-sensors = <0x0a 0x01>;
++
++				trips {
++
++					ddr-controller-alert {
++						temperature = <0x14c08>;
++						hysteresis = <0x7d0>;
++						type = "passive";
++						phandle = <0x0e>;
++					};
++
++					ddr-controller-crit {
++						temperature = <0x17318>;
++						hysteresis = <0x7d0>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++
++					map0 {
++						trip = <0x0e>;
++						cooling-device = <0x0c 0xffffffff 0xffffffff 0x0d 0xffffffff 0xffffffff>;
++					};
++				};
++			};
++		};
++
++		pcie@3400000 {
++			msi-map = <0x00 0x10 0x07 0x01 0x100 0x10 0x0e 0x01>;
++			compatible = "fsl,ls1028a-pcie";
++			reg = <0x00 0x3400000 0x00 0x100000 0x80 0x00 0x00 0x2000>;
++			reg-names = "regs\0config";
++			interrupts = <0x00 0x6c 0x04 0x00 0x6d 0x04>;
++			interrupt-names = "pme\0aer";
++			#address-cells = <0x03>;
++			#size-cells = <0x02>;
++			device_type = "pci";
++			dma-coherent;
++			iommu-map = <0x00 0x0f 0x07 0x01 0x100 0x0f 0x0e 0x01>;
++			bus-range = <0x00 0xff>;
++			ranges = <0x81000000 0x00 0x00 0x80 0x10000 0x00 0x10000 0x82000000 0x00 0x40000000 0x80 0x40000000 0x00 0x40000000>;
++			msi-parent = <0x10>;
++			#interrupt-cells = <0x01>;
++			interrupt-map-mask = <0x00 0x00 0x00 0x07>;
++			interrupt-map = <0x00 0x00 0x00 0x01 0x01 0x00 0x00 0x00 0x6d 0x04 0x00 0x00 0x00 0x02 0x01 0x00 0x00 0x00 0x6e 0x04 0x00 0x00 0x00 0x03 0x01 0x00 0x00 0x00 0x6f 0x04 0x00 0x00 0x00 0x04 0x01 0x00 0x00 0x00 0x70 0x04>;
++			status = "okay";
++		};
++
++		pcie@3500000 {
++			msi-map = <0x00 0x10 0x08 0x01 0x100 0x10 0x0f 0x01>;
++			compatible = "fsl,ls1028a-pcie";
++			reg = <0x00 0x3500000 0x00 0x100000 0x88 0x00 0x00 0x2000>;
++			reg-names = "regs\0config";
++			interrupts = <0x00 0x71 0x04 0x00 0x72 0x04>;
++			interrupt-names = "pme\0aer";
++			#address-cells = <0x03>;
++			#size-cells = <0x02>;
++			device_type = "pci";
++			dma-coherent;
++			iommu-map = <0x00 0x0f 0x08 0x01 0x100 0x0f 0x0f 0x01>;
++			bus-range = <0x00 0xff>;
++			ranges = <0x81000000 0x00 0x00 0x88 0x10000 0x00 0x10000 0x82000000 0x00 0x40000000 0x88 0x40000000 0x00 0x40000000>;
++			msi-parent = <0x10>;
++			#interrupt-cells = <0x01>;
++			interrupt-map-mask = <0x00 0x00 0x00 0x07>;
++			interrupt-map = <0x00 0x00 0x00 0x01 0x01 0x00 0x00 0x00 0x72 0x04 0x00 0x00 0x00 0x02 0x01 0x00 0x00 0x00 0x73 0x04 0x00 0x00 0x00 0x03 0x01 0x00 0x00 0x00 0x74 0x04 0x00 0x00 0x00 0x04 0x01 0x00 0x00 0x00 0x75 0x04>;
++			status = "okay";
++		};
++
++		pcie@1f0000000 {
++			compatible = "pci-host-ecam-generic";
++			reg = <0x01 0xf0000000 0x00 0x100000>;
++			#address-cells = <0x03>;
++			#size-cells = <0x02>;
++			msi-parent = <0x10>;
++			device_type = "pci";
++			bus-range = <0x00 0x00>;
++			dma-coherent;
++			msi-map = <0x00 0x10 0x20 0x0c>;
++			iommu-map = <0x00 0x0f 0x20 0x0c>;
++			ranges = <0x82000000 0x00 0x00 0x01 0xf8000000 0x00 0x160000 0xc2000000 0x00 0x00 0x01 0xf8160000 0x00 0x70000 0x82000000 0x00 0x00 0x01 0xf81d0000 0x00 0x20000 0xc2000000 0x00 0x00 0x01 0xf81f0000 0x00 0x20000 0x82000000 0x00 0x00 0x01 0xf8210000 0x00 0x20000 0xc2000000 0x00 0x00 0x01 0xf8230000 0x00 0x20000 0x82000000 0x00 0x00 0x01 0xfc000000 0x00 0x400000>;
++
++			ethernet@0,0 {
++				compatible = "fsl,enetc";
++				reg = <0x00 0x00 0x00 0x00 0x00>;
++				status = "disabled";
++			};
++
++			ethernet@0,1 {
++				compatible = "fsl,enetc";
++				reg = <0x100 0x00 0x00 0x00 0x00>;
++				status = "disabled";
++			};
++
++			mdio@0,3 {
++				compatible = "fsl,enetc-mdio";
++				reg = <0x300 0x00 0x00 0x00 0x00>;
++				#address-cells = <0x01>;
++				#size-cells = <0x00>;
++
++				ethernet-phy@0 {
++					reg = <0x00>;
++				};
++
++				ethernet-phy@1 {
++					reg = <0x01>;
++				};
++
++				ethernet-phy@2 {
++					reg = <0x02>;
++				};
++
++				ethernet-phy@3 {
++					reg = <0x03>;
++				};
++
++				ethernet-phy@8 {
++					reg = <0x08>;
++					phandle = <0x11>;
++				};
++
++				ethernet-phy@9 {
++					reg = <0x09>;
++					phandle = <0x12>;
++				};
++
++				ethernet-phy@a {
++					reg = <0x0a>;
++					phandle = <0x13>;
++				};
++			};
++
++			ethernet@0,2 {
++				mac-address = [5e 15 53 3a 2c 8e];
++				compatible = "fsl,enetc";
++				reg = <0x200 0x00 0x00 0x00 0x00>;
++				phandle = <0x14>;
++
++				fixed-link {
++					speed = <0x3e8>;
++					full-duplex;
++				};
++			};
++
++			ethernet@0,4 {
++				compatible = "fsl,enetc-ptp";
++				reg = <0x400 0x00 0x00 0x00 0x00>;
++				clocks = <0x02 0x04 0x00>;
++				little-endian;
++				fsl,extts-fifo;
++			};
++
++			ethernet-switch@0,5 {
++				reg = <0x500 0x00 0x00 0x00 0x00>;
++				interrupts = <0x00 0x5f 0x04>;
++
++				ports {
++					#address-cells = <0x01>;
++					#size-cells = <0x00>;
++
++					port@0 {
++						reg = <0x00>;
++						status = "okay";
++						label = "swp0";
++						phy-handle = <0x11>;
++						phy-mode = "qsgmii";
++						managed = "in-band-status";
++					};
++
++					port@1 {
++						reg = <0x01>;
++						status = "okay";
++						label = "swp1";
++						phy-handle = <0x12>;
++						phy-mode = "qsgmii";
++						managed = "in-band-status";
++					};
++
++					port@2 {
++						reg = <0x02>;
++						status = "okay";
++						label = "swp2";
++						phy-handle = <0x13>;
++						phy-mode = "qsgmii";
++						managed = "in-band-status";
++					};
++
++					port@3 {
++						reg = <0x03>;
++						status = "disabled";
++						label = "swp3";
++					};
++
++					port@4 {
++						reg = <0x04>;
++						ethernet = <0x14>;
++						phy-mode = "internal";
++
++						fixed-link {
++							speed = <0x9c4>;
++							full-duplex;
++						};
++					};
++
++					port@5 {
++						reg = <0x05>;
++						phy-mode = "internal";
++						status = "disabled";
++
++						fixed-link {
++							speed = <0x3e8>;
++							full-duplex;
++						};
++					};
++				};
++			};
++
++			ethernet@0,6 {
++				compatible = "fsl,enetc";
++				reg = <0x600 0x00 0x00 0x00 0x00>;
++				status = "okay";
++
++				fixed-link {
++					speed = <0x3e8>;
++					full-duplex;
++				};
++			};
++		};
++
++		pwm@2800000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2800000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "okay";
++		};
++
++		pwm@2810000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2810000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		pwm@2820000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2820000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		pwm@2830000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2830000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		pwm@2840000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2840000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		pwm@2850000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2850000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		pwm@2860000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2860000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		pwm@2870000 {
++			compatible = "fsl,vf610-ftm-pwm";
++			#pwm-cells = <0x03>;
++			reg = <0x00 0x2870000 0x00 0x10000>;
++			clock-names = "ftm_sys\0ftm_ext\0ftm_fix\0ftm_cnt_clk_en";
++			clocks = <0x02 0x04 0x01 0x02 0x04 0x01 0x15 0x02 0x04 0x01>;
++			status = "disabled";
++		};
++
++		rcpm@1e34040 {
++			compatible = "fsl,ls1028a-rcpm\0fsl,qoriq-rcpm-2.1+";
++			reg = <0x00 0x1e34040 0x00 0x1c>;
++			#fsl,rcpm-wakeup-cells = <0x07>;
++			little-endian;
++			phandle = <0x16>;
++		};
++
++		timer@2800000 {
++			compatible = "fsl,ls1028a-ftm-alarm";
++			reg = <0x00 0x2800000 0x00 0x10000>;
++			fsl,rcpm-wakeup = <0x16 0x00 0x00 0x00 0x00 0x4000 0x00 0x00>;
++			interrupts = <0x00 0x2c 0x04>;
++			status = "disabled";
++		};
++
++		timer@2810000 {
++			compatible = "fsl,ls1028a-ftm-alarm";
++			reg = <0x00 0x2810000 0x00 0x10000>;
++			fsl,rcpm-wakeup = <0x16 0x00 0x00 0x00 0x00 0x4000 0x00 0x00>;
++			interrupts = <0x00 0x2d 0x04>;
++			status = "okay";
++		};
++	};
++
++	firmware {
++
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
++	};
++
++	display@f080000 {
++		iommus = <0x0f 0x48>;
++		compatible = "arm,mali-dp500";
++		reg = <0x00 0xf080000 0x00 0x10000>;
++		interrupts = <0x00 0xde 0x04 0x00 0xdf 0x04>;
++		interrupt-names = "DE\0SE";
++		clocks = <0x17 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02>;
++		clock-names = "pxlclk\0mclk\0aclk\0pclk";
++		arm,malidp-output-port-lines = [08 08 08];
++		arm,malidp-arqos-value = <0xd000d000>;
++
++		port {
++
++			endpoint {
++				remote-endpoint = <0x18>;
++				phandle = <0x19>;
++			};
++		};
++	};
++
++	display@f200000 {
++		compatible = "cdn,ls1028a-dp";
++		reg = <0x00 0xf200000 0x00 0xfffff>;
++		interrupts = <0x00 0xdd 0x04>;
++		clocks = <0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x02 0x17>;
++		clock-names = "clk_core\0pclk\0sclk\0cclk\0clk_vif\0clk_pxl";
++		lane-mapping = <0x4e>;
++		status = "okay";
++
++		port {
++
++			endpoint {
++				remote-endpoint = <0x19>;
++				phandle = <0x18>;
++			};
++		};
++	};
++
++	chosen {
++		kaslr-seed = <0x00 0x00>;
++		linux,stdout-path = "/soc/serial@21c0500";
++		bootargs = "console=ttyS0,115200 earlycon=uart8250,mmio,0x21c0500 root=PARTUUID=30dd9c9d-04 rw rootwait video=1920x1080-32@60 cma=256M iommu.passthrough=1 arm-smmu.disable_bypass=0";
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x00 0x80000000 0x00 0x7be00000 0x20 0x80000000 0x01 0x80000000>;
++	};
++
++	clock-mclk {
++		compatible = "fixed-clock";
++		#clock-cells = <0x00>;
++		clock-frequency = <0x17d7840>;
++	};
++
++	regulator-1p8v {
++		compatible = "regulator-fixed";
++		regulator-name = "1P8V";
++		regulator-min-microvolt = <0x1b7740>;
++		regulator-max-microvolt = <0x1b7740>;
++		regulator-always-on;
++	};
++
++	regulator-sb3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "3v3_vbus";
++		regulator-min-microvolt = <0x325aa0>;
++		regulator-max-microvolt = <0x325aa0>;
++		regulator-boot-on;
++		regulator-always-on;
++		phandle = <0x08>;
++	};
++};
+-- 
+2.25.1
+

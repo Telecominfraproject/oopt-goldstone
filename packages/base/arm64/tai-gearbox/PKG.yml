@@ -1,0 +1,24 @@
+variables:
+  VERSION: 0.5.0
+
+packages:
+  - name: gs-tai-gearbox
+    arch: arm64
+    version: $VERSION
+    maintainer: goldstone-nos@googlegroups.com
+    summary: TAI shell server
+    after-install: $__DIR__/after-install.sh
+    before-remove: $__DIR__/before-remove.sh
+    depends:
+    - k3s
+    - gs-tai
+    files:
+        builds/manifests:  /var/lib/tai-gearbox/k8s
+        builds/tai-gearbox.service: /etc/systemd/system/
+        builds/tai-gearbox.sh: /usr/bin/
+        builds/libtai-mdx1.so.$VERSION: /var/lib/tai-gearbox/
+        builds/mdx1_fw_app_revb.mem.$VERSION: /var/lib/tai-gearbox/
+    links:
+        /var/lib/tai-gearbox/libtai-mdx1.so: libtai-mdx1.so.$VERSION
+        /var/lib/tai-gearbox/libtai.so: libtai-mdx1.so
+        /var/lib/tai-gearbox/mdx1_fw_app_revb.mem: mdx1_fw_app_revb.mem.$VERSION

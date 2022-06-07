@@ -1,0 +1,19 @@
+packages:
+  - name: gs-tai
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone TAI package
+    after-install: $X1/packages/base/any/tai/after-install.sh
+    before-remove: $X1/packages/base/any/tai/before-remove.sh
+    depends:
+    - k3s
+    files:
+        builds/tai-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/manifests:  /var/lib/tai/k8s
+        $X1/packages/base/any/tai/builds/manifests: /var/lib/tai/k8s/base
+        $X1/packages/base/any/tai/builds/tai.service: /etc/systemd/system/
+        $X1/packages/base/any/tai/builds/tai.sh: /usr/bin/
+        builds/bin: /var/lib/tai/lib
+    links:
+        /var/lib/tai/lib/libtai.so: $DEFAULT_LIBTAI

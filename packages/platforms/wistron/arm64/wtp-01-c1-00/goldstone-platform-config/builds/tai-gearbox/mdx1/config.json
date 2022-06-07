@@ -1,0 +1,8 @@
+{
+    "module": {
+        "attrs": {
+            "firmware-location": "/var/lib/tai/mdx1_fw_app_revb.mem",
+            "boot-mode": "cold"
+        }
+    }
+}

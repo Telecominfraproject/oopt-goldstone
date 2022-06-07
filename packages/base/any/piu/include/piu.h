@@ -10,3 +10,4 @@ struct piu_cmd {
 
 #define PIU_READ  _IOWR(IOC_MAGIC, 1, struct piu_cmd)
 #define PIU_WRITE _IOWR(IOC_MAGIC, 2, struct piu_cmd)
+#define PIU_INIT  _IOWR(IOC_MAGIC, 3, struct piu_cmd)

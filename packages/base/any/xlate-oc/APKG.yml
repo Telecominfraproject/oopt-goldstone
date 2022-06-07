@@ -1,0 +1,16 @@
+packages:
+  - name: gs-xlate-oc
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone OpenConfig Translator
+    after-install: $X1/packages/base/any/xlate-oc/after-install.sh
+    before-remove: $X1/packages/base/any/xlate-oc/before-remove.sh
+    depends:
+    - k3s
+    - gs-mgmt
+    files:
+        builds/gs-xlate-oc-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/manifests: /var/lib/gs-xlate-oc/k8s
+        $X1/packages/base/any/xlate-oc/builds/gs-xlate-oc.service: /etc/systemd/system/
+        $X1/packages/base/any/xlate-oc/builds/gs-xlate-oc-yang.service: /etc/systemd/system/

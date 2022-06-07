@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package bcmd;
+
+service BCMD {
+    rpc Exec(ExecRequest) returns (ExecResponse);
+}
+
+message ExecRequest {
+    string command = 1;
+}
+
+message ExecResponse {
+    string response = 1;
+}

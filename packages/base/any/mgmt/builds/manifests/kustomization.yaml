@@ -1,0 +1,7 @@
+resources:
+- north-notif.yaml
+- south-gearbox.yaml
+- south-dpll.yaml
+- south-onlp.yaml
+- south-sonic.yaml
+- south-tai.yaml

@@ -5,7 +5,7 @@ metadata:
 spec:
     containers:
     - name: cli
-      image: docker.io/microsonic/usonic-cli:latest
+      image: docker.io/nlpldev/usonic-cli:latest
       imagePullPolicy: IfNotPresent
       command: ['sh', '-c', 'sleep 100000']
       volumeMounts:
@@ -21,7 +21,11 @@ spec:
           name: sonic-db-config
     - name: sonic-version
       configMap:
-          name: sonic-version
+          name: usonic-config
+          items:
+          - key: sonic_version.yml
+            path: sonic_version.yml
     - name: usonic-config
       configMap:
           name: usonic-config
+    terminationGracePeriodSeconds: 0

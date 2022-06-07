@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: north-notif
+    labels:
+        app: gs-mgmt
+        gs-mgmt: north-notif
+spec:
+    selector:
+        matchLabels:
+            app: north-notif
+    template:
+        metadata:
+            labels:
+                app: north-notif
+        spec:
+            containers:
+            - name: notif
+              image: ghcr.io/oopt-goldstone/mgmt/north-notif:latest
+              imagePullPolicy: IfNotPresent
+              command: ['gsnorthd-notif']
+              args: ['--verbose']
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 2
+                periodSeconds: 10
+              startupProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 120
+                periodSeconds: 1
+              ports:
+              - name: liveness-port
+                containerPort: 8080
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: tai-dpll
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: tai-dpll
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: tai-dpll
+        spec:
+            containers:
+            - name: taish-server
+              image: tai-arm64:latest
+              imagePullPolicy: IfNotPresent
+              command: ['taish_server']
+              args: ['-v']
+              env:
+              - name: LD_LIBRARY_PATH
+                value: "/var/lib/tai"
+              volumeMounts:
+              - name: host-libtai
+                mountPath: /var/lib/tai
+              securityContext:
+                privileged: true
+            volumes:
+            - name: host-libtai
+              hostPath:
+                path: /var/lib/tai-dpll/

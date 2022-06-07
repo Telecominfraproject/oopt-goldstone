@@ -1,22 +1,52 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: usonic
+    namespace: default
+
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: usonic
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: view
+subjects:
+- kind: ServiceAccount
+  name: usonic
+  namespace: default
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: usonic
+    name: usonic-core
+    labels:
+      app: usonic
 spec:
     replicas: 1
     selector:
         matchLabels:
             app: usonic
+            usonic: core
     strategy:
         type: Recreate
     template:
         metadata:
             labels:
                 app: usonic
+                usonic: core
         spec:
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
             initContainers:
             - name: init-loglevel
-              image: docker.io/microsonic/usonic-debug:201904
+              image: ghcr.io/microsonic/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['/var/run/start/start.sh']
               volumeMounts:
@@ -26,7 +56,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: init-configdb
-              image: docker.io/microsonic/usonic-cli:latest
+              image: docker.io/nlpldev/usonic-cli:latest
               imagePullPolicy: IfNotPresent
               command: ['sonic-cfggen', '-k', 'dummy', '-p', '/etc/usonic/port_config.ini', '-j', '/etc/sonic/config_db.json', '--write-to-db']
               volumeMounts:
@@ -37,17 +67,17 @@ spec:
               - name: usonic-config
                 mountPath: /etc/usonic/
             - name: complete-init
-              image: docker.io/microsonic/usonic-debug:201904
+              image: ghcr.io/microsonic/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['redis-cli', '-h', 'redis.default.svc.cluster.local', '-n', '4', 'SET', 'CONFIG_DB_INITIALIZED', '1']
             containers:
             - name: syncd
-              image: docker.io/microsonic/usonic-debug:201904
+              image: ghcr.io/microsonic/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'service syslog-ng start && dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
               env:
               - name: LD_LIBRARY_PATH
-                value: "/var/lib/current:/var/lib/usonic"
+                value: "/var/lib/current:/var/lib/usonic/lib"
               volumeMounts:
               - name: usonic-config
                 mountPath: /etc/sonic/
@@ -62,7 +92,7 @@ spec:
               - name: bcmsh-sock
                 mountPath: /var/run/sswsyncd
               - name: host-libsai
-                mountPath: /var/lib/usonic
+                mountPath: /var/lib/usonic/lib
               - name: current
                 mountPath: /var/lib/current
               securityContext:
@@ -70,58 +100,29 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: orchagent
-              image: docker.io/microsonic/usonic-debug:201904
+              image: ghcr.io/microsonic/usonic-debug:201904
               imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'sleep 5 && gdb -ex "run" -ex "bt" --args orchagent -m $GLOBAL_MAC_ADDRESS']
+              command: ['orchagent']
+              args: ['-m', '$(GLOBAL_MAC_ADDRESS)']
               env:
               - name: GLOBAL_MAC_ADDRESS
-                value: "72:16:EA:18:79:F9"
+                valueFrom:
+                  configMapKeyRef:
+                    name: usonic-config
+                    key: macaddress
               volumeMounts:
               - name: redis-sock
                 mountPath: /var/run/redis/redis.sock
               - name: sonic-db-config
                 mountPath: /var/run/redis/sonic-db/
-            - name: portsyncd
-              image: docker.io/microsonic/usonic-debug:201904
-              imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" portsyncd']
-              volumeMounts:
-              - name: redis-sock
-                mountPath: /var/run/redis/redis.sock
-              - name: sonic-db-config
-                mountPath: /var/run/redis/sonic-db/
-            - name: neighsyncd
-              image: docker.io/microsonic/usonic-debug:201904
-              imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" neighsyncd']
-              volumeMounts:
-              - name: redis-sock
-                mountPath: /var/run/redis/redis.sock
-              - name: sonic-db-config
-                mountPath: /var/run/redis/sonic-db/
-            - name: vlanmgrd
-              image: docker.io/microsonic/usonic-debug:201904
-              imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'mount -o remount,rw /sys && sleep 8 && gdb -ex "run" -ex "bt" vlanmgrd']
-              volumeMounts:
-              - name: redis-sock
-                mountPath: /var/run/redis/redis.sock
-              - name: sonic-db-config
-                mountPath: /var/run/redis/sonic-db/
-              securityContext:
-                privileged: true
-            - name: intfmgrd
-              image: docker.io/microsonic/usonic-debug:201904
-              imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'sleep 8 && gdb -ex "run" -ex "bt" intfmgrd']
-              volumeMounts:
-              - name: redis-sock
-                mountPath: /var/run/redis/redis.sock
-              - name: sonic-db-config
-                mountPath: /var/run/redis/sonic-db/
-              securityContext:
-                capabilities:
-                    add: ["NET_ADMIN"]
+              startupProbe:
+                exec:
+                  command:
+                  - grep
+                  - SAI_SWITCH_ATTR_NUMBER_OF_ACTIVE_PORTS
+                  - sairedis.rec
+                failureThreshold: 60 # 60 * 2 = 120sec for SAI initialization
+                periodSeconds: 2
             volumes:
             - name: redis-sock
               hostPath:
@@ -141,19 +142,559 @@ spec:
             - name: usonic-config
               configMap:
                   name: usonic-config
+            - name: config-db-json
+              configMap:
+                  name: usonic-config
+                  items:
+                  - key: config_db.json
+                    path: config_db.json
             - name: sonic-db-config
               configMap:
                   name: sonic-db-config
-            - name: config-db-json
-              configMap:
-                  name: config-db-json
             - name: warm-boot
               emptyDir: {}
             - name: bcmsh-sock
-              emptyDir: {}
+              hostPath:
+                  path: /var/run/sswsyncd/
             - name: host-libsai
               hostPath:
-                  path: /var/lib/usonic/
+                  path: /var/lib/usonic/lib
             - name: current
               hostPath:
                   path: /var/lib/goldstone/device/current/usonic
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: bcmd
+spec:
+    selector:
+        app: usonic
+        usonic: bcm
+    ports:
+    - protocol: TCP
+      port: 50051
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-bcm
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: bcm
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: bcm
+        spec:
+            serviceAccountName: usonic
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-core', '--timeout=5m']
+            containers:
+            - name: bcmd
+              image: bcmd:latest
+              imagePullPolicy: IfNotPresent
+              env:
+              - name: LED_PROC_INIT_SOC
+                value: "/var/lib/current/led_proc_init.soc"
+              command: ['bcmd']
+              args: ['--init-soc', '$(LED_PROC_INIT_SOC)']
+              volumeMounts:
+              - name: bcmsh-sock
+                mountPath: /var/run/sswsyncd
+              - name: current
+                mountPath: /var/lib/current
+              - name: bcmrun
+                mountPath: /run/bcm
+            volumes:
+            - name: bcmsh-sock
+              hostPath:
+                  path: /var/run/sswsyncd/
+            - name: current
+              hostPath:
+                  path: /var/lib/goldstone/device/current/usonic
+            - name: bcmrun
+              hostPath:
+                  path: /run/bcm
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-port
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: port
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: port
+        spec:
+            serviceAccountName: usonic
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-bcm', '--timeout=5m']
+            containers:
+            - name: portsyncd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['portsyncd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+                    # TODO: need more research to use this. enabling startupProbe makes
+                    # state change to 'ready' really slow.
+                    #
+                    #              startupProbe:
+                    #                exec:
+                    #                  command:
+                    #                  - bash
+                    #                  - -c
+                    #                  - 'redis-cli exists PORT_TABLE:PortInitDone | grep 1'
+                    #                failureThreshold: 5 # 5sec for Port initialization
+                    #                periodSeconds: 1
+              livenessProbe:
+                exec:
+                  command:
+                  - bash
+                  - -c
+                  - 'redis-cli -h redis.default.svc.cluster.local exists PORT_TABLE:PortInitDone | grep 1'
+                failureThreshold: 1
+                periodSeconds: 10
+                # using this instead of startupProbe for now
+                initialDelaySeconds: 5
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-neighbor
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: neighbor
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: neighbor
+        spec:
+            serviceAccountName: usonic
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
+            containers:
+            - name: neighsyncd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['neighsyncd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-frr
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: frr
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: frr
+        spec:
+            hostNetwork: true
+            serviceAccountName: usonic
+            dnsPolicy: ClusterFirstWithHostNet
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-core', '--timeout=5m']
+            containers:
+            - name: fpmsyncd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['fpmsyncd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: frr
+                mountPath: /var/run/frr/
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: zebra
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['/usr/lib/frr/zebra', '-A', '127.0.0.1', '-s', '90000000', '-M', 'fpm']
+              volumeMounts:
+              - name: frr
+                mountPath: /var/run/frr/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: staticd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['/usr/lib/frr/staticd', '-A', '127.0.0.1']
+              volumeMounts:
+              - name: frr
+                mountPath: /var/run/frr/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: bgpd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['/usr/lib/frr/bgpd', '-A', '127.0.0.1']
+              volumeMounts:
+              - name: frr
+                mountPath: /var/run/frr/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: frr
+              emptyDir: {}
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-teamd
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: teamd
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: teamd
+        spec:
+            hostNetwork: true
+            serviceAccountName: usonic
+            dnsPolicy: ClusterFirstWithHostNet
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
+            containers:
+            - name: teamsyncd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['teamsyncd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: teamd
+                mountPath: /var/run/teamd/
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: teammgrd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['teammgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: teamd
+                mountPath: /var/run/teamd/
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: teamd
+              emptyDir: {}
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-lldpd
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: lldpd
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: lldpd
+        spec:
+            hostNetwork: true
+            serviceAccountName: usonic
+            dnsPolicy: ClusterFirstWithHostNet
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-core', '--timeout=5m']
+            containers:
+            - name: lldpd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['/usr/sbin/lldpd', '-d', '-I', 'Ethernet*,eth0', '-C', 'eth0']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: lldpd
+                mountPath: /var/run/
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                privileged: true
+                capabilities:
+                    add: ["NET_ADMIN"]
+                    #            - name: lldpsyncd
+                    #              image: ghcr.io/microsonic/usonic-debug:201904
+                    #              imagePullPolicy: IfNotPresent
+                    #              command: ['/usr/bin/env', 'python2', '-m', 'lldp_syncd']
+                    #              volumeMounts:
+                    #              - name: redis-sock
+                    #                mountPath: /var/run/redis/redis.sock
+                    #              - name: lldpd
+                    #                mountPath: /var/run/
+                    #              - name: sonic-db-config
+                    #                mountPath: /var/run/redis/sonic-db/
+                    #              securityContext:
+                    #                privileged: true
+                    #                capabilities:
+                    #                    add: ["NET_ADMIN"]
+                    #            - name: lldpmgrd
+                    #              image: ghcr.io/microsonic/usonic-debug:201904
+                    #              imagePullPolicy: IfNotPresent
+                    #              command: ['/usr/bin/lldpmgrd']
+                    #              volumeMounts:
+                    #              - name: redis-sock
+                    #                mountPath: /var/run/redis/redis.sock
+                    #              - name: lldpd
+                    #                mountPath: /var/run/
+                    #              - name: sonic-db-config
+                    #                mountPath: /var/run/redis/sonic-db/
+                    #              securityContext:
+                    #                privileged: true
+                    #                capabilities:
+                    #                    add: ["NET_ADMIN"]
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: lldpd
+              emptyDir: {}
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: usonic-mgrd
+    labels:
+      app: usonic
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: usonic
+            usonic: mgrd
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: usonic
+                usonic: mgrd
+        spec:
+            serviceAccountName: usonic
+            hostNetwork: true
+            dnsPolicy: ClusterFirstWithHostNet
+            initContainers:
+            - name: wait-core
+              image: docker.io/bitnami/kubectl:latest
+              imagePullPolicy: IfNotPresent
+              command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
+            - name: swssconfig
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['swssconfig']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+            containers:
+            - name: vlanmgrd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['sh', '-c', 'mount -o remount,rw /sys && vlanmgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                privileged: true
+            - name: intfmgrd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['intfmgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: portmgrd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['portmgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+            - name: nbrmgrd
+              image: ghcr.io/microsonic/usonic-debug:201904
+              imagePullPolicy: IfNotPresent
+              command: ['nbrmgrd']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
+              - name: sonic-db-config
+                mountPath: /var/run/redis/sonic-db/
+              securityContext:
+                capabilities:
+                    add: ["NET_ADMIN"]
+            volumes:
+            - name: redis-sock
+              hostPath:
+                  path: /var/lib/usonic/redis/redis.sock
+                  type: Socket
+            - name: sonic-db-config
+              configMap:
+                  name: sonic-db-config
+

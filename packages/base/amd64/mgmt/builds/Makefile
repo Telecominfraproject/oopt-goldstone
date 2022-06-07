@@ -1,9 +1,2 @@
-IMAGE_REPO=docker.io/microsonic
-IMAGES=gs-mgmt-debug
-TAG=latest
-
-mgmt-amd64.tar: FORCE
-	DOCKER_BUILDKIT=1 docker build --build-arg BASE=$(IMAGE_REPO)/$(IMAGES):$(TAG) -t $(IMAGES):$(TAG) .
-	docker save $(foreach image,$(IMAGES), $(image):$(TAG)) > $@
-
-FORCE:
+include $(X1)/make/config.amd64.mk
+include $(X1)/packages/base/any/mgmt/builds/Makefile

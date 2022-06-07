@@ -1,0 +1,7 @@
+source-directory /etc/network/interfaces.d
+
+auto eth0
+iface eth0 inet manual
+
+auto swp2
+iface swp2 inet dhcp

@@ -1,0 +1,13 @@
+THIS_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+NAME ?= arm64-wistron-wtp-01-c1-00-cfp2
+
+SOURCES := main.c
+
+obj-m := $(NAME).o
+
+$(NAME)-y := $(SOURCES:.c=.o)
+
+ccflags-y := -I$(X1)/sm/linux-gft/drivers/net/ethernet
+
+# vim: ft=make

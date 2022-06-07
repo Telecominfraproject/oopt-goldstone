@@ -1,0 +1,15 @@
+packages:
+  - name: gs-snmp
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone SNMP server
+    after-install: $X1/packages/base/any/snmp/after-install.sh
+    before-remove: $X1/packages/base/any/snmp/before-remove.sh
+    depends:
+    - k3s
+    - gs-mgmt
+    files:
+        builds/manifests: /var/lib/gs-snmp/k8s
+        builds/gs-snmp-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        $X1/packages/base/any/snmp/builds/gs-north-snmp.service: /etc/systemd/system/

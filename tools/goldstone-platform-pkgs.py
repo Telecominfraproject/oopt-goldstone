@@ -36,7 +36,7 @@ if not ops.without_vs:
 # The platform-config package
 # The ONLP package
 #
-ONL_PATTERNS = [ "goldstone-platform-config-%(platform)s" ]
+ONL_PATTERNS = [ "goldstone-platform-config-%(platform)s", "goldstone-module-%(platform)s" ]
 
 PATTERNS = list(onlu.sflatten(ops.add_patterns))
 

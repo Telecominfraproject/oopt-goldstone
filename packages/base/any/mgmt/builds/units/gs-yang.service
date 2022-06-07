@@ -1,0 +1,11 @@
+[Unit]
+Description=setup Goldstone YANG models
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/gs-yang.py --install-platform
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=gs-mgmt-south.target gs-mgmt-north.target

@@ -1,0 +1,29 @@
+variables:
+  basename: goldstone-kernel-5.4-lts-arm64-all
+
+common:
+  arch: arm64
+  version: 1.0.0
+  maintainer: goldstone-nos@googlegroups.com
+
+packages:
+  - name: $basename
+    version: 1.0.0
+    summary: Goldstone Kernel 5.4 for ARM64 Integrated Processor Platforms.
+    symlinks: True
+
+    files:
+      builds/kernel-5.4* : $$PKG_INSTALL/
+      builds/linux-5.4*-mbuild : $$PKG_INSTALL/mbuilds
+      builds/linux-5.4*-dtbs : $$PKG_INSTALL/dtbs
+
+    changelog:  Change changes changes.,
+
+  - name: $basename-modules
+    version: 1.0.0
+    summary: Goldstone Kernel 5.4 LTS Kernel Modules for ARM64 Platforms
+
+    files:
+      builds/lib: /lib
+
+    changelog:  Change changes changes.,

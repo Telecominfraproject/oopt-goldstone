@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-tai
+spec:
+    template:
+        spec:
+            containers:
+            - name: tai
+              image: MGMT_IMAGE_REPO/south-tai:IMAGE_TAG

@@ -1,0 +1,9 @@
+variables:
+    PLATFORM: vs
+
+packages:
+  - name: goldstone-module-$PLATFORM
+    arch: all
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone module for $PLATFORM

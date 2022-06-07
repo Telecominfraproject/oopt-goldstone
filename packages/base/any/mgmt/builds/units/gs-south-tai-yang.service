@@ -1,0 +1,12 @@
+[Unit]
+Description=Goldstone Management South TAI Daemon YANG model setup
+Before=gs-yang.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/gs-yang.py --install south-tai
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

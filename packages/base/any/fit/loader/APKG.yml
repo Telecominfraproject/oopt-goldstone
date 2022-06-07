@@ -1,0 +1,22 @@
+prerequisites:
+  packages:
+    - x1-loader-initrd:$ARCH
+  stage: 3
+
+common:
+  arch: $ARCH
+  version: 1.0.0
+  copyright: Copyright 2013, 2014, 2015 Big Switch Networks
+  maintainer: support@bigswitch.com
+  support: opennetworklinux@googlegroups.com
+
+packages:
+  - name: x1-loader-fit
+    version: 1.0.0
+    summary: X1 FIT Loader Image for $ARCH
+
+    files:
+      builds/x1-loader-fit.itb : $$PKG_INSTALL/
+      builds/manifest.json      : $$PKG_INSTALL/
+
+    changelog:  Change changes changes.,

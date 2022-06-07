@@ -1,0 +1,20 @@
+packages:
+  - name: netopeer2
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: NETCONF server
+    after-install: $X1/packages/base/any/netopeer2/after-install.sh
+    before-remove: $X1/packages/base/any/netopeer2/before-remove.sh
+    depends:
+    - sysrepo
+    - gssystem
+    - k3s
+    - gs-mgmt
+    files:
+        builds/manifests: /var/lib/netopeer2/k8s
+        builds/netopeer2-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/yang: /var/lib/netopeer2/yang
+        builds/scripts: /var/lib/netopeer2/scripts
+        $X1/packages/base/any/netopeer2/builds/gs-north-netconf.service: /etc/systemd/system/
+        $X1/packages/base/any/netopeer2/builds/netopeer2.sh: /usr/bin/

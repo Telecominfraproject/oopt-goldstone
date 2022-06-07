@@ -661,6 +661,7 @@ ExecStartPre=-/sbin/modprobe overlay
 ExecStartPost=/bin/sh -c 'while [ true ]; do ( kubectl get nodes | grep " Ready" ) && exit 0; sleep 1; done'
 ExecStart=${BIN_DIR}/k3s \\
     ${CMD_K3S_EXEC}
+    --bind-address 127.0.0.1 --advertise-address 127.0.0.1 --node-ip 127.0.0.1  --flannel-iface lo --disable local-storage --disable metrics-server --disable traefik --disable-cloud-controller --kubelet-arg 'address=127.0.0.1'
 
 EOF
 }
@@ -725,6 +726,7 @@ get_installed_hashes() {
 # --- enable and start systemd service ---
 systemd_enable() {
     info "systemd: Enabling ${SYSTEM_NAME} unit"
+    $SUDO systemctl enable prep-k3s.service >/dev/null
     $SUDO systemctl enable ${FILE_K3S_SERVICE} >/dev/null
 #    $SUDO systemctl daemon-reload >/dev/null
 }

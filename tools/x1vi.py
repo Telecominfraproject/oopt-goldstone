@@ -16,7 +16,7 @@ class OnlVersionImplementation(object):
         else:
             # The current branch is used as the release version.
             self.release = False
-            cmd = ('git', 'rev-parse', '--abbrev-ref', 'HEAD')
+            cmd = ('git', 'describe', '--tags', '--always')
             branch = subprocess.check_output(cmd).strip()
             self.PRODUCTS[0]['version'] = branch
 

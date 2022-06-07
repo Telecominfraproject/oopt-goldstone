@@ -1,15 +1,1 @@
-packages:
-  - name: gs-mgmt
-    arch: amd64
-    version: 1.0.0
-    copyright: Copyright 2020 Wataru Ishida
-    maintainer: wataru.ishid@gmail.com
-    changelog: Initial
-    support:   wataru.ishid@gmail.com
-    summary: Goldstone Management Framework
-    before-remove: $__DIR__/before-remove.sh
-    depends:
-    - k3s
-    files:
-        builds/mgmt-amd64.tar: /var/lib/rancher/k3s/agent/images/
-        builds/manifests:  /var/lib/rancher/k3s/server/manifests/mgmt/
+!include $X1/packages/base/any/mgmt/APKG.yml ARCH=amd64

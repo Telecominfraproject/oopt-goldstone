@@ -3,17 +3,14 @@ variables:
 
 prerequisites:
   broken: true
-  packages: [ "x1-swi:$ARCH" ]
+  packages: [ "goldstone-swi:$ARCH" ]
 
 packages:
-  - name: x1-installer-$BOOTMODE
+  - name: goldstone-installer-$BOOTMODE
     summary: Goldstone Network OS $ARCH Installer
     arch: $ARCH
     version: 0.$FNAME_RELEASE_ID
-    copyright: Copyright 2018 Big Switch Networks
-    maintainer: support@bigswitch.com
-    changelog: Initial
-    support:   support@bigswitch.com
+    maintainer: goldstone-nos@googlegroups.com
 
     files:
       builds/*INSTALLER        : $$PKG_INSTALL/

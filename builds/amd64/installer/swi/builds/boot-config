@@ -1,3 +1,0 @@
-NETDEV=eth0
-BOOTMODE=SWI
-SWI=images::latest

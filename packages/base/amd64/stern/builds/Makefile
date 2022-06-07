@@ -1,5 +1,2 @@
-STERN_VERSION = 1.11.0
-
-stern:
-	wget -O $@ https://github.com/wercker/stern/releases/download/$(STERN_VERSION)/stern_linux_amd64
-	chmod +x $@
+include $(X1)/make/config.amd64.mk
+include $(X1)/packages/base/any/stern/builds/Makefile

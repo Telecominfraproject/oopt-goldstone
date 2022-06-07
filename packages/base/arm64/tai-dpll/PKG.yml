@@ -1,0 +1,21 @@
+variables:
+  VERSION: 0.4.0
+
+packages:
+  - name: gs-tai-dpll
+    arch: arm64
+    version: $VERSION
+    maintainer: goldstone-nos@googlegroups.com
+    summary: TAI for DPLL
+    before-remove: $__DIR__/before-remove.sh
+    depends:
+    - k3s
+    - gs-tai
+    files:
+        builds/manifests:  /var/lib/tai-dpll/k8s
+        builds/tai-dpll.service: /etc/systemd/system/
+        builds/tai-dpll.sh: /usr/bin/
+        builds/libtai-dpll.so.$VERSION: /var/lib/tai-dpll/
+    links:
+        /var/lib/tai-dpll/libtai-dpll.so: libtai-dpll.so.$VERSION
+        /var/lib/tai-dpll/libtai.so: libtai-dpll.so

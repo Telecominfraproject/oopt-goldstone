@@ -1,0 +1,18 @@
+prerequisites:
+  packages:
+    - goldstone-kernel-5.4-lts-arm64-all:arm64
+
+variables:
+  ARCH: arm64
+  BASENAME: arm64-wistron-wtp-01-c1-00
+  REVISION: r0
+  PLATFORM: $BASENAME
+
+packages:
+  - name: onl-platform-modules-$PLATFORM
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: onl platform modules for $PLATFORM
+    files:
+        builds/lib: lib

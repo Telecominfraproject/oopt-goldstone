@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: tai
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: tai
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                app: tai
+        spec:
+            containers:
+            - name: taish-server
+              image: tai:latest
+              imagePullPolicy: IfNotPresent
+              command: ['taish_server']
+              args: ['-v', '-n']
+              env:
+              - name: LD_LIBRARY_PATH
+                value: "/var/lib/tai"
+              volumeMounts:
+              - name: host-libtai
+                mountPath: /var/lib/tai
+              - name: tai-config
+                mountPath: /etc/tai
+              securityContext:
+                privileged: true
+            volumes:
+            - name: host-libtai
+              hostPath:
+                path: /var/lib/tai/lib
+            - name: tai-config
+              hostPath:
+                path: /var/lib/goldstone/device/current/tai

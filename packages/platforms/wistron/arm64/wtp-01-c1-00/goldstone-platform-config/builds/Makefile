@@ -1,0 +1,2 @@
+all:
+	# nothing to do

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tai
+spec:
+  template:
+    spec:
+      containers:
+      - name: taish-server
+        image: tai-arm64:latest
+        env:
+        - name: TAI_MUX_PLATFORM_ADAPTER
+          value: "exec"
+        - name: TAI_MUX_EXEC_SCRIPT
+          value: "/etc/tai/mux/exec.py"
+        volumeMounts:
+        - name: sys
+          mountPath: /sys
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys

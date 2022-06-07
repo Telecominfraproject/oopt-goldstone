@@ -5,10 +5,7 @@ packages:
   - name: goldstone-platform-config-$PLATFORM
     arch: $ARCH
     version: 1.0.0
-    copyright: Copyright 2020 Wataru Ishida
-    maintainer: wataru.ishid@gmail.com
-    changelog: Initial
-    support:   wataru.ishid@gmail.com
+    maintainer: goldstone-nos@googlegroups.com
     summary: Goldstone config file for $PLATFORM
     files:
         builds/sai.profile: /var/lib/goldstone/device/$PLATFORM/usonic/sai.profile
