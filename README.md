@@ -1,13 +1,19 @@
 Goldstone NOS
 ---
 
-Goldstone NOS is an open source network OS for [TIP OOPT](https://telecominfraproject.com/oopt/) networking hardware
+Goldstone NOS is a modular, container-based open source network OS for [TIP OOPT](https://telecominfraproject.com/oopt/) networking hardware
+
+![Architecture](https://user-images.githubusercontent.com/5915117/173298883-50eeeaea-bee7-494d-9d86-eef8d9783514.png)
 
 ### Supported Hardware
 
 - Wistron WTP-01-02-00 (Galileo 1)
 - Wistron WTP-01-C1-00 (Galileo FlexT)
 - Edgecore AS7716-24SC/XC (Cassini)
+
+### Getting Started
+
+You can download pre-built Goldstone ONIE installer from the [release](https://github.com/oopt-goldstone/goldstone-buildimage/releases) page.
 
 ### How to build
 
