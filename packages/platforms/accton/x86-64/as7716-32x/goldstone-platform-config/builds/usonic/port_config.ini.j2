@@ -1,0 +1,4 @@
+# name lanes alias index speed
+{% for i in interfaces -%}
+{{ '%-15s' | format(i['name']) }} {{ '%-15s' | format(i['lanes']) }} {{ '%-15s' | format(i['alias']) }} {{ '%-5s' | format(i['index']) }} {{ i['speed'] }}
+{% endfor %}

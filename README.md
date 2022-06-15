@@ -7,9 +7,13 @@ Goldstone NOS is a modular, container-based open source network OS for [TIP OOPT
 
 ### Supported Hardware
 
+**Transponders:**
 - Wistron WTP-01-02-00 (Galileo 1)
 - Wistron WTP-01-C1-00 (Galileo Flex T)
 - Edgecore AS7716-24SC/XC (Cassini)
+
+**TOR/Data-center switches:**
+- Edgecore AS7716-32X
 
 ### Getting Started
 
