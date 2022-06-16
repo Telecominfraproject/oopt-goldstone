@@ -3,7 +3,7 @@ Goldstone NOS
 
 Goldstone NOS is a modular, container-based open source network OS for [TIP OOPT](https://telecominfraproject.com/oopt/) networking hardware
 
-![Architecture](https://user-images.githubusercontent.com/5915117/173298883-50eeeaea-bee7-494d-9d86-eef8d9783514.png)
+<img width="900" alt="Architecture" src="https://user-images.githubusercontent.com/5915117/174015089-7b4d7c71-e07d-4468-8a94-a9f19368516d.png">
 
 ### Supported Hardware
 
