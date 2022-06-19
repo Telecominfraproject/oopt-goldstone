@@ -7,8 +7,7 @@ packages:
     after-install: $X1/packages/base/any/netopeer2/after-install.sh
     before-remove: $X1/packages/base/any/netopeer2/before-remove.sh
     depends:
-    - sysrepo
-    - gssystem
+    - gsyang
     - k3s
     - gs-mgmt
     files:
@@ -17,4 +16,5 @@ packages:
         builds/yang: /var/lib/netopeer2/yang
         builds/scripts: /var/lib/netopeer2/scripts
         $X1/packages/base/any/netopeer2/builds/gs-north-netconf.service: /etc/systemd/system/
+        $X1/packages/base/any/netopeer2/builds/gs-north-netconf-yang.service: /etc/systemd/system/
         $X1/packages/base/any/netopeer2/builds/netopeer2.sh: /usr/bin/

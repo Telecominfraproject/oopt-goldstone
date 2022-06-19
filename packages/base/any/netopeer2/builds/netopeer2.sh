@@ -9,7 +9,9 @@ export NP2_MODULE_PERMS="664"
 export NP2_MODULE_DIR=/var/lib/netopeer2/yang
 
 install() {
-    $NP2/setup.sh && $NP2/merge_hostkey.sh && $NP2/merge_config.sh
+    flock /run/gs-yang-lock $NP2/setup.sh
+    flock /run/gs-yang-lock $NP2/merge_hostkey.sh
+    flock /run/gs-yang-lock $NP2/merge_config.sh
 }
 
 remove() {

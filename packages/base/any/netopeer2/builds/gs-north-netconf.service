@@ -13,3 +13,4 @@ StandardOutput=journal
 
 [Install]
 WantedBy=gs-mgmt-north.target
+Also=gs-north-netconf-yang.service

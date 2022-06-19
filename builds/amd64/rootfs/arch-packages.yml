@@ -16,8 +16,6 @@
 - stern:amd64
 - gs-mgmt:amd64
 - cfp2piu-kernel-5.4-lts-x86-64-all:amd64
-- libyang1:amd64
-- sysrepo:amd64
 - gscli:amd64
 - onlp-py3:amd64
 - gssystem:amd64

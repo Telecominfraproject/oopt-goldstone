@@ -40,8 +40,11 @@ yang-image:
 
 debs: host-image
 	$(RM) -r debs && mkdir debs
-	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/libyang/libyang1_*.deb /data/libyang1_$(ARCH).deb"
-	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/sysrepo/sysrepo_*.deb /data/sysrepo_$(ARCH).deb"
+	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/libyang/libyang2_*.deb /data/libyang2_$(ARCH).deb"
+	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/libyang/libyang-tools_*.deb /data/libyang-tools_$(ARCH).deb"
+	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/libyang/libyang2-tools_*.deb /data/libyang2-tools_$(ARCH).deb"
+	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/sysrepo/libsysrepo7_*.deb /data/libsysrepo7_$(ARCH).deb"
+	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/sysrepo/sysrepo-tools_*.deb /data/sysrepo-tools_$(ARCH).deb"
 	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/tacacs/libtac2_*.deb /data/libtac2_$(ARCH).deb"
 	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/tacacs/libtac2-bin_*.deb /data/libtac2-bin_$(ARCH).deb"
 	docker run -v `pwd`/debs:/data -w /data $(MGMT_BUILDER) sh -c "cp /usr/share/debs/tacacs/libpam-tacplus_*.deb /data/libpam-tacplus_$(ARCH).deb"

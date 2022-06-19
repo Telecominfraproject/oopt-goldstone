@@ -13,8 +13,6 @@
 - gs-tai-gearbox:arm64
 - gs-tai-dpll:arm64
 - gs-mgmt:arm64
-- libyang1:arm64
-- sysrepo:arm64
 - gscli:arm64
 - onlp-py3:arm64
 - gssystem:arm64

@@ -1,10 +1,19 @@
 packages:
-  - name: libyang1
-    arch: $ARCH 
-    external: $__DIR__/builds/debs/libyang1_$ARCH.deb
-  - name: sysrepo
+  - name: libyang2
     arch: $ARCH
-    external: $__DIR__/builds/debs/sysrepo_$ARCH.deb
+    external: $__DIR__/builds/debs/libyang2_$ARCH.deb
+  - name: libyang-tools
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libyang-tools_$ARCH.deb
+  - name: libyang2-tools
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libyang2-tools_$ARCH.deb
+  - name: libsysrepo7
+    arch: $ARCH
+    external: $__DIR__/builds/debs/libsysrepo7_$ARCH.deb
+  - name: sysrepo-tools
+    arch: $ARCH
+    external: $__DIR__/builds/debs/sysrepo-tools_$ARCH.deb
   - name: libtac2
     arch: $ARCH
     external: $__DIR__/builds/debs/libtac2_$ARCH.deb
@@ -19,11 +28,11 @@ packages:
     external: $__DIR__/builds/debs/libnss-tacplus_$ARCH.deb
   - name: libyang-python
     arch: $ARCH
-    version: 1.0.0
+    version: 2.0.0
     maintainer: goldstone-nos@googlegroups.com
     summary: libyang python wrapper
     depends:
-    - libyang1
+    - libyang2
     - libffi-dev
     files:
         builds/wheels/libyang: /var/lib/goldstone/wheels/libyang
@@ -31,11 +40,11 @@ packages:
     before-remove: $X1/packages/base/any/mgmt/libyang-python-before-remove.sh
   - name: sysrepo-python
     arch: $ARCH
-    version: 1.0.0
+    version: 2.0.0
     maintainer: goldstone-nos@googlegroups.com
     summary: sysrepo python wrapper
     depends:
-    - sysrepo
+    - libsysrepo7
     - libyang-python
     files:
         builds/wheels/sysrepo: /var/lib/goldstone/wheels/sysrepo
@@ -47,7 +56,7 @@ packages:
     maintainer: goldstone-nos@googlegroups.com
     summary: Goldstone YANG models
     depends:
-    - sysrepo
+    - sysrepo-tools
     files:
         builds/yang: /var/lib/goldstone/yang
         builds/gs-yang.py: /usr/bin/
