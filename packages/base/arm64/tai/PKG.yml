@@ -1,1 +1,1 @@
-!include $X1/packages/base/any/tai/APKG.yml ARCH=arm64 DEFAULT_LIBTAI=libtai-mux.so.0.5.0
+!include $X1/packages/base/any/tai/APKG.yml ARCH=arm64 DEFAULT_LIBTAI=libtai-mux.so.0.6.0

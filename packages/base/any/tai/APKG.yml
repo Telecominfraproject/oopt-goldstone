@@ -14,6 +14,6 @@ packages:
         $X1/packages/base/any/tai/builds/manifests: /var/lib/tai/k8s/base
         $X1/packages/base/any/tai/builds/tai.service: /etc/systemd/system/
         $X1/packages/base/any/tai/builds/tai.sh: /usr/bin/
-        builds/bin: /var/lib/tai/lib
+        builds/lib: /var/lib/tai/lib
     links:
         /var/lib/tai/lib/libtai.so: $DEFAULT_LIBTAI

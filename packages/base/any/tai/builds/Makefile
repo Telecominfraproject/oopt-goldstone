@@ -16,12 +16,14 @@ endif
 LIB_DIR ?= lib
 LIBS := $(addprefix $(LIB_DIR)/,$(TAI_LIBS))
 
-BIN_DIR ?= bin
+LIB_REPO ?= ghcr.io/oopt-goldstone
+
+define download_library
+docker run --rm --platform linux/$(ARCH) -v $(abspath $(LIB_DIR)):/data -w /data $(LIB_REPO)/$(1) sh -c 'cp /root/* /data/'
+sudo chown -R `id -u`:`id -g` $(LIB_DIR)
+endef
 
 all: $(LIBS) tai-$(ARCH).tar
-	rm -rf $(BIN_DIR)
-	mkdir $(BIN_DIR)
-	cp $(LIBS) $(BIN_DIR)
 
 tai-$(ARCH).tar: FORCE
 	docker pull --platform=linux/$(ARCH) $(IMAGE_REPO)/$(IMAGE_NAME):$(TAG)
