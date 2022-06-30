@@ -50,5 +50,9 @@
   {"synce-reference-clock": {"name": "0", "index": 0, "gearbox": {"name": "2"}}, "input-reference": {"name": "4", "index": 4, "dpll": {"name": "1"}}},
   {"synce-reference-clock": {"name": "1", "index": 1, "gearbox": {"name": "2"}}, "input-reference": {"name": "5", "index": 5, "dpll": {"name": "1"}}},
   {"synce-reference-clock": {"name": "2", "index": 2, "gearbox": {"name": "2"}}, "input-reference": {"name": "6", "index": 6, "dpll": {"name": "1"}}},
-  {"synce-reference-clock": {"name": "3", "index": 3, "gearbox": {"name": "2"}}, "input-reference": {"name": "7", "index": 7, "dpll": {"name": "1"}}}
+  {"synce-reference-clock": {"name": "3", "index": 3, "gearbox": {"name": "2"}}, "input-reference": {"name": "7", "index": 7, "dpll": {"name": "1"}}},
+  {"transponder": {"netif": {"index": 0, "line-rate": "400g"}, "hostifs": [{"index": 0}, {"index": 1}, {"index": 2}, {"index": 3}]}},
+  {"transponder": {"netif": {"index": 0, "line-rate": "300g"}, "hostifs": [{"index": 0}, {"index": 1}, {"index": 2}]}},
+  {"transponder": {"netif": {"index": 0, "line-rate": "200g"}, "hostifs": [{"index": 0}, {"index": 1}]}},
+  {"transponder": {"netif": {"index": 0, "line-rate": "100g"}, "hostifs": [{"index": 0}]}}
 ]
