@@ -174,6 +174,9 @@ static ssize_t piu_temp_show(struct device *dev, struct device_attribute *da, ch
             }
             thermal = 0;
             piu_i2c_read(priv, ACO_PIU_THERMAL_VALUE, &thermal);
+            if (thermal == 255) {
+                return scnprintf(buf, PAGE_SIZE, "\n");
+            }
             return scnprintf(buf, PAGE_SIZE, "%d\n", thermal);
         }
     default:
