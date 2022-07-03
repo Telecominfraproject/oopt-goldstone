@@ -1,5 +1,5 @@
 GS_MGMT_IMAGE_REPO ?= ghcr.io/oopt-goldstone/mgmt
-GS_MGMT_VERSION ?= v0.5.0
+GS_MGMT_VERSION ?= v0.6.0
 
 .PHONY: manifests
 
