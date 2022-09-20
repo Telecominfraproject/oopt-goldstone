@@ -1,0 +1,5 @@
+# master playbook
+- import_playbook: install.yaml
+- import_playbook: sanity.yaml
+- import_playbook: create_user.yaml
+- import_playbook: configure.yaml

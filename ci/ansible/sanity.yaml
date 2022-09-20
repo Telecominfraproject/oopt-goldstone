@@ -1,0 +1,36 @@
+- hosts: galileo
+  vars_files:
+    - vars/common.yaml
+    - vars/root.yaml
+  gather_facts: no
+  tasks:
+    - name: Wait for booting up
+      pause:
+        seconds: 600
+    - name: Check the common management layer is running
+      systemd:
+        name: "{{ item }}"
+        state: started
+      timeout: 1200
+      with_items:
+        - gs-north-netconf.service
+        - gs-north-snmp.service
+        - gs-north-notif.service
+        - gs-south-system.service
+        - gs-south-tai.service
+        - gs-south-onlp.service
+        - gs-xlate-oc.service
+
+- hosts: galileo_flex_t
+  vars_files:
+    - vars/common.yaml
+    - vars/root.yaml
+  gather_facts: no
+  tasks:
+    - name: Check the GalileoFlexT specific management layer is running
+      systemd:
+        name: "{{ item }}"
+        state: started
+      timeout: 1200
+      with_items:
+        - gs-south-gearbox.service

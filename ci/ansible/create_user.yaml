@@ -1,0 +1,38 @@
+- hosts: galileo
+  vars_files:
+    - vars/common.yaml
+    - vars/root.yaml
+  gather_facts: no
+  tasks:
+    - name: Check if I can login as user 'ansible'
+      command: >
+        ssh -i .ssh/id_rsa -q
+        -o BatchMode=yes
+        -o ConnectTimeout=3
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        ansible@{{ ansible_host }} "echo OK"
+      delegate_to: 127.0.0.1
+      changed_when: False
+      failed_when: False
+      register: check_ansible_user
+    - block:
+      - name: Create Ansible user
+        user:
+          name: ansible
+          comment: "Ansible User"
+          password: "{{ 'password' | password_hash('sha512') }}"
+          generate_ssh_key: yes
+          shell: /bin/bash
+          groups: ["gsmgmt"]
+      - name: Add authorized-key
+        authorized_key:
+          user: ansible
+          key: "{{ lookup('file', '.ssh/id_rsa.pub') }}"
+          exclusive: yes
+      - name: Allow sudo for ansible
+        copy:
+          content: ansible ALL=(ALL) ALL
+          dest: /etc/sudoers.d/ansible
+          mode: 0600
+      when: not "OK" in check_ansible_user.stdout

@@ -1,0 +1,12 @@
+- hosts: galileo
+  vars_files:
+    - vars/common.yaml
+    - vars/root.yaml
+  gather_facts: no
+  tasks:
+    - name: set boot mode to "install"
+      command: onl-onie-boot-mode install
+    - name: reboot and install the new NOS
+      reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 600

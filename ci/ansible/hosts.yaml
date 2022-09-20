@@ -1,0 +1,29 @@
+galileo:
+  children:
+    #galileo_1:
+    galileo_flex_t:
+
+#edgecore_as:
+  #children:
+    #csg:
+    #as7946:
+
+galileo_flex_t:
+  hosts:
+    gft1:
+      ansible_host: 192.168.201.201
+
+galileo_1:
+  hosts:
+    g1:
+      ansible_host: 192.168.201.202
+
+csg:
+  hosts:
+    csg1:
+      ansible_host: 192.168.201.203
+
+as7946:
+  hosts:
+    as7946_1:
+      ansible_host: 192.168.201.204

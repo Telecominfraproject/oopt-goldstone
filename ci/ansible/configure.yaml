@@ -1,0 +1,13 @@
+- hosts: gft1
+  become: yes
+  vars_files:
+    - vars/common.yaml
+    - vars/ansible.yaml
+  gather_facts: no
+  tasks:
+    - name: piu1 set admin-status up
+      command: gscli -c "transponder piu1; admin-status up"
+    - name: remove pre-existing Interface1/[0-1]/3 configuration
+      command: gscli -c "no interface Interface1/[0-1]/3"
+    - name: Interface1/[0-1]/3 set admin-status up
+      command: gscli -c "interface Interface1/[0-1]/3; admin-status up"

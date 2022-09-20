@@ -63,8 +63,18 @@ pipeline {
         """
       }
     }
-
-
+    stage('Run Ansible ZTP script') {
+      when {
+        branch pattern: "^PR.*", comparator: "REGEXP"
+        environment name: 'SKIP', value: '0'
+      }
+      steps {
+        dir("ci/ansible") {
+          sh 'make image'
+          sh 'DOCKER_RUN_OPTION="-t" DOCKER_CMD="make play" make cmd'
+        }
+      }
+    }
   }
 
   post {
