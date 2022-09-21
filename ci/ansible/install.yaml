@@ -1,4 +1,4 @@
-- hosts: galileo
+- hosts: galileo, edgecore_as
   vars_files:
     - vars/common.yaml
     - vars/root.yaml

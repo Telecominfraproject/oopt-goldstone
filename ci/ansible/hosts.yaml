@@ -3,9 +3,9 @@ galileo:
     #galileo_1:
     galileo_flex_t:
 
-#edgecore_as:
-  #children:
-    #csg:
+edgecore_as:
+  children:
+    csg:
     #as7946:
 
 galileo_flex_t:
