@@ -4,8 +4,9 @@ set -eux
 
 start() {
     kubectl apply -k /var/lib/tai/k8s
-    kubectl wait --for=condition=available deploy/tai
-    kubectl wait --for=condition=ready pod/$(kubectl get pod -l app=tai -o jsonpath='{.items[0].metadata.name}')
+    sleep 1
+    kubectl wait --timeout=5m --for=condition=available deploy/tai
+    kubectl wait --timeout=5m --for=condition=ready pod/$(kubectl get pod -l app=tai -o jsonpath='{.items[0].metadata.name}')
 }
 
 
