@@ -12,94 +12,13 @@ parity_correction=0
 parity_enable=0
 mmu_lossless=1
 
-dport_map_direct=1
-dport_map_enable=1
-
-
 pbmp_xport_xe=0x3ffffffffffffffffffffffffffffffffe
 pbmp_oversubscribe=0x3ffffffcffffffff3fffffffffffffffe
 
-#DPORT
-dport_map_port_68=1
-dport_map_port_72=2
-dport_map_port_76=3
-dport_map_port_80=4
-dport_map_port_96=5
-dport_map_port_106=6
-dport_map_port_110=7
-dport_map_port_114=8
-dport_map_port_118=9
-dport_map_port_122=10
-dport_map_port_126=11
-dport_map_port_130=12
-dport_map_port_84=13
-dport_map_port_88=14
-dport_map_port_92=15
-dport_map_port_102=16
-dport_map_port_38=17
-dport_map_port_34=18
-dport_map_port_46=19
-dport_map_port_42=20
-dport_map_port_54=21
-dport_map_port_50=22
-dport_map_port_62=23
-dport_map_port_58=24
-dport_map_port_5=25
-dport_map_port_1=26
-dport_map_port_13=27
-dport_map_port_9=28
-dport_map_port_21=29
-dport_map_port_17=30
-dport_map_port_25=31
-dport_map_port_29=32
+{% for i in interfaces -%}
+ portmap_{{ i['port'] }}={{ i['lane'] }}:{{ i['speed'] }}
+{% endfor %}
 
-## EagleCore ports ##
-dport_map_port_66=33
-dport_map_port_100=34
-
-## EagleCore ports ##
-portmap_66=129:10
-portmap_100=131:10
-
-## Loopback ports ##
-portmap_33=132:10
-portmap_67=133:10
-portmap_101=134:10
-portmap_135=135:10
-
-#PortMap
-portmap_68=65:100
-portmap_72=69:100
-portmap_76=73:100
-portmap_80=77:100
-portmap_96=93:100
-portmap_106=101:100
-portmap_110=105:100
-portmap_114=109:100
-portmap_118=113:100
-portmap_122=117:100
-portmap_126=121:100
-portmap_130=125:100
-portmap_84=81:100
-portmap_88=85:100
-portmap_92=89:100
-portmap_102=97:100
-portmap_38=37:100
-portmap_34=33:100
-portmap_46=45:100
-portmap_42=41:100
-portmap_54=53:100
-portmap_50=49:100
-portmap_62=61:100
-portmap_58=57:100
-portmap_5=5:100
-portmap_1=1:100
-portmap_13=13:100
-portmap_9=9:100
-portmap_21=21:100
-portmap_17=17:100
-portmap_25=25:100
-portmap_29=29:100
 #LaneSwap RX
 xgxs_rx_lane_map_68=0x1203
 xgxs_rx_lane_map_72=0x0123
