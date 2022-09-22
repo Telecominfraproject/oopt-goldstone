@@ -9,8 +9,10 @@ Goldstone NOS is a modular, container-based open source network OS for [TIP OOPT
 
 **Transponders:**
 - Wistron WTP-01-02-00 (Galileo 1)
+  - ACO, DCO, QSFP28 PIU are supported
 - Wistron WTP-01-C1-00 (Galileo Flex T)
 - Edgecore AS7716-24SC/XC (Cassini)
+  - only ACO PIU is supported
 
 **TOR/Data-center switches:**
 - Edgecore AS7716-32X
@@ -26,11 +28,10 @@ You can download pre-built Goldstone ONIE installer from the [release](https://g
 - Git
 - make
 - Docker ( version >= 18.09, enable [buildkit](https://docs.docker.com/develop/develop-images/build_enhancements/) )
-- Enable an execution of different multi-architecture containers by QEMU and binfmt_misc
+  - Enable an execution of different multi-architecture containers by QEMU and binfmt_misc
     - You can do this by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p`
     - See https://github.com/multiarch/qemu-user-static for details
-- Python2 (!!)
-    - Goldstone uses the ONL build system to build the NOS. ONL build system only supports Python2.
+- Python
 
 ```
 $ git clone https://github.com/oopt-goldstone/goldstone-buildimage.git
