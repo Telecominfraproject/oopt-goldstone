@@ -6,7 +6,7 @@ galileo:
 edgecore_as:
   children:
     csg:
-    #as7946:
+    as7946:
 
 galileo_flex_t:
   hosts:
