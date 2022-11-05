@@ -72,8 +72,8 @@ docker-debug: docker-check
 	$(ONL)/docker/tools/onlbuilder $(BUILDER_OPTS) $(VOLUMES_OPTS) -c tools/debug.sh
 
 builder:
-	docker pull --platform=linux/amd64 python:3-buster
-	docker tag python:3-buster python:3-buster-amd64
+	docker pull --platform=linux/amd64 python:3.10-buster
+	docker tag python:3.10-buster python:3-buster-amd64
 	cd docker/images/builder && docker build -t $(GOLDSTONE_BUILDER_IMAGE) .
 
 docker: docker-check

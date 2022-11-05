@@ -1,4 +1,4 @@
-IMAGE_NAME ?= python:3-slim-buster
+IMAGE_NAME ?= python:3.10-slim-buster
 
 all: python pip python3.10 libpython3.10.so.1.0
 
