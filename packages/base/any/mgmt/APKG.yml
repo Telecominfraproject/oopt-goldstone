@@ -106,6 +106,7 @@ packages:
         $X1/packages/base/any/mgmt/builds/units/gs-mgmt-south.target: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-mgmt-north.target: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-mgmt-xlate.target: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-mgmt-system.target: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-south-gearbox.service: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-south-gearbox-yang.service: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-south-dpll.service: /etc/systemd/system/
