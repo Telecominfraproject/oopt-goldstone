@@ -64,6 +64,16 @@
             "name": "openconfig-yang-types",
             "organization": "OpenConfig working group",
             "version": "2021-03-02"
+        },
+        {
+            "name": "openconfig-telemetry",
+            "organization": "OpenConfig working group",
+            "version": "2018-11-21"
+        },
+        {
+            "name": "openconfig-telemetry-types",
+            "organization": "OpenConfig working group",
+            "version": "2018-11-21"
         }
     ]
 }
