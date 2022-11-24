@@ -10,3 +10,5 @@ packages:
         builds/pip: /usr/local/bin/pip
         builds/python3.10: /usr/local/lib/python3.10
         builds/libpython3.10.so.1.0:  /usr/local/lib/libpython3.10.so.1.0
+    links:
+        /usr/local/bin/python3: /usr/local/bin/python
