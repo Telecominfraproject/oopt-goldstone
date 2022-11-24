@@ -1,0 +1,7 @@
+#!/usr/bin/python
+
+"""Install Goldstone
+"""
+
+import goldstone.install.App
+goldstone.install.App.main()

@@ -9,5 +9,7 @@ packages:
     summary: X1 Loader Files
 
     files:
-      - src/lib : /lib
-
+      - src/lib: /lib
+      - src/bin: /bin
+      - src/usr/bin: /usr/bin
+      - src/python: $PY_INSTALL

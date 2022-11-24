@@ -29,7 +29,7 @@ endif
 __installer:
 	-rm -f *md5sum *_INSTALLER
 	$(ONLPM) --copy-file x1-loader-initrd:$(ARCH) zerotouch.json .
-	$(ONL)/tools/mkinstaller.py $(MKINSTALLER_OPTS) --out $(INSTALLER_NAME)
+	$(X1)/tools/mkinstaller.py $(MKINSTALLER_OPTS) --out $(INSTALLER_NAME)
 	md5sum "$(INSTALLER_NAME)" | awk '{ print $$1 }' > "$(INSTALLER_NAME).md5sum"
 
 clean:
