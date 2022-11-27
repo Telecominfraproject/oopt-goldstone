@@ -1,7 +1,36 @@
 import os
+import zipfile
+import glob
 
 from onl.install import BaseInstall as ONLBaseInstall
 from onl.install.InstallUtils import MountContext
+
+# The ONL swiprep script uses GNU unzip command, which doesn't support zip64
+def swiprep(self, swi, dst):
+    z = zipfile.ZipFile(swi)
+    rootfs = None
+    for n in z.namelist():
+        if n.startswith("rootfs-") and n.endswith(".sqsh"):
+            rootfs = n
+            break
+    if not rootfs:
+        self.log.error("cannot find a valid rootfs")
+        return
+    # the pwd is on tmpfs. copy the rootfs.sqsh to the disk so that it doesn't consume memory
+    z.extract(rootfs, dst)
+    self.check_call(("unsquashfs", "-f", "-d", dst, "{}/{}".format(dst, rootfs)))
+    self.unlink("{}/{}".format(dst, rootfs))
+
+    self.check_call(("mkdir", "-p", "{}/etc/onl".format(dst)))
+
+    for thing in glob.glob("/etc/onl/*"):
+        if thing == "/etc/onl/sysconfig":
+            continue
+        self.check_call(("cp", "-R", thing, "{}/etc/onl".format(dst)))
+
+    if os.path.exists("/etc/fw_env.config"):
+        self.copyfile("/etc/fw_env.config", "{}/etc/fw_env.config".format(dst))
+
 
 # Unlike the ONL default behavior, which just installs the SWI blob to the
 # ONL-IMAGE partition and let the ONL initrd loader extract it to the ONL-DATA
@@ -38,11 +67,12 @@ def installSwi(self):
     with open("/etc/onl/platform", "w") as f:
         f.write(onie_platform.replace("_", "-"))
 
-    self.installerCopy(base, "swi")
-
     data = self.blkidParts["ONL-DATA"]
     with MountContext(data.device, log=self.log) as ctx:
-        self.check_call(("swiprep", "--install", "./swi", ctx.dir))
+        # the pwd is on tmpfs. copy the swi to the disk so that it doesn't consume memory
+        self.installerCopy(base, "{}/swi".format(ctx.dir))
+        swiprep(self, "{}/swi".format(ctx.dir), ctx.dir)
+        self.unlink("{}/swi".format(ctx.dir))
 
 
 class GrubInstaller(ONLBaseInstall.GrubInstaller, object):
