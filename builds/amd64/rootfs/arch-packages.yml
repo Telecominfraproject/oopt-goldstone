@@ -9,6 +9,7 @@
 - iptables
 - x1-upgrade
 - onl-kernel-5.4-lts-x86-64-all-modules
+- onl-kernel-4.19-lts-x86-64-all-modules:amd64
 - x1-saibcm-kernel-5.4-lts-x86-64-all:amd64
 - gs-usonic:amd64
 - gs-tai:amd64

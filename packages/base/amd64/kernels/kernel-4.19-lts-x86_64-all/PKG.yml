@@ -1,0 +1,24 @@
+variables:
+  basename: onl-kernel-4.19-lts-x86-64-all
+
+common:
+  arch: amd64
+  version: 1.0.0
+  maintainer: goldstone-nos@googlegroups.com
+
+packages:
+  - name: $basename
+    version: 1.0.0
+    summary: Goldstone Kernel 4.19 for AMD64 Integrated Processor Platforms.
+    symlinks: True
+
+    files:
+      builds/$ONL_DEBIAN_SUITE/kernel-4.19* : $$PKG_INSTALL/
+      builds/$ONL_DEBIAN_SUITE/linux-4.19*-mbuild : $$PKG_INSTALL/mbuilds
+
+  - name: $basename-modules
+    version: 1.0.0
+    summary: Goldstone Kernel 4.19 LTS Kernel Modules for AMD64 Platforms
+
+    files:
+      builds/$ONL_DEBIAN_SUITE/lib: /lib
