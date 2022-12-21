@@ -1,0 +1,916 @@
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 8fd3cedd9..42ce6af51 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -155,6 +155,18 @@ static int __init set_pci_reboot(const struct dmi_system_id *d)
+ 	return 0;
+ }
+ 
++static int __init set_pci_cold_reboot(const struct dmi_system_id *d)
++{
++  if (reboot_type != BOOT_CF9_COLD)
++    {
++      reboot_type = BOOT_CF9_COLD;
++      printk(KERN_INFO "%s series board detected. "
++             "Selecting PCI COLD reboot.\n", d->ident);
++    }
++
++  return 0;
++}
++
+ static int __init set_kbd_reboot(const struct dmi_system_id *d)
+ {
+ 	if (reboot_type != BOOT_KBD) {
+@@ -479,6 +491,112 @@ static const struct dmi_system_id reboot_dmi_table[] __initconst = {
+ 		},
+ 	},
+ 
++  { /* Handle problems with warm rebooting on the Accton DELL 4248-ON. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Dell EMC",
++    .matches = {
++      DMI_MATCH(DMI_SYS_VENDOR, "Dell"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS5916-54. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS5916",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS5916"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS7316-26. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS7316",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS7316"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the UfiSpace. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Ufi Space",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Ufi"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS7716-24. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS7716-24",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS7716-24"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS7816-64x. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS7816-64X",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS7816-64"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the S6000. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Dell S6000",
++    .matches = {
++      DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc"),
++      DMI_MATCH(DMI_PRODUCT_NAME, "S6000"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Delta AG-9032V2. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Delta AG-9032V2",
++    .matches = {
++      DMI_MATCH(DMI_SYS_VENDOR, "DNI"),
++      DMI_MATCH(DMI_PRODUCT_NAME, "AG9032V2"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS7315-30x. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS7315-30X",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS7315-30X"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS5915-18x. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS5915-18X",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS5915-18X"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS7535-28xb. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS7535-28XB",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS7535-28XB"),
++    },
++  },
++
++  { /* Handle problems with warm rebooting on the Accton AS7946-30xb. */
++    .callback = set_pci_cold_reboot,
++    .ident = "Accton AS7946-30XB",
++    .matches = {
++        DMI_MATCH(DMI_SYS_VENDOR, "Accton"),
++        DMI_MATCH(DMI_PRODUCT_NAME, "AS7946-30XB"),
++    },
++  },
++
+ 	{ }
+ };
+ 
+@@ -668,6 +786,17 @@ static void native_machine_emergency_restart(void)
+ 			/* We're probably dead after this, but... */
+ 			reboot_type = BOOT_KBD;
+ 			break;
++
++    case BOOT_CF9_COLD:
++      {
++        u8 cf9 = inb(0xcf9) & ~0x0E;
++        outb(cf9|0x2, 0xcf9); /* Request cold reboot */
++        udelay(50);
++        outb(cf9|0x0E, 0xcf9); /* Actually do the reset */
++        udelay(50);
++        reboot_type = BOOT_TRIPLE;
++      }
++      break;
+ 		}
+ 	}
+ }
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index a3c9ea29d..6d9b1c3aa 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -794,7 +794,7 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 	return vma_prot;
+ }
+ 
+-#ifdef CONFIG_STRICT_DEVMEM
++#if defined (CONFIG_STRICT_DEVMEM) || 1
+ /* This check is done in drivers/char/mem.c in case of STRICT_DEVMEM */
+ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+ {
+diff --git a/drivers/i2c/Kconfig b/drivers/i2c/Kconfig
+index efc3354d6..0b21bff03 100644
+--- a/drivers/i2c/Kconfig
++++ b/drivers/i2c/Kconfig
+@@ -34,7 +34,6 @@ config ACPI_I2C_OPREGION
+ 	  such as smart batteries through an I2C host controller driver.
+ 
+ if I2C
+-
+ config I2C_BOARDINFO
+ 	bool
+ 	default y
+diff --git a/drivers/i2c/busses/i2c-ismt.c b/drivers/i2c/busses/i2c-ismt.c
+index 0d1c3ec8c..a98dc6953 100644
+--- a/drivers/i2c/busses/i2c-ismt.c
++++ b/drivers/i2c/busses/i2c-ismt.c
+@@ -594,7 +594,7 @@ static int ismt_access(struct i2c_adapter *adap, u16 addr,
+ 		dma_unmap_single(dev, dma_addr, dma_size, dma_direction);
+ 
+ 	if (unlikely(!time_left)) {
+-		dev_err(dev, "completion wait timed out\n");
++/*		dev_err(dev, "completion wait timed out\n"); */
+ 		ret = -ETIMEDOUT;
+ 		goto out;
+ 	}
+diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
+index 69aaee5d7..3b05bbb8a 100644
+--- a/drivers/tty/serial/8250/8250_core.c
++++ b/drivers/tty/serial/8250/8250_core.c
+@@ -132,7 +132,7 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
+ 
+ 		if (l == i->head && pass_counter++ > PASS_LIMIT) {
+ 			/* If we hit this, we're dead. */
+-			printk_ratelimited(KERN_ERR
++      pr_debug_ratelimited(
+ 				"serial8250: too much work for irq%d\n", irq);
+ 			break;
+ 		}
+diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
+index 8415bf1a9..ae586326f 100644
+--- a/include/linux/ipv6.h
++++ b/include/linux/ipv6.h
+@@ -131,6 +131,7 @@ struct inet6_skb_parm {
+ #define IP6SKB_HOPBYHOP        32
+ #define IP6SKB_L3SLAVE         64
+ #define IP6SKB_JUMBOGRAM      128
++#define IP6SKB_DOREDIRECT     256
+ };
+ 
+ #if defined(CONFIG_NET_L3_MASTER_DEV)
+diff --git a/include/linux/mroute_base.h b/include/linux/mroute_base.h
+index 6675b9f81..d4540ab81 100644
+--- a/include/linux/mroute_base.h
++++ b/include/linux/mroute_base.h
+@@ -8,6 +8,14 @@
+ #include <net/sock.h>
+ #include <net/fib_notifier.h>
+ 
++#define IPMR_IPI_MODIFIED
++
++#ifdef IPMR_IPI_MODIFIED
++#include <linux/hashtable.h>
++
++#define IPMR_MAX_UNRESOVE_QUEUE_LEN     (3000)
++#endif /* IPMR_IPI_MODIFIED */
++
+ /**
+  * struct vif_device - interface representor for multicast routing
+  * @dev: network device being used
+@@ -93,7 +101,11 @@ static inline int mr_call_vif_notifiers(struct net *net,
+ /* This one is nasty; value is defined in uapi using different symbols for
+  * mroute and morute6 but both map into same 32.
+  */
++#ifdef IPMR_IPI_MODIFIED
++#define MAXVIFS	100 /* must be kept same as MAXVIFS in uapi/mroute.h */
++#else /* IPMR_IPI_MODIFIED */
+ #define MAXVIFS	32
++#endif /* IPMR_IPI_MODIFIED */
+ #endif
+ 
+ #define VIF_EXISTS(_mrt, _idx) (!!((_mrt)->vif_table[_idx].dev))
+@@ -130,6 +142,9 @@ enum {
+ struct mr_mfc {
+ 	struct rhlist_head mnode;
+ 	unsigned short mfc_parent;
++#ifdef IPMR_IPI_MODIFIED
++  unsigned short mfc_parent_unres;
++#endif /* IPMR_IPI_MODIFIED */
+ 	int mfc_flags;
+ 
+ 	union {
+@@ -247,6 +262,9 @@ struct mr_table {
+ 	struct sock __rcu	*mroute_sk;
+ 	struct timer_list	ipmr_expire_timer;
+ 	struct list_head	mfc_unres_queue;
++#ifdef IPMR_IPI_MODIFIED
++	DECLARE_HASHTABLE(mfc_unres_queue_hash, 13);
++#endif /* IPMR_IPI_MODIFIED */
+ 	struct vif_device	vif_table[MAXVIFS];
+ 	struct rhltable		mfc_hash;
+ 	struct list_head	mfc_cache_list;
+@@ -258,6 +276,14 @@ struct mr_table {
+ 	int			mroute_reg_vif_num;
+ };
+ 
++#ifdef IPMR_IPI_MODIFIED
++struct ipi_hash_backet
++{
++	struct hlist_node hash_backet;
++	void *data;
++	u32 hash;
++};
++#endif /* IPMR_IPI_MODIFIED */
+ #ifdef CONFIG_IP_MROUTE_COMMON
+ void vif_device_init(struct vif_device *v,
+ 		     struct net_device *dev,
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index e63799a6e..c58102c80 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -30,6 +30,7 @@ enum reboot_type {
+ 	BOOT_EFI	= 'e',
+ 	BOOT_CF9_FORCE	= 'p',
+ 	BOOT_CF9_SAFE	= 'q',
++  BOOT_CF9_COLD = 'd',
+ };
+ extern enum reboot_type reboot_type;
+ 
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index 7ed4713d5..dc2b9d346 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -209,7 +209,7 @@ struct ucred {
+ 				 */
+ #define AF_XDP		44	/* XDP sockets			*/
+ 
+-#define AF_MAX		45	/* For now.. */
++#define AF_MAX		128	/* For now.. */
+ 
+ /* Protocol families, same as address families. */
+ #define PF_UNSPEC	AF_UNSPEC
+diff --git a/include/uapi/linux/mroute.h b/include/uapi/linux/mroute.h
+index 5d37a9ccc..4ea269a6b 100644
+--- a/include/uapi/linux/mroute.h
++++ b/include/uapi/linux/mroute.h
+@@ -28,13 +28,14 @@
+ #define MRT_TABLE	(MRT_BASE+9)	/* Specify mroute table ID		*/
+ #define MRT_ADD_MFC_PROXY	(MRT_BASE+10)	/* Add a (*,*|G) mfc entry	*/
+ #define MRT_DEL_MFC_PROXY	(MRT_BASE+11)	/* Del a (*,*|G) mfc entry	*/
+-#define MRT_MAX		(MRT_BASE+11)
++#define MRT_FLUSH_UNRES_QUEUE       (MRT_BASE+12) /* Flush unresolved queue (added by IPI) */
++#define MRT_MAX		(MRT_BASE+12)
+ 
+ #define SIOCGETVIFCNT	SIOCPROTOPRIVATE	/* IP protocol privates */
+ #define SIOCGETSGCNT	(SIOCPROTOPRIVATE+1)
+ #define SIOCGETRPF	(SIOCPROTOPRIVATE+2)
+ 
+-#define MAXVIFS		32
++#define MAXVIFS		100
+ typedef unsigned long vifbitmap_t;	/* User mode code depends on this lot */
+ typedef unsigned short vifi_t;
+ #define ALL_VIFS	((vifi_t)(-1))
+diff --git a/include/uapi/linux/mroute6.h b/include/uapi/linux/mroute6.h
+index 9999cc006..5e680635c 100644
+--- a/include/uapi/linux/mroute6.h
++++ b/include/uapi/linux/mroute6.h
+@@ -37,7 +37,7 @@
+ #define SIOCGETSGCNT_IN6	(SIOCPROTOPRIVATE+1)
+ #define SIOCGETRPF	(SIOCPROTOPRIVATE+2)
+ 
+-#define MAXMIFS		32
++#define MAXMIFS		100
+ typedef unsigned long mifbitmap_t;	/* User mode code depends on this lot */
+ typedef unsigned short mifi_t;
+ #define ALL_MIFS	((mifi_t)(-1))
+@@ -68,7 +68,7 @@ struct mif6ctl {
+ 	mifi_t	mif6c_mifi;		/* Index of MIF */
+ 	unsigned char mif6c_flags;	/* MIFF_ flags */
+ 	unsigned char vifc_threshold;	/* ttl limit */
+-	__u16	 mif6c_pifi;		/* the index of the physical IF */
++	int	 mif6c_pifi;		/* the index of the physical IF */
+ 	unsigned int vifc_rate_limit;	/* Rate limiter values (NI) */
+ };
+ 
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 8fb44dec9..8e37df23f 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -565,6 +565,7 @@ static int __init reboot_setup(char *str)
+ 		case 't':
+ 		case 'e':
+ 		case 'p':
++    case 'd':
+ 			reboot_type = *str;
+ 			break;
+ 
+diff --git a/net/ipv4/ip_input.c b/net/ipv4/ip_input.c
+index c3a0683e8..288ed7395 100644
+--- a/net/ipv4/ip_input.c
++++ b/net/ipv4/ip_input.c
+@@ -415,6 +415,14 @@ static int ip_rcv_finish(struct net *net, struct sock *sk, struct sk_buff *skb)
+ 	return ret;
+ }
+ 
++int dev_ma_list_filter( unsigned char *addr)
++{
++	/* We will filter only all VRRP VMAC addresses. */
++	unsigned char pat[4] = { 0, 0, 0x5e, 0 };
++
++	return (memcmp(addr, pat, 4) == 0);
++}
++
+ /*
+  * 	Main IP Receive routine.
+  */
+@@ -427,7 +435,12 @@ static struct sk_buff *ip_rcv_core(struct sk_buff *skb, struct net *net)
+ 	 * that it receives, do not try to analyse it.
+ 	 */
+ 	if (skb->pkt_type == PACKET_OTHERHOST)
+-		goto drop;
++    {
++      if (dev_ma_list_filter(eth_hdr(skb)->h_dest))
++        skb->pkt_type = PACKET_HOST;
++      else
++        goto drop;
++    }
+ 
+ 
+ 	__IP_UPD_PO_STATS(net, IPSTATS_MIB_IN, skb->len);
+diff --git a/net/ipv4/ip_output.c b/net/ipv4/ip_output.c
+index d63091812..da4876ef5 100644
+--- a/net/ipv4/ip_output.c
++++ b/net/ipv4/ip_output.c
+@@ -190,6 +190,14 @@ static int ip_finish_output2(struct net *net, struct sock *sk, struct sk_buff *s
+ 	struct neighbour *neigh;
+ 	u32 nexthop;
+ 
++  /* IPI: Drop ICMP redirect forwarded pkts */
++  if (IPCB(skb)->flags & IPSKB_DOREDIRECT)
++    {
++      IPCB(skb)->flags &= ~IPSKB_DOREDIRECT;
++      kfree_skb(skb);
++      return 0;
++    }
++
+ 	if (rt->rt_type == RTN_MULTICAST) {
+ 		IP_UPD_PO_STATS(net, IPSTATS_MIB_OUTMCAST, skb->len);
+ 	} else if (rt->rt_type == RTN_BROADCAST)
+diff --git a/net/ipv4/ipmr.c b/net/ipv4/ipmr.c
+index d235478d9..3d6eef418 100644
+--- a/net/ipv4/ipmr.c
++++ b/net/ipv4/ipmr.c
+@@ -71,6 +71,11 @@
+ 
+ #include <linux/nospec.h>
+ 
++#ifdef IPMR_IPI_MODIFIED
++static struct kmem_cache *mrt_cachep_hash_backet __read_mostly;
++static struct mfc_cache *ipmr_delete_unresolved_entry_hash(struct mr_table *mrt, struct mfc_cache *c, bool check_vif);
++#endif /* IPMR_IPI_MODIFIED */
++
+ struct ipmr_rule {
+ 	struct fib_rule		common;
+ };
+@@ -799,6 +804,10 @@ static void ipmr_expire_process(struct timer_list *t)
+ 			continue;
+ 		}
+ 
++#ifdef IPMR_IPI_MODIFIED
++		ipmr_delete_unresolved_entry_hash(mrt, (struct mfc_cache *)c, true);
++#endif /* IPMR_IPI_MODIFIED */
++
+ 		list_del(&c->list);
+ 		mroute_netlink_event(mrt, (struct mfc_cache *)c, RTM_DELROUTE);
+ 		ipmr_destroy_unres(mrt, (struct mfc_cache *)c);
+@@ -1002,7 +1011,9 @@ static struct mfc_cache *ipmr_cache_alloc_unres(void)
+ 
+ 	if (c) {
+ 		skb_queue_head_init(&c->_c.mfc_un.unres.unresolved);
+-		c->_c.mfc_un.unres.expires = jiffies + 10 * HZ;
++    /* ZebOS : Reduced Unresolved cache expiry to 1sec, to delete
++     * unprocessed NOCACHE events from kernel */
++		c->_c.mfc_un.unres.expires = jiffies + HZ;
+ 	}
+ 	return c;
+ }
+@@ -1122,6 +1133,108 @@ static int ipmr_cache_report(struct mr_table *mrt,
+ 	return ret;
+ }
+ 
++#ifdef IPMR_IPI_MODIFIED
++/*
++ * IPI modification of ipmr unresolved queue handling:
++ *
++ * The issues fixed:
++ * 1) MC entry in unresolved queue does not have a parent interface index, and once MC packet with a group address
++ *    unresolved is received, and report it to a user space application, subsequent packet receptions with the same
++ *    group address do not cause to report it to the user application, until 10 second expiration happens, even if
++ *    the packet is received at the differnet parent insterface. It causes unnecessary multicaist packet duplications
++ *    due to delay of alert condition detection by PIM, while the entry exist. This issue appears with (*,G) entries,
++ *    but, not with (S,G) entries.
++ * 2) only 10 entry can be created in the unresolved queue simultanuously, this limits MC address processing only
++ *    10 MC address per 10 seconds.
++ *
++ * What was changed:
++ * 1) Increased the maxmum number of entries in the unresolved queue from 10 to 3000.
++ * 2) Added a hash table to lookup an entry in the unresolved queue, since the original code takes sequential search,
++ *    and a performance issue is concerned with the increased entry number.
++ * 3) In the lookup of hash table, the parent interface is included, as well as source and distination IP addresses.
++ */
++
++static void ipmr_add_unresolved_entry_hash(struct mr_table *mrt, struct mfc_cache *uc)
++{
++	struct ipi_hash_backet *hash_backet = kmem_cache_zalloc(mrt_cachep_hash_backet, GFP_KERNEL);
++
++	if (hash_backet) {
++		u64 key;
++		u32 hash;
++		int index;
++
++		key = ((u64)uc->mfc_mcastgrp);
++		hash   = hash_min(key, 32);
++		index  = hash_min(key, 13);
++
++		hash_backet->data = uc;
++		hash_backet->hash = hash;
++
++		hlist_add_head(&hash_backet->hash_backet, &mrt->mfc_unres_queue_hash[index]);
++	}
++}
++
++static struct mfc_cache *ipmr_delete_unresolved_entry_hash(struct mr_table *mrt, struct mfc_cache *c, bool check_vif)
++{
++	struct ipi_hash_backet *hash_backet;
++	u64 key;
++	u32 hash;
++	int index;
++	struct mfc_cache *uc;
++
++	key = ((u64)c->mfc_mcastgrp);
++	hash  = hash_min(key, 32);
++	index = hash_min(key, 13);
++
++	hlist_for_each_entry(hash_backet,
++			 &mrt->mfc_unres_queue_hash[index], hash_backet) {
++		uc = (struct mfc_cache *)hash_backet->data;
++		if (hash_backet->hash != hash)
++			continue;
++		if (uc->mfc_mcastgrp == c->mfc_mcastgrp &&
++			uc->mfc_origin == c->mfc_origin &&
++			(check_vif == false || uc->_c.mfc_parent_unres == c->_c.mfc_parent_unres))
++			break;
++	}
++
++	if (hash_backet) {
++		hash_del(&hash_backet->hash_backet);
++		kmem_cache_free(mrt_cachep_hash_backet, hash_backet);
++	}
++	else
++		uc = NULL;
++	return uc;
++}
++
++static struct mfc_cache *ipmr_lookup_unresolved_entry_hash(struct mr_table *mrt, u32 ip_src, u32 ip_dst,  vifi_t vifi)
++{
++	struct ipi_hash_backet *hash_backet;
++	u64 key;
++	u32 hash;
++	int index;
++	struct mfc_cache *uc;
++
++	key = ((u64)ip_dst);
++	hash  = hash_min(key, 32);
++	index = hash_min(key, 13);
++
++	hlist_for_each_entry(hash_backet,
++				&mrt->mfc_unres_queue_hash[index], hash_backet) {
++			uc = (struct mfc_cache *)hash_backet->data;
++			if (hash_backet->hash != hash)
++				continue;
++			if (uc->mfc_mcastgrp == ip_dst &&
++				uc->mfc_origin == ip_src &&
++					uc->_c.mfc_parent_unres == vifi)
++				break;
++	}
++	if (hash_backet)
++		return uc;
++	else
++		return NULL;
++}
++#endif /* IPMR_IPI_MODIFIED */
++
+ /* Queue a packet for resolution. It gets locked cache entry! */
+ static int ipmr_cache_unresolved(struct mr_table *mrt, vifi_t vifi,
+ 				 struct sk_buff *skb, struct net_device *dev)
+@@ -1132,6 +1245,11 @@ static int ipmr_cache_unresolved(struct mr_table *mrt, vifi_t vifi,
+ 	int err;
+ 
+ 	spin_lock_bh(&mfc_unres_lock);
++#ifdef IPMR_IPI_MODIFIED
++	c = ipmr_lookup_unresolved_entry_hash(mrt, iph->saddr, iph->daddr, vifi);
++	if (c)
++		found = true;
++#else /* IPMR_IPI_MODIFIED */
+ 	list_for_each_entry(c, &mrt->mfc_unres_queue, _c.list) {
+ 		if (c->mfc_mcastgrp == iph->daddr &&
+ 		    c->mfc_origin == iph->saddr) {
+@@ -1139,9 +1257,18 @@ static int ipmr_cache_unresolved(struct mr_table *mrt, vifi_t vifi,
+ 			break;
+ 		}
+ 	}
++#endif /* IPMR_IPI_MODIFIED */
+ 
+ 	if (!found) {
+ 		/* Create a new entry if allowable */
++#ifdef IPMR_IPI_MODIFIED
++		if (atomic_read(&mrt->cache_resolve_queue_len) >= IPMR_MAX_UNRESOVE_QUEUE_LEN ||
++		    (c = ipmr_cache_alloc_unres()) == NULL) {
++			spin_unlock_bh(&mfc_unres_lock);
++			kfree_skb(skb);
++			return -ENOBUFS;
++		}
++#else /* IPMR_IPI_MODIFIED */
+ 		if (atomic_read(&mrt->cache_resolve_queue_len) >= 10 ||
+ 		    (c = ipmr_cache_alloc_unres()) == NULL) {
+ 			spin_unlock_bh(&mfc_unres_lock);
+@@ -1149,9 +1276,13 @@ static int ipmr_cache_unresolved(struct mr_table *mrt, vifi_t vifi,
+ 			kfree_skb(skb);
+ 			return -ENOBUFS;
+ 		}
++#endif /* IPMR_IPI_MODIFIED */
+ 
+ 		/* Fill in the new cache entry */
+ 		c->_c.mfc_parent = -1;
++#ifdef IPMR_IPI_MODIFIED
++		c->_c.mfc_parent_unres = vifi;
++#endif /* IPMR_IPI_MODIFIED */
+ 		c->mfc_origin	= iph->saddr;
+ 		c->mfc_mcastgrp	= iph->daddr;
+ 
+@@ -1171,6 +1302,9 @@ static int ipmr_cache_unresolved(struct mr_table *mrt, vifi_t vifi,
+ 
+ 		atomic_inc(&mrt->cache_resolve_queue_len);
+ 		list_add(&c->_c.list, &mrt->mfc_unres_queue);
++#ifdef IPMR_IPI_MODIFIED
++		ipmr_add_unresolved_entry_hash(mrt, c);
++#endif /* IPMR_IPI_MODIFIED */
+ 		mroute_netlink_event(mrt, c, RTM_NEWROUTE);
+ 
+ 		if (atomic_read(&mrt->cache_resolve_queue_len) == 1)
+@@ -1222,7 +1356,9 @@ static int ipmr_mfc_add(struct net *net, struct mr_table *mrt,
+ 			struct mfcctl *mfc, int mrtsock, int parent)
+ {
+ 	struct mfc_cache *uc, *c;
++#ifndef IPMR_IPI_MODIFIED
+ 	struct mr_mfc *_uc;
++#endif /* IPMR_IPI_MODIFIED */
+ 	bool found;
+ 	int ret;
+ 
+@@ -1273,6 +1409,29 @@ static int ipmr_mfc_add(struct net *net, struct mr_table *mrt,
+ 	/* Check to see if we resolved a queued list. If so we
+ 	 * need to send on the frames and tidy up.
+ 	 */
++#ifdef IPMR_IPI_MODIFIED
++	for (;;) {
++		spin_lock_bh(&mfc_unres_lock);
++		found = false;
++		uc = ipmr_delete_unresolved_entry_hash(mrt, c, false);
++		if (uc) {
++			found = true;
++			list_del(&uc->_c.list);
++			atomic_dec(&mrt->cache_resolve_queue_len);
++
++			if (list_empty(&mrt->mfc_unres_queue))
++				del_timer(&mrt->ipmr_expire_timer);
++
++		}
++		spin_unlock_bh(&mfc_unres_lock);
++		if (found) {
++			ipmr_cache_resolve(net, mrt, uc, c);
++			ipmr_cache_free(uc);
++		}
++		else
++			break;
++	}
++#else /* IPMR_IPI_MODIFIED */
+ 	found = false;
+ 	spin_lock_bh(&mfc_unres_lock);
+ 	list_for_each_entry(_uc, &mrt->mfc_unres_queue, list) {
+@@ -1293,6 +1452,7 @@ static int ipmr_mfc_add(struct net *net, struct mr_table *mrt,
+ 		ipmr_cache_resolve(net, mrt, uc, c);
+ 		ipmr_cache_free(uc);
+ 	}
++#endif /* IPMR_IPI_MODIFIED */
+ 	call_ipmr_mfc_entry_notifiers(net, FIB_EVENT_ENTRY_ADD, c, mrt->id);
+ 	mroute_netlink_event(mrt, c, RTM_NEWROUTE);
+ 	return 0;
+@@ -1331,6 +1491,9 @@ static void mroute_clean_tables(struct mr_table *mrt, bool all)
+ 	if (atomic_read(&mrt->cache_resolve_queue_len) != 0) {
+ 		spin_lock_bh(&mfc_unres_lock);
+ 		list_for_each_entry_safe(c, tmp, &mrt->mfc_unres_queue, list) {
++#ifdef IPMR_IPI_MODIFIED
++			ipmr_delete_unresolved_entry_hash(mrt, (struct mfc_cache *)c, true);
++#endif /* IPMR_IPI_MODIFIED */
+ 			list_del(&c->list);
+ 			cache = (struct mfc_cache *)c;
+ 			mroute_netlink_event(mrt, cache, RTM_DELROUTE);
+@@ -1340,6 +1503,66 @@ static void mroute_clean_tables(struct mr_table *mrt, bool all)
+ 	}
+ }
+ 
++#ifdef IPMR_IPI_MODIFIED
++static void mroute_clean_unres_queue_by_individual_entry(struct mr_table *mrt, u32 ip_src, u32 grp_addr, vifi_t vifi)
++{
++	struct hlist_node *node_tmp;
++	struct ipi_hash_backet *hash_backet;
++	u64 key;
++	u32 hash;
++	int index;
++	struct mfc_cache *uc = NULL;
++
++	key = ((u64)grp_addr);
++	hash  = hash_min(key, 32);
++	index = hash_min(key, 13);
++
++
++	hlist_for_each_entry_safe(hash_backet, node_tmp,
++			&mrt->mfc_unres_queue_hash[index], hash_backet) {
++		if (hash_backet->hash != hash)
++			continue;
++		uc = (struct mfc_cache *)hash_backet->data;
++		if (uc->mfc_mcastgrp == grp_addr &&
++				(ip_src == 0 || uc->mfc_origin == ip_src) &&
++				uc->_c.mfc_parent_unres == vifi) {
++			hash_del(&hash_backet->hash_backet);
++			kmem_cache_free(mrt_cachep_hash_backet, hash_backet);
++
++			list_del(&uc->_c.list);
++
++			if (list_empty(&mrt->mfc_unres_queue))
++				del_timer(&mrt->ipmr_expire_timer);
++
++			mroute_netlink_event(mrt, uc, RTM_DELROUTE);
++			ipmr_destroy_unres(mrt, uc);
++		}
++	}
++}
++
++static void mroute_flush_unres_queue(struct mr_table *mrt, struct mfcctl *mfc)
++{
++	struct mr_mfc *c, *next;
++
++	if (mfc->mfcc_mcastgrp.s_addr) {
++		spin_lock_bh(&mfc_unres_lock);
++		mroute_clean_unres_queue_by_individual_entry(mrt, mfc->mfcc_origin.s_addr,
++					mfc->mfcc_mcastgrp.s_addr, mfc->mfcc_parent);
++		spin_unlock_bh(&mfc_unres_lock);
++	}
++	else if (atomic_read(&mrt->cache_resolve_queue_len) != 0) {
++		spin_lock_bh(&mfc_unres_lock);
++		list_for_each_entry_safe(c, next, &mrt->mfc_unres_queue, list) {
++			ipmr_delete_unresolved_entry_hash(mrt, (struct mfc_cache *)c, true);
++			list_del(&c->list);
++			mroute_netlink_event(mrt,  (struct mfc_cache *)c, RTM_DELROUTE);
++			ipmr_destroy_unres(mrt,  (struct mfc_cache *)c);
++		}
++		spin_unlock_bh(&mfc_unres_lock);
++	}
++}
++#endif /* IPMR_IPI_MODIFIED */
++
+ /* called from ip_ra_control(), before an RCU grace period,
+  * we dont need to call synchronize_rcu() here
+  */
+@@ -1540,6 +1763,22 @@ int ip_mroute_setsockopt(struct sock *sk, int optname, char __user *optval,
+ 				raw_sk(sk)->ipmr_table = uval;
+ 		}
+ 		break;
++#ifdef IPMR_IPI_MODIFIED
++	case MRT_FLUSH_UNRES_QUEUE:
++	{
++		if (optlen != sizeof(mfc)) {
++			ret = -EINVAL;
++			break;
++		}
++		if (copy_from_user(&mfc, optval, sizeof(mfc))) {
++			ret = -EFAULT;
++			break;
++		}
++		if (mrt->mroute_do_assert)
++			mroute_flush_unres_queue(mrt, &mfc);
++		break;
++	}
++#endif /* IPMR_IPI_MODIFIED */
+ 	/* Spurious command, or MRT_VERSION which you cannot set. */
+ 	default:
+ 		ret = -ENOPROTOOPT;
+@@ -3014,6 +3253,16 @@ int __init ip_mr_init(void)
+ 				       0, SLAB_HWCACHE_ALIGN | SLAB_PANIC,
+ 				       NULL);
+ 
++#ifdef IPMR_IPI_MODIFIED
++	mrt_cachep_hash_backet = kmem_cache_create("ip_mrt_cache_hash_backet",
++					sizeof(struct ipi_hash_backet),
++					0, SLAB_HWCACHE_ALIGN | SLAB_PANIC,
++                                             NULL);
++	if (mrt_cachep_hash_backet == NULL) {
++		err = -ENOMEM;
++		goto reg_pernet_fail;
++	}
++#endif /* IPMR_IPI_MODIFIED */
+ 	err = register_pernet_subsys(&ipmr_net_ops);
+ 	if (err)
+ 		goto reg_pernet_fail;
+@@ -3047,5 +3296,9 @@ reg_notif_fail:
+ 	unregister_pernet_subsys(&ipmr_net_ops);
+ reg_pernet_fail:
+ 	kmem_cache_destroy(mrt_cachep);
++#ifdef IPMR_IPI_MODIFIED
++	if (mrt_cachep_hash_backet)
++		kmem_cache_destroy(mrt_cachep_hash_backet);
++#endif /* IPMR_IPI_MODIFIED */
+ 	return err;
+ }
+diff --git a/net/ipv4/ipmr_base.c b/net/ipv4/ipmr_base.c
+index eab8cd5ec..0ecf817e3 100644
+--- a/net/ipv4/ipmr_base.c
++++ b/net/ipv4/ipmr_base.c
+@@ -52,6 +52,9 @@ mr_table_alloc(struct net *net, u32 id,
+ 	}
+ 	INIT_LIST_HEAD(&mrt->mfc_cache_list);
+ 	INIT_LIST_HEAD(&mrt->mfc_unres_queue);
++#ifdef IPMR_IPI_MODIFIED
++        hash_init(mrt->mfc_unres_queue_hash);
++#endif /* IPMR_IPI_MODIFIED */
+ 
+ 	timer_setup(&mrt->ipmr_expire_timer, expire_func, 0);
+ 
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+index 69127f603..0b41471fc 100644
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -1656,6 +1656,12 @@ int ip_mc_validate_source(struct sk_buff *skb, __be32 daddr, __be32 saddr,
+ 
+ 	if (ipv4_is_zeronet(saddr)) {
+ 		if (!ipv4_is_local_multicast(daddr))
++#ifdef IPMR_IPI_MODIFIED
++        /* IGMP papckets with 0.0.0.0 source IP can be sent in a L2 switch
++         with IGM snooping enabled, and therefore, those packets must not
++         be dropped here */
++        if (ip_hdr(skb)->protocol != IPPROTO_IGMP)
++#endif /* IPMR_IPI_MODIFIED */
+ 			return -EINVAL;
+ 	} else {
+ 		err = fib_validate_source(skb, saddr, 0, tos, 0, dev,
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index ef309a26a..a3de5a06e 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -3480,8 +3480,8 @@ static int addrconf_notify(struct notifier_block *this, unsigned long event,
+ 
+ 			if (!addrconf_link_ready(dev)) {
+ 				/* device is not ready yet. */
+-				pr_info("ADDRCONF(NETDEV_UP): %s: link is not ready\n",
+-					dev->name);
++		/*		pr_info("ADDRCONF(NETDEV_UP): %s: link is not ready\n",
++					dev->name); */
+ 				break;
+ 			}
+ 
+@@ -3516,8 +3516,8 @@ static int addrconf_notify(struct notifier_block *this, unsigned long event,
+ 				idev->if_flags |= IF_READY;
+ 			}
+ 
+-			pr_info("ADDRCONF(NETDEV_CHANGE): %s: link becomes ready\n",
+-				dev->name);
++	/*		pr_info("ADDRCONF(NETDEV_CHANGE): %s: link becomes ready\n",
++				dev->name); */
+ 
+ 			run_pending = 1;
+ 		}
+diff --git a/net/ipv6/ip6_output.c b/net/ipv6/ip6_output.c
+index eed9231c9..9f346a30e 100644
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -67,6 +67,14 @@ static int ip6_finish_output2(struct net *net, struct sock *sk, struct sk_buff *
+ 	struct in6_addr *nexthop;
+ 	int ret;
+ 
++  /* IPI: Drop ICMP redirect forwarded pkts */
++  if (IP6CB(skb)->flags & IP6SKB_DOREDIRECT)
++    {
++      IP6CB(skb)->flags &= ~IP6SKB_DOREDIRECT;
++      kfree_skb(skb);
++      return 0;
++    }
++
+ 	if (ipv6_addr_is_multicast(&ipv6_hdr(skb)->daddr)) {
+ 		struct inet6_dev *idev = ip6_dst_idev(skb_dst(skb));
+ 
+@@ -507,6 +515,9 @@ int ip6_forward(struct sk_buff *skb)
+ 			ndisc_send_redirect(skb, target);
+ 		if (peer)
+ 			inet_putpeer(peer);
++
++    /* IPI: Mark pkt for redirect */
++    IP6CB(skb)->flags |= IP6SKB_DOREDIRECT;
+ 	} else {
+ 		int addrtype = ipv6_addr_type(&hdr->saddr);
+ 
+diff --git a/net/ipv6/ip6mr.c b/net/ipv6/ip6mr.c
+index 35e7092ec..174a5f16c 100644
+--- a/net/ipv6/ip6mr.c
++++ b/net/ipv6/ip6mr.c
+@@ -1147,7 +1147,7 @@ static int ip6mr_cache_unresolved(struct mr_table *mrt, mifi_t mifi,
+ 		 *	Create a new entry if allowable
+ 		 */
+ 
+-		if (atomic_read(&mrt->cache_resolve_queue_len) >= 10 ||
++		if (atomic_read(&mrt->cache_resolve_queue_len) >= 3000 ||
+ 		    (c = ip6mr_cache_alloc_unres()) == NULL) {
+ 			spin_unlock_bh(&mfc_unres_lock);
+ 
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 109ab510b..66d4d958f 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1496,7 +1496,7 @@ static inline u16 socket_type_to_security_class(int family, int type, int protoc
+ 			return SECCLASS_SMC_SOCKET;
+ 		case PF_XDP:
+ 			return SECCLASS_XDP_SOCKET;
+-#if PF_MAX > 45
++#if PF_MAX > 128
+ #error New address family defined, please update this function.
+ #endif
+ 		}
+diff --git a/security/selinux/include/classmap.h b/security/selinux/include/classmap.h
+index 201f7e588..47923ddc4 100644
+--- a/security/selinux/include/classmap.h
++++ b/security/selinux/include/classmap.h
+@@ -246,6 +246,6 @@ struct security_class_mapping secclass_map[] = {
+ 	{ NULL }
+   };
+ 
+-#if PF_MAX > 45
++#if PF_MAX > 128
+ #error New address family defined, please update secclass_map.
+ #endif
