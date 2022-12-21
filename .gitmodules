@@ -1,6 +1,6 @@
 [submodule "sm/ONL"]
 	path = sm/ONL
-	url = https://github.com/oopt-goldstone/OpenNetworkLinux.git
+	url = https://github.com/iown-apn/oss-OpenNetworkLinux.git
 [submodule "sm/sonic-buildimage"]
 	path = sm/sonic-buildimage
 	url = https://github.com/microsonic/sonic-buildimage.git
