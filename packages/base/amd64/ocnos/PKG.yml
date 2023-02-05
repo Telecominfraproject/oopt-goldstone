@@ -1,0 +1,16 @@
+packages:
+  - name: gs-ocnos
+    arch: amd64
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    changelog: Initial
+    support: goldstone-support-group@ipinfusion.com
+    summary: ocnos
+    before-remove: $__DIR__/before-remove.sh
+    depends:
+    - k3s
+    - jq
+    files:
+        builds/manifests:  /var/lib/ocnos/k8s
+        builds/ocnos.service: /etc/systemd/system/
+        builds/ocnos.sh: /usr/bin/
