@@ -1,6 +1,6 @@
 galileo:
   children:
-    #galileo_1:
+    galileo_1:
     galileo_flex_t:
 
 edgecore_as:
