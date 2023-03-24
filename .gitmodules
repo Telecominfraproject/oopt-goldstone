@@ -7,3 +7,7 @@
 [submodule "sm/linux-gft"]
 	path = sm/linux-gft
 	url = https://github.com/oopt-goldstone/linux-gft.git
+[submodule "sm/sonic-buildimage-xcvrd"]
+	path = sm/sonic-buildimage-xcvrd
+	url = https://github.com/sonic-net/sonic-buildimage.git
+	branch = 202205

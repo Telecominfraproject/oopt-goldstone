@@ -1,0 +1,22 @@
+prerequisites:
+  submodules:
+    - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-swss-common }
+    - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-py-swsssdk }
+    - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-platform-common }
+    - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-platform-daemons }
+
+packages:
+  - name: xcvrd
+    arch: amd64
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: xcvrd
+    before-remove: $__DIR__/before-remove.sh
+    depends:
+    - k3s
+    - jq
+    files:
+        builds/manifests:  /var/lib/xcvrd/k8s
+        builds/xcvrd.service: /etc/systemd/system/
+        builds/xcvrd.sh: /usr/bin/
+        builds/xcvrd.tar: /var/lib/rancher/k3s/agent/images/
