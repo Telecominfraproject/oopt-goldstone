@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: xcvrd
+    labels:
+        gs-mgmt: xcvrd
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: xcvrd
+    labels:
+        gs-mgmt: xcvrd
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: view
+subjects:
+- kind: ServiceAccount
+  name: xcvrd
+  namespace: default
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+    name: xcvrd
+    labels:
+        app: xcvrd
+spec:
+    serviceAccountName: xcvrd
+    initContainers:
+    - name: wait-redis
+      image:  docker.io/lachlanevenson/k8s-kubectl:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'kubectl wait --for=condition=ready pods/redis-xcvrd']
+    - name: start-init
+      image: redis:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c']
+      args:
+        - redis-cli -h redis-xcvrd.default.svc.cluster.local -n 4 SET CONFIG_DB_INITIALIZED 1;
+          redis-cli -h redis-xcvrd.default.svc.cluster.local HSET PORT_TABLE:PortConfigDone count 0;
+          redis-cli -h redis-xcvrd.default.svc.cluster.local HSET PORT_TABLE:PortInitDone lanes 1;
+    - name: init-configdb
+      image: xcvrd:latest
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c']
+      args:
+        - sonic-cfggen -k dummy -p /etc/xcvrd/port_config.ini -j /etc/sonic/config_db.json --write-to-db;
+          swssconfig_xcvrd.py;
+      volumeMounts:
+      - name: sonic-db-config
+        mountPath: /var/run/redis/sonic-db/
+      - name: config-db-json
+        mountPath: /etc/sonic/
+      - name: xcvrd-config
+        mountPath: /etc/xcvrd/
+    containers:
+    - name: pmon
+      image: xcvrd:latest
+      imagePullPolicy: Never
+      command: ['xcvrd']
+      volumeMounts:
+      - name: config-db-json
+        mountPath: /etc/sonic/
+      - name: xcvrd-config
+        mountPath: /etc/xcvrd/
+      - name: sonic-db-config
+        mountPath: /var/run/redis/sonic-db/
+      - name: sys
+        mountPath: /sys
+      - name: platform
+        mountPath: /usr/share/sonic/platform
+      securityContext:
+        privileged: true
+    volumes:
+    - name: xcvrd-config
+      configMap:
+          name: xcvrd-config
+    - name: config-db-json
+      configMap:
+          name: xcvrd-config
+          items:
+          - key: config_db.json
+            path: config_db.json
+    - name: sonic-db-config
+      configMap:
+          name: sonic-db-config-xcvrd
+    - name: sys
+      hostPath:
+          path: /sys
+    - name: platform
+      emptyDir: {}

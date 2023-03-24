@@ -33,3 +33,4 @@
 - python3.10:amd64
 - gs-north-gnmi:amd64
 - gs-system-telemetry:amd64
+- xcvrd:amd64

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: redis-xcvrd
+    labels:
+        app: redis-xcvrd
+spec:
+    containers:
+    - name: redis
+      image: redis:latest 
+      imagePullPolicy: IfNotPresent
+      command: ["redis-server", "/etc/redis/redis.conf"]
+      volumeMounts:
+      - name: redis-sock
+        mountPath: /var/run/redis/
+      - name: redis-server-config
+        mountPath: /etc/redis/
+      ports:
+      - containerPort: 6379
+    volumes:
+    - name: redis-sock
+      hostPath:
+          path: /var/lib/xcvrd/redis
+          type: Directory
+    - name: redis-server-config
+      configMap:
+          name: redis-server-config-xcvrd

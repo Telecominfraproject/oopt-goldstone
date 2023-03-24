@@ -1,0 +1,1068 @@
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/pytest.ini b/device/accton/x86_64-accton_as7946_30xb-r0/pytest.ini
+new file mode 100644
+index 000000000..000062fb7
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/pytest.ini
+@@ -0,0 +1,2 @@
++[pytest]
++addopts = --cov=sonic_platform --cov-report html --cov-report term --cov-report xml --junitxml=test-results.xml -v
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/__init__.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/__init__.py
+new file mode 100644
+index 000000000..fc57de7a2
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/__init__.py
+@@ -0,0 +1,2 @@
++__all__ = ['chassis', 'platform', 'sfp']
++from . import platform 
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/chassis.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/chassis.py
+new file mode 100644
+index 000000000..77f371a30
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/chassis.py
+@@ -0,0 +1,74 @@
++#############################################################################
++# Accton
++#
++# Module contains an implementation of SONiC Platform Base API and
++# provides the Chassis information which are available in the platform
++#
++#############################################################################
++
++import os
++import sys
++
++from sonic_platform_base.chassis_base import ChassisBase
++from .event import SfpEvent
++
++PORT_START = 1
++PORT_END = 30
++QSFP_PORT_START = 0
++QSFP_PORT_END = 25
++HOST_CHK_CMD = "docker > /dev/null 2>&1"
++
++
++class Chassis(ChassisBase):
++    """Platform-specific Chassis class"""
++
++    def __init__(self):
++        ChassisBase.__init__(self)
++
++        self.__initialize_sfp()
++
++    def __initialize_sfp(self):
++        from sonic_platform.sfp import Sfp
++
++        self.QSFP_PORT_START = QSFP_PORT_START
++        self.QSFP_PORT_END = QSFP_PORT_END
++        for index in range(0, PORT_END):
++            if index in range(self.QSFP_PORT_START, self.QSFP_PORT_END + 1):
++                sfp_module = Sfp(index, 'QSFP')
++            else:
++                sfp_module = Sfp(index, 'SFP')
++            self._sfp_list.append(sfp_module)
++        self._sfpevent = SfpEvent(self._sfp_list)
++        self.sfp_module_initialized = True
++
++    def get_change_event(self, timeout=0):
++        # SFP event
++        if not self.sfp_module_initialized:
++            self.__initialize_sfp()
++
++        status, sfp_event = self._sfpevent.get_sfp_event(timeout)
++
++        return status, sfp_event
++
++    def get_sfp(self, index):
++        """
++        Retrieves sfp represented by (1-based) index <index>
++        Args:
++            index: An integer, the index (1-based) of the sfp to retrieve.
++            The index should be the sequence of a physical port in a chassis,
++            starting from 1.
++            For example, 1 for Ethernet0, 2 for Ethernet4 and so on.
++        Returns:
++            An object dervied from SfpBase representing the specified sfp
++        """
++        sfp = None
++        if not self.sfp_module_initialized:
++            self.__initialize_sfp()
++
++        try:
++            # The index will start from 1
++            sfp = self._sfp_list[index-1]
++        except IndexError:
++            sys.stderr.write("SFP index {} out of range (1-{})\n".format(
++                             index, len(self._sfp_list)))
++        return sfp
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/event.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/event.py
+new file mode 100644
+index 000000000..a6539caa3
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/event.py
+@@ -0,0 +1,56 @@
++import time
++from sonic_py_common.logger import Logger
++
++
++class SfpEvent:
++    ''' Listen to insert/remove sfp events '''
++
++    def __init__(self, sfp_list):
++        self._sfp_list = sfp_list
++        self._logger = Logger()
++        self._sfp_change_event_data = {'present': 0}
++
++    def get_presence_bitmap(self):
++        bitmap = 0
++        for sfp in self._sfp_list:
++            modpres = sfp.get_presence()
++            i=sfp._port_num-1
++            if modpres:
++                bitmap = bitmap | (1 << i)
++        return bitmap
++
++    def get_sfp_event(self, timeout=2000):
++        port_dict = {}
++        change_dict = {}
++        change_dict['sfp'] = port_dict
++
++        if timeout < 1000:
++            cd_ms = 1000
++        else:
++            cd_ms = timeout
++
++        while cd_ms > 0:
++            bitmap = self.get_presence_bitmap()
++            changed_ports = self._sfp_change_event_data['present'] ^ bitmap
++            if changed_ports != 0:
++                break
++            time.sleep(1)
++            # timeout=0 means wait for event forever
++            if timeout != 0:
++                cd_ms = cd_ms - 1000
++
++        if changed_ports != 0:
++            for sfp in self._sfp_list:
++                i=sfp._port_num-1
++                if (changed_ports & (1 << i)):
++                    if (bitmap & (1 << i)) == 0:
++                        port_dict[i+1] = '0'
++                    else:
++                        port_dict[i+1] = '1'
++
++
++            # Update the cache dict
++            self._sfp_change_event_data['present'] = bitmap
++            return True, change_dict
++        else:
++            return True, change_dict
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py
+new file mode 100644
+index 000000000..da9045417
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py
+@@ -0,0 +1,23 @@
++import os
++import struct
++import subprocess
++from mmap import *
++from sonic_py_common import device_info
++
++HOST_CHK_CMD = "docker > /dev/null 2>&1"
++EMPTY_STRING = ""
++
++
++class APIHelper():
++
++    def __init__(self):
++        (self.platform, self.hwsku) = device_info.get_platform_and_hwsku()
++
++    def read_txt_file(self, file_path):
++        try:
++            with open(file_path, 'r') as fd:
++                data = fd.read()
++                return data.strip()
++        except IOError:
++            pass
++        return None
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/platform.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/platform.py
+new file mode 100644
+index 000000000..c38a56e38
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/platform.py
+@@ -0,0 +1,18 @@
++#############################################################################
++# Accton
++#
++# Module contains an implementation of SONiC Platform Base API and
++# provides the platform information
++#
++#############################################################################
++
++from sonic_platform_base.platform_base import PlatformBase
++from sonic_platform.chassis import Chassis
++
++
++class Platform(PlatformBase):
++    """Platform-specific Platform class"""
++
++    def __init__(self):
++        PlatformBase.__init__(self)
++        self._chassis = Chassis()
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
+new file mode 100644
+index 000000000..bb1814f2f
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
+@@ -0,0 +1,248 @@
++#############################################################################
++# Accton
++#
++# Sfp contains an implementation of SONiC Platform Base API and
++# provides the sfp device status which are available in the platform
++#
++#############################################################################
++
++import os
++import sys
++import time
++import struct
++import fcntl
++
++from ctypes import create_string_buffer
++
++from sonic_platform_base.sfp_base import SfpBase
++from .helper import APIHelper
++
++#Edge-core definitions
++CPLD2_I2C_PATH = "/sys/bus/i2c/devices/12-0061/"
++CPLD3_I2C_PATH = "/sys/bus/i2c/devices/13-0062/"
++
++# definitions of the offset and width for values in XCVR info eeprom
++XCVR_TYPE_OFFSET = 0
++XCVR_TYPE_WIDTH = 1
++
++SFP_TYPE_CODE_LIST = [
++    '03'  # SFP/SFP+/SFP28
++]
++QSFP_TYPE_CODE_LIST = [
++    '0d',  # QSFP+ or later
++    '11'  # QSFP28 or later
++]
++QSFP_DD_TYPE_CODE_LIST = [
++    '18'  # QSFP-DD Double Density 8X Pluggable Transceiver
++]
++
++SFP_TYPE = "SFP"
++QSFP_TYPE = "QSFP"
++OSFP_TYPE = "OSFP"
++QSFP_DD_TYPE = "QSFP_DD"
++
++SFP_I2C_START = 25
++I2C_EEPROM_PATH = '/sys/bus/i2c/devices/{0}-0050/eeprom'
++
++
++class Sfp(SfpBase):
++    """Platform-specific Sfp class"""
++    HOST_CHK_CMD = "docker > /dev/null 2>&1"
++    PLATFORM = "x86_64-accton_as7946_30xb-r0"
++    HWSKU = "Accton-AS7946-30XB"
++
++    # Path to sysfs
++    PLATFORM_ROOT_PATH = "/usr/share/sonic/device"
++    PMON_HWSKU_PATH = "/usr/share/sonic/hwsku"
++
++    CPLD2_PORT_START = 1
++    CPLD2_PORT_END = 13
++    CPLD3_PORT_START = 14
++    CPLD3_PORT_END = 26
++
++    def __init__(self, sfp_index=0, sfp_name=None):
++
++        self._index = sfp_index
++        self._port_num = self._index + 1
++        self._api_helper = APIHelper()
++        self._name = sfp_name
++
++        self._dom_capability_detect()
++        self._eeprom_path = self._get_eeprom_path()
++        SfpBase.__init__(self)
++
++    def _read_eeprom_specific_bytes(self, offset, num_bytes):
++        sysfs_sfp_i2c_client_eeprom_path = self._get_eeprom_path()
++        eeprom_raw = []
++        try:
++            eeprom = open(
++                sysfs_sfp_i2c_client_eeprom_path,
++                mode="rb", buffering=0)
++        except IOError:
++            return None
++
++        for i in range(0, num_bytes):
++            eeprom_raw.append("0x00")
++
++        try:
++            eeprom.seek(offset)
++            raw = eeprom.read(num_bytes)
++            for n in range(0, num_bytes):
++                eeprom_raw[n] = hex(raw[n])[2:].zfill(2)
++        except (IOError, BaseException):
++            eeprom_raw = None
++        finally:
++            eeprom.close()
++
++        return eeprom_raw
++
++    def _detect_sfp_type(self):
++        sfp_type = QSFP_TYPE
++        eeprom_raw = []
++        eeprom_raw = self._read_eeprom_specific_bytes(
++            XCVR_TYPE_OFFSET, XCVR_TYPE_WIDTH)
++        if eeprom_raw:
++            if eeprom_raw[0] in SFP_TYPE_CODE_LIST:
++                self.sfp_type = SFP_TYPE
++            elif eeprom_raw[0] in QSFP_TYPE_CODE_LIST:
++                self.sfp_type = QSFP_TYPE
++            elif eeprom_raw[0] in QSFP_DD_TYPE_CODE_LIST:
++                self.sfp_type = QSFP_DD_TYPE
++            else:
++                self.sfp_type = sfp_type
++        else:
++            self.sfp_type = sfp_type
++
++    def _get_eeprom_path(self):
++        port_to_i2c_mapping = SFP_I2C_START + self._index
++        port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
++        return port_eeprom_path
++
++    def _dom_capability_detect(self):
++        self._detect_sfp_type()
++
++    def get_presence(self):
++        """
++        Retrieves the presence of the device
++        Returns:
++            bool: True if device is present, False if not
++        """
++        if self._port_num <= 16: 
++            present_path = "{}{}{}".format(CPLD2_I2C_PATH, '/module_present_', self._port_num)
++        else:
++            present_path = "{}{}{}".format(CPLD3_I2C_PATH, '/module_present_', self._port_num)
++
++        val=self._api_helper.read_txt_file(present_path)
++        if val is not None:
++            return int(val, 10)==1
++        else:           
++            return False
++
++    def is_replaceable(self):
++        """
++        Retrieves if replaceable
++        Returns:
++            A boolean value, True if replaceable
++        """
++        return True
++
++    def read_eeprom(self, offset, num_bytes):
++        """
++        Overrides read_eeprom() method.
++        Calls
++        """
++        port_to_i2c_mapping = SFP_I2C_START + self._index
++        port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
++        if offset > 255:
++            result = divmod(offset, 128)
++
++            buffer = create_string_buffer(1)
++            buffer[0] = result[0] - 1
++            try:
++                with open(port_eeprom_path, "r+b", buffering=0) as fd:
++                    fcntl.flock(fd, fcntl.LOCK_EX)
++                    fd.seek(127)
++                    fd.write(buffer[0])
++                    time.sleep(0.02)
++
++                    offset = result[1] + 128
++                    fd.seek(offset)
++                    raw = fd.read(num_bytes)
++
++                    buffer[0] = 0
++                    fd.seek(127)
++                    fd.write(buffer[0])
++                    time.sleep(0.02)
++                    fcntl.flock(fd, fcntl.LOCK_UN)
++            except IOError as e:
++                print("Error: unable to open file: %s" % str(e))
++                raise Exception 
++            except Exception as e:
++                print ('Error: unable to open file: ', str(e))
++                raise Exception
++        else:
++            try:
++                with open(port_eeprom_path, "r+b", buffering=0) as fd:
++                    fcntl.flock(fd, fcntl.LOCK_EX)
++                    fd.seek(offset)
++                    raw = fd.read(num_bytes)
++                    fcntl.flock(fd, fcntl.LOCK_UN)
++            except IOError as e:
++                print("Error: unable to open file: %s" % str(e))
++                raise Exception 
++            except Exception as e:
++                print("Error: Unexpected Error: {}".format(e))
++                raise Exception 
++
++        return bytearray(raw)
++
++    def write_eeprom(self, offset, num_bytes, value):
++        """
++        Overrides write_eeprom() method.
++        """
++        port_to_i2c_mapping = SFP_I2C_START + self._index
++        port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
++        if offset > 255:
++            result = divmod(offset, 128)
++
++            buffer = create_string_buffer(1)
++            buffer[0] = result[0] - 1
++            try:
++                with open(port_eeprom_path, "r+b", buffering=0) as fd:
++                    fcntl.flock(fd, fcntl.LOCK_EX)
++                    fd.seek(127)
++                    fd.write(buffer[0])
++                    time.sleep(0.02)
++
++                    offset = result[1] + 128
++                    fd.seek(offset)
++                    raw = fd.write(value)
++                    time.sleep(0.09)
++
++                    buffer[0] = 0
++                    fd.seek(127)
++                    fd.write(buffer[0])
++                    time.sleep(0.02)
++                    fcntl.flock(fd, fcntl.LOCK_UN)
++                    return True
++            except IOError as e:
++                print("Error: unable to open file: %s" % str(e))
++                return False
++            except Exception as e:
++                print("Error: Unexpected Error: {}".format(e))
++                return False
++        else:
++            try:
++                with open(port_eeprom_path, "r+b", buffering=0) as fd:
++                    fcntl.flock(fd, fcntl.LOCK_EX)
++                    fd.seek(offset)
++                    fd.write(value)
++                    time.sleep(0.09)
++                    fcntl.flock(fd, fcntl.LOCK_UN)
++                return True
++            except IOError as e:
++                print("Error: unable to open file: %s" % str(e))
++                return False
++            except Exception as e:
++                print("Error: Unexpected Error: {}".format(e))
++                return False
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/tests/__init__.py b/device/accton/x86_64-accton_as7946_30xb-r0/tests/__init__.py
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_chassis.py b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_chassis.py
+new file mode 100644
+index 000000000..27c55253c
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_chassis.py
+@@ -0,0 +1,89 @@
++from sonic_platform.platform import *
++from sonic_platform.chassis import *
++import sys
++import pytest
++
++if sys.version_info >= (3, 3):
++    from unittest.mock import MagicMock, patch
++else:
++    from mock import MagicMock, patch
++
++# from sonic_platform.helper import APIHelper
++from sonic_platform_base.platform_base import PlatformBase
++from sonic_platform_base.chassis_base import ChassisBase
++
++APIHelper = MagicMock()
++PlatformBase = MagicMock()
++ChassisBase = MagicMock()
++
++class TestSonicPlatformChassis(object):
++
++    @patch('sonic_platform.event.SfpEvent', MagicMock())
++    @patch('sonic_platform.sfp.Sfp')
++    def test_Chassis_initialize_sfp(self, mock_sfp):
++        chassis = Platform().get_chassis()
++        assert mock_sfp.call_count == 30
++        assert mock_sfp.call_args_list[0][0] == (0, 'QSFP')
++        assert mock_sfp.call_args_list[1][0] == (1, 'QSFP')
++        assert mock_sfp.call_args_list[2][0] == (2, 'QSFP')
++        assert mock_sfp.call_args_list[3][0] == (3, 'QSFP')
++        assert mock_sfp.call_args_list[4][0] == (4, 'QSFP')
++        assert mock_sfp.call_args_list[5][0] == (5, 'QSFP')
++        assert mock_sfp.call_args_list[6][0] == (6, 'QSFP')
++        assert mock_sfp.call_args_list[7][0] == (7, 'QSFP')
++        assert mock_sfp.call_args_list[8][0] == (8, 'QSFP')
++        assert mock_sfp.call_args_list[9][0] == (9, 'QSFP')
++        assert mock_sfp.call_args_list[10][0] == (10, 'QSFP')
++        assert mock_sfp.call_args_list[11][0] == (11, 'QSFP')
++        assert mock_sfp.call_args_list[12][0] == (12, 'QSFP')
++        assert mock_sfp.call_args_list[13][0] == (13, 'QSFP')
++        assert mock_sfp.call_args_list[14][0] == (14, 'QSFP')
++        assert mock_sfp.call_args_list[15][0] == (15, 'QSFP')
++        assert mock_sfp.call_args_list[16][0] == (16, 'QSFP')
++        assert mock_sfp.call_args_list[17][0] == (17, 'QSFP')
++        assert mock_sfp.call_args_list[18][0] == (18, 'QSFP')
++        assert mock_sfp.call_args_list[19][0] == (19, 'QSFP')
++        assert mock_sfp.call_args_list[20][0] == (20, 'QSFP')
++        assert mock_sfp.call_args_list[21][0] == (21, 'QSFP')
++        assert mock_sfp.call_args_list[22][0] == (22, 'QSFP')
++        assert mock_sfp.call_args_list[23][0] == (23, 'QSFP')
++        assert mock_sfp.call_args_list[24][0] == (24, 'QSFP')
++        assert mock_sfp.call_args_list[25][0] == (25, 'QSFP')
++        assert mock_sfp.call_args_list[26][0] == (26, 'SFP')
++        assert mock_sfp.call_args_list[27][0] == (27, 'SFP')
++        assert mock_sfp.call_args_list[28][0] == (28, 'SFP')
++        assert mock_sfp.call_args_list[29][0] == (29, 'SFP')
++        assert mock_sfp.sfp_module_initialized
++
++    def test_Chassis_get_change_event(self):
++        chassis = Platform().get_chassis()
++        chassis.sfp_module_initialized = True
++        chassis._Chassis__initialize_sfp = MagicMock()
++        chassis._sfpevent = MagicMock()
++        chassis._sfpevent.get_sfp_event = MagicMock(return_value=(True, {}))
++        
++        assert chassis.get_change_event() == (True, {})
++        assert chassis._Chassis__initialize_sfp.call_count == 0
++        
++        chassis.sfp_module_initialized = False
++        assert chassis.get_change_event() == (True, {})
++        assert chassis._Chassis__initialize_sfp.call_count == 1
++
++    def test_Chassis_get_sfp(self):
++        chassis = Platform().get_chassis()
++        chassis._sfp_list = ['Sfp0','Sfp1']
++        chassis.sfp_module_initialized = True
++        chassis._Chassis__initialize_sfp = MagicMock()
++
++        sfp = chassis.get_sfp(1)
++        assert sfp == 'Sfp0'
++        assert chassis._Chassis__initialize_sfp.call_count == 0
++
++        chassis.sfp_module_initialized = False
++        sfp = chassis.get_sfp(2)
++        assert sfp == 'Sfp1'
++        assert chassis._Chassis__initialize_sfp.call_count == 1
++
++        # SFP index 3 out of range
++        sfp = chassis.get_sfp(3)
++        assert sfp == None
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_event.py b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_event.py
+new file mode 100644
+index 000000000..9b95232cb
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_event.py
+@@ -0,0 +1,98 @@
++from sonic_platform.event import *
++import sys
++import pytest
++
++if sys.version_info >= (3, 3):
++    from unittest.mock import MagicMock, patch
++else:
++    from mock import MagicMock, patch
++
++class TestSonicPlatformSfpEvent(object):
++
++    def test_Chassis_get_presence_bitmap(self):
++        mock_sfp1 = MagicMock()
++        mock_sfp1.get_presence = MagicMock(return_value=True)
++        mock_sfp1._port_num = 1
++        mock_sfp2 = MagicMock()
++        mock_sfp2.get_presence = MagicMock(return_value=True)
++        mock_sfp2._port_num = 2
++        mock_sfp3 = MagicMock()
++        mock_sfp3.get_presence = MagicMock(return_value=True)
++        mock_sfp3._port_num = 3
++        mock_sfp4 = MagicMock()
++        mock_sfp4.get_presence = MagicMock(return_value=True)
++        mock_sfp4._port_num = 4
++        event = SfpEvent([mock_sfp1, mock_sfp2, mock_sfp3, mock_sfp4])
++        assert event.get_presence_bitmap() == 15
++        assert mock_sfp1.get_presence.call_count == 1
++        assert mock_sfp2.get_presence.call_count == 1
++        assert mock_sfp3.get_presence.call_count == 1
++        assert mock_sfp4.get_presence.call_count == 1
++
++        mock_sfp1.get_presence = MagicMock(return_value=False)
++        mock_sfp2.get_presence = MagicMock(return_value=False)
++        mock_sfp3.get_presence = MagicMock(return_value=False)
++        mock_sfp4.get_presence = MagicMock(return_value=False)
++        event = SfpEvent([mock_sfp1, mock_sfp2, mock_sfp3, mock_sfp4])
++        assert event.get_presence_bitmap() == 0
++        assert mock_sfp1.get_presence.call_count == 1
++        assert mock_sfp2.get_presence.call_count == 1
++        assert mock_sfp3.get_presence.call_count == 1
++        assert mock_sfp4.get_presence.call_count == 1
++
++        mock_sfp1.get_presence = MagicMock(return_value=True)
++        mock_sfp2.get_presence = MagicMock(return_value=False)
++        mock_sfp3.get_presence = MagicMock(return_value=True)
++        mock_sfp4.get_presence = MagicMock(return_value=False)
++        event = SfpEvent([mock_sfp1, mock_sfp2, mock_sfp3, mock_sfp4])
++        assert event.get_presence_bitmap() == 5
++        assert mock_sfp1.get_presence.call_count == 1
++        assert mock_sfp2.get_presence.call_count == 1
++        assert mock_sfp3.get_presence.call_count == 1
++        assert mock_sfp4.get_presence.call_count == 1
++
++    def test_Chassis_get_sfp_event(self):
++        mock_sfp1 = MagicMock()
++        mock_sfp1._port_num = 1
++        mock_sfp2 = MagicMock()
++        mock_sfp2._port_num = 2
++        mock_sfp3 = MagicMock()
++        mock_sfp3._port_num = 3
++        mock_sfp4 = MagicMock()
++        mock_sfp4._port_num = 4
++        event = SfpEvent([mock_sfp1, mock_sfp2, mock_sfp3, mock_sfp4])
++        
++        # SFP modules (1,2,3,4) inserted.
++        event.get_presence_bitmap = MagicMock(return_value=15)
++        assert event.get_sfp_event(2000) == (True, {'sfp':{1: '1',
++                                                           2: '1',
++                                                           3: '1',
++                                                           4: '1'}})
++        
++        # SFP modules (2,4) removed in some ports.
++        event.get_presence_bitmap = MagicMock(return_value=5)
++        assert event.get_sfp_event(2000) == (True, {'sfp':{2: '0',
++                                                           4: '0'}})
++
++        # SFP modules (1,3) removed from all ports.
++        event.get_presence_bitmap = MagicMock(return_value=0)
++        assert event.get_sfp_event(2000) == (True, {'sfp':{1: '0',
++                                                           3: '0'}})
++
++        # All SFP modules remains removed from all ports.
++        event.get_presence_bitmap = MagicMock(return_value=0)
++        assert event.get_sfp_event(2000) == (True, {'sfp':{}})
++        
++        # SFP modules (1,4) inserted in some ports.
++        event.get_presence_bitmap = MagicMock(return_value=9)
++        assert event.get_sfp_event(2000) == (True, {'sfp':{1: '1',
++                                                           4: '1'}})
++
++        # SFP modules (2,3) removed from all ports.
++        event.get_presence_bitmap = MagicMock(return_value=15)
++        assert event.get_sfp_event(2000) == (True, {'sfp':{2: '1',
++                                                           3: '1'}})
++
++        # All SFP modules remains inserted.
++        event.get_presence_bitmap = MagicMock(return_value=15)
++        assert event.get_sfp_event(100) == (True, {'sfp':{}})
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_helper.py b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_helper.py
+new file mode 100644
+index 000000000..7c44fa6b4
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_helper.py
+@@ -0,0 +1,26 @@
++from sonic_platform.helper import *
++import os
++import sys
++import pytest
++
++if sys.version_info >= (3, 3):
++    from unittest.mock import MagicMock, patch
++else:
++    from mock import MagicMock, patch
++
++test_dir_path = os.path.dirname(os.path.abspath(__file__))
++test_text_path = os.path.join(test_dir_path, 'test_helper_read.txt')
++test_text_fail_path = os.path.join(test_dir_path, 'test_helper_read_fail.txt')
++
++class TestSonicPlatformAPIHelper(object):
++
++    def test_APIHelper_read_txt_file(self):
++        with open(test_text_path, "w") as f:
++            f.write("API-HELPER-TEST")
++
++        api_helper = APIHelper()
++        from sonic_py_common import device_info
++        device_info = MagicMock(return_value=('platform','hwsku'))
++        assert api_helper.read_txt_file(test_text_path) == 'API-HELPER-TEST'
++
++        assert api_helper.read_txt_file(test_text_fail_path) == None
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_sfp.py b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_sfp.py
+new file mode 100644
+index 000000000..10ecc189a
+--- /dev/null
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/tests/test_sfp.py
+@@ -0,0 +1,316 @@
++import sonic_platform.sfp
++from sonic_platform.sfp import *
++import sys
++import pytest
++import threading
++import fcntl
++
++if sys.version_info >= (3, 3):
++    from unittest.mock import MagicMock, patch
++else:
++    from mock import MagicMock, patch
++
++test_dir_path = os.path.dirname(os.path.abspath(__file__))
++test_path_read_specific_bytes = os.path.join(test_dir_path, 'test_sfp_eeprom.txt')
++test_words_to_read_specific_bytes = b'abcde01234'
++
++test_fail_path = os.path.join(test_dir_path, 'test_sfp_eeprom_not_exist.txt')
++test_eeprom_read_path = os.path.join(test_dir_path, 'test_sfp_eeprom_read')
++test_eeprom_write_path = os.path.join(test_dir_path, 'test_sfp_eeprom_write')
++test_eeprom_fail_path = '/tmp/test/hoge/test_sfp_eeprom_not_exist.txt'
++
++test_words = b'01234567890123456789012345678901234567890123456789'\
++             b'00112233445566778899000111222333444555666777888999'\
++             b'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX'\
++             b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++             b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++             b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'\
++
++
++from sonic_platform_base.sfp_base import SfpBase
++from sonic_platform.helper import APIHelper
++SfpBase = MagicMock()
++APIHelper = MagicMock()
++
++class TestSonicPlatformSfp(object):
++
++    def test_Sfp__read_eeprom_specific_bytes(self):
++        create_dummy_eeprom_read_specific_bytes()
++        sfp = Sfp()
++        sfp._get_eeprom_path = MagicMock(return_value=test_path_read_specific_bytes)
++        val = sfp._read_eeprom_specific_bytes(0, 5)
++        assert val == ['61', '62', '63', '64', '65'] # abcde
++
++        val = sfp._read_eeprom_specific_bytes(5, 5)
++        assert val == ['30', '31', '32', '33', '34'] # 01234
++
++        val = sfp._read_eeprom_specific_bytes(10, 5) # too much offset
++        assert val == None
++
++        val = sfp._read_eeprom_specific_bytes(0, 20) # too much num_bytes to read
++        assert val == None
++
++        sfp._get_eeprom_path = MagicMock(return_value=test_fail_path)
++        val = sfp._read_eeprom_specific_bytes(0, 5)
++        assert val == None
++
++    def test_Sfp__detect_sfp_type(self):
++        sfp = Sfp()
++        sfp._read_eeprom_specific_bytes = MagicMock(return_value=['03'])
++        sfp._detect_sfp_type()
++        assert sfp.sfp_type == 'SFP'
++
++        sfp._read_eeprom_specific_bytes = MagicMock(return_value=['0d'])
++        sfp._detect_sfp_type()
++        assert sfp.sfp_type == 'QSFP'
++
++        sfp._read_eeprom_specific_bytes = MagicMock(return_value=['11'])
++        sfp._detect_sfp_type()
++        assert sfp.sfp_type == 'QSFP'
++
++        sfp._read_eeprom_specific_bytes = MagicMock(return_value=['18'])
++        sfp._detect_sfp_type()
++        assert sfp.sfp_type == 'QSFP_DD'
++
++        sfp._read_eeprom_specific_bytes = MagicMock(return_value=['UNSUPPORTED_SFP_TYPE'])
++        sfp._detect_sfp_type()
++        assert sfp.sfp_type == 'QSFP'
++
++        sfp._read_eeprom_specific_bytes = MagicMock(return_value=None)
++        sfp._detect_sfp_type()
++        assert sfp.sfp_type == 'QSFP'
++
++    def test_Sfp__get_eeprom_path(self):
++        sfp = Sfp()
++        sfp._index = 0
++        assert sfp._get_eeprom_path() == '/sys/bus/i2c/devices/25-0050/eeprom'
++
++    def test_Sfp_get_presence(self):
++        sfp = Sfp()
++        sfp._port_num = 0
++        sfp._api_helper.read_txt_file = MagicMock(return_value='1')
++        assert sfp.get_presence()
++
++        sfp._port_num = 17
++        sfp._api_helper.read_txt_file = MagicMock(return_value='0')
++        assert not sfp.get_presence()
++
++        sfp._port_num = 17
++        sfp._api_helper.read_txt_file = MagicMock(return_value=None)
++        assert not sfp.get_presence()
++
++    def test_Sfp_is_replaceable(self):
++        sfp = Sfp()
++        assert sfp.is_replaceable()
++
++    def test_Sfp_read_eeprom(self, capfd):
++        reset_dummy_eeprom(test_eeprom_read_path)
++        sonic_platform.sfp.I2C_EEPROM_PATH = test_eeprom_read_path
++        sfp = Sfp()
++        sfp._port_num = 0
++
++        # 0 <= offset <= 255
++        assert sfp.read_eeprom(0, 5) == bytearray(b'01234')
++
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(15, 5) == bytearray(b'56789')
++
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(255, 5) == bytearray(b'zAABB')
++
++        # 256 < offset
++        # divmod(offset, 128) = divmod(256, 128) = [2, 0]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(256, 5) == bytearray(b'CDEFG')
++
++        # divmod(offset, 128) = divmod(308, 128) = [2, 52]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(308, 5) == bytearray(b'xwvut')
++
++        # divmod(offset, 128) = divmod(383, 128) = [2, 127]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(383, 5) == bytearray(b'zAABB')
++
++        # divmod(offset, 128) = divmod(384, 128) = [3, 0]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(384, 5) == bytearray(b'CDEFG')
++
++        # divmod(offset, 128) = divmod(436, 128) = [3, 52]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(436, 5) == bytearray(b'xwvut')
++
++        # divmod(offset, 128) = divmod(511, 128) = [3, 127]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.read_eeprom(511, 5) == bytearray(b'zAABB')
++
++        sonic_platform.sfp.I2C_EEPROM_PATH = test_eeprom_fail_path
++        reset_dummy_eeprom(test_eeprom_write_path)
++        with pytest.raises(Exception) as e:
++            _ = sfp.read_eeprom(256, 5)
++        out, err = capfd.readouterr()
++        assert out == f"Error: unable to open file: [Errno 2] No such file or directory: '{test_eeprom_fail_path}'\n"
++        assert err == ""
++
++        reset_dummy_eeprom(test_eeprom_write_path)
++        with pytest.raises(Exception) as e:
++            _ = sfp.read_eeprom(0, 5)
++        out, err = capfd.readouterr()
++        assert out == f"Error: unable to open file: [Errno 2] No such file or directory: '{test_eeprom_fail_path}'\n"
++        assert err == ""
++
++        sonic_platform.sfp.I2C_EEPROM_PATH = test_eeprom_read_path
++        reset_dummy_eeprom(test_eeprom_write_path)
++        with pytest.raises(Exception) as e:
++            _ = sfp.read_eeprom(256, '5')
++        out, err = capfd.readouterr()
++        assert out == f"Error: unable to open file:  argument should be integer or None, not 'str'\n"
++        assert err == ""
++
++        reset_dummy_eeprom(test_eeprom_write_path)
++        with pytest.raises(Exception) as e:
++            _ = sfp.read_eeprom(0, '5')
++        out, err = capfd.readouterr()
++        assert out == f"Error: Unexpected Error: argument should be integer or None, not 'str'\n"
++        assert err == ""
++
++    def test_Sfp_write_eeprom(self, capfd):
++        reset_dummy_eeprom(test_eeprom_write_path)
++        sonic_platform.sfp.I2C_EEPROM_PATH = test_eeprom_write_path
++        sfp = Sfp()
++        sfp._port_num = 0
++
++        # 0 <= offset <= 255
++        assert sfp.write_eeprom(0, 5, b'abcde')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'abcde567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(50, 5, b'xxxxx')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'xxxxx233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(255, 5, b'00000')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyz00000CCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++        # 256 < offset
++        # divmod(offset, 128) = divmod(256, 128) = [2, 0]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(256, 5, b'11111')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzA\x0011111HIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++        # divmod(offset, 128) = divmod(308, 128) = [2, 52]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(308, 5, b'22222')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzA\x00CDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzy22222srqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++        # divmod(offset, 128) = divmod(383, 128) = [2, 127]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(383, 5, b'33333')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzA\x00CDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyz33333CCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++        # divmod(offset, 128) = divmod(256, 128) = [2, 0]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(256, 5, b'44444')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzA\x0044444HIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++        # divmod(offset, 128) = divmod(308, 128) = [2, 52]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(308, 5, b'55555')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzA\x00CDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzy55555srqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyzzAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++        # divmod(offset, 128) = divmod(383, 128) = [2, 127]
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert sfp.write_eeprom(383, 5, b'66666')
++        assert read_dummy_eeprom(test_eeprom_write_path) == \
++                        b'01234567890123456789012345678901234567890123456789'\
++                        b'00112233445566778899000111222333444555666777888999'\
++                        b'abcdefghijklmnopqrstuvwxyzA\x00CDEFGHIJKLMNOPQRSTUVWX'\
++                        b'YZZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfe'\
++                        b'dcbaaabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvww'\
++                        b'xxyyz66666CCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUU\n'
++
++
++        sonic_platform.sfp.I2C_EEPROM_PATH = test_eeprom_fail_path
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert not sfp.write_eeprom(256, 5, b'cdefg')
++        out, err = capfd.readouterr()
++        assert out == f"Error: unable to open file: [Errno 2] No such file or directory: '{test_eeprom_fail_path}'\n"
++        assert err == ""
++
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert not sfp.write_eeprom(0, 5, b'cdefg')
++        out, err = capfd.readouterr()
++        assert out == f"Error: unable to open file: [Errno 2] No such file or directory: '{test_eeprom_fail_path}'\n"
++        assert err == ""
++
++        sonic_platform.sfp.I2C_EEPROM_PATH = test_eeprom_write_path
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert not sfp.write_eeprom(256, 5, 'cdefg')
++        out, err = capfd.readouterr()
++        assert out == f"Error: Unexpected Error: a bytes-like object is required, not 'str'\n"
++        assert err == ""
++
++        reset_dummy_eeprom(test_eeprom_write_path)
++        assert not sfp.write_eeprom(0, 5, 'cdefg')
++        out, err = capfd.readouterr()
++        assert out == f"Error: Unexpected Error: a bytes-like object is required, not 'str'\n"
++        assert err == ""
++
++def create_dummy_eeprom_read_specific_bytes():
++    with open(test_path_read_specific_bytes, "wb") as f:
++        f.write(test_words_to_read_specific_bytes)
++
++def read_dummy_eeprom(file_path):
++    val = ''
++    with open(file_path, "rb") as f:
++        val = f.read()
++    return val
++
++def reset_dummy_eeprom(file_path):
++    with open(file_path, "wb") as f:
++        f.write(test_words)
+diff --git a/platform/broadcom/sonic-platform-modules-accton/as7946-30xb/sonic_platform_setup.py b/platform/broadcom/sonic-platform-modules-accton/as7946-30xb/sonic_platform_setup.py
+new file mode 100644
+index 000000000..0dbab543b
+--- /dev/null
++++ b/platform/broadcom/sonic-platform-modules-accton/as7946-30xb/sonic_platform_setup.py
+@@ -0,0 +1,41 @@
++from setuptools import setup
++
++DEVICE_NAME = 'accton'
++HW_SKU = 'x86_64-accton_as7946_30xb-r0'  
++
++setup(
++    name='sonic-platform',
++    version='1.0.0',
++    description='SONiC platform API implementation on Accton Platforms',
++    license='Apache 2.0',
++    author='SONiC Team',
++    author_email='linuxnetdev@microsoft.com',
++    url='https://github.com/Azure/sonic-buildimage',
++    maintainer='Michael Shih',
++    maintainer_email='michael_shih@edge-core.com',
++    packages=[
++        'sonic_platform',
++        'tests',
++    ],
++    tests_require=[
++        'pytest',
++        'pytest-cov',
++    ],
++    package_dir={
++        'sonic_platform': '../../../../device/{}/{}/sonic_platform'.format(DEVICE_NAME, HW_SKU),
++        'tests': '../../../../device/{}/{}/tests'.format(DEVICE_NAME, HW_SKU),
++    },
++    classifiers=[
++        'Development Status :: 3 - Alpha',
++        'Environment :: Plugins',
++        'Intended Audience :: Developers',
++        'Intended Audience :: Information Technology',
++        'Intended Audience :: System Administrators',
++        'License :: OSI Approved :: Apache Software License',
++        'Natural Language :: English',
++        'Operating System :: POSIX :: Linux',
++        'Programming Language :: Python :: 3.7',
++        'Topic :: Utilities',
++    ],
++    keywords='sonic SONiC platform PLATFORM',
++)
