@@ -14,3 +14,4 @@ packages:
     summary: Goldstone config file for $PLATFORM
     files:
         builds/init.sh: /var/lib/goldstone/device/$PLATFORM/init.sh
+        builds/xcvrd: /var/lib/goldstone/device/$PLATFORM/xcvrd
