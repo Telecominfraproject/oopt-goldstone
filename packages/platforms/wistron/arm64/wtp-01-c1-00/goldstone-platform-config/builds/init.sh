@@ -15,3 +15,4 @@ systemctl enable gs-south-tai
 systemctl enable gs-south-system
 systemctl enable gs-south-gearbox
 systemctl enable gs-south-dpll
+systemctl enable gs-xlate-or
