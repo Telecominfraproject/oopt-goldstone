@@ -1,0 +1,15 @@
+packages:
+  - name: gs-xlate-or
+    arch: $ARCH
+    version: 1.0.0
+    maintainer: goldstone-nos@googlegroups.com
+    summary: Goldstone OpenROADM Translator
+    before-remove: $X1/packages/base/any/xlate-or/before-remove.sh
+    depends:
+    - k3s
+    - gs-mgmt
+    files:
+        builds/gs-xlate-or-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
+        builds/manifests: /var/lib/gs-xlate-or/k8s
+        $X1/packages/base/any/xlate-or/builds/gs-xlate-or.service: /etc/systemd/system/
+        $X1/packages/base/any/xlate-or/builds/gs-xlate-or-yang.service: /etc/systemd/system/

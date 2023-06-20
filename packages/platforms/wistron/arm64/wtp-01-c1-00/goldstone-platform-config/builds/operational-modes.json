@@ -67,6 +67,60 @@
     },
     {
         "openroadm": {
+            "profile-name": "OR-W-100G-SC-Enh"
+        },
+        "description": "Open ROADM 100G SC Enhanced",
+        "line-rate": "100g",
+        "modulation-format": "dp-qpsk",
+        "fec-type": "ofec"
+    },
+    {
+        "openroadm": {
+            "profile-name": "OR-W-400G-oFEC-63.1Gbd"
+        },
+        "description": "Open ROADM 400G 63.1Gbd",
+        "line-rate": "400g",
+        "modulation-format": "dp-16-qam",
+        "fec-type": "ofec"
+    },
+    {
+        "openroadm": {
+            "profile-name": "OR-W-300G-oFEC-63.1Gbd"
+        },
+        "description": "Open ROADM 300G 63.1Gbd",
+        "line-rate": "300g",
+        "modulation-format": "dp-8-qam",
+        "fec-type": "ofec"
+    },
+    {
+        "openroadm": {
+            "profile-name": "OR-W-200G-oFEC-63.1Gbd"
+        },
+        "description": "Open ROADM 200G 63.1Gbd",
+        "line-rate": "200g",
+        "modulation-format": "dp-qpsk",
+        "fec-type": "ofec"
+    },
+    {
+        "openroadm": {
+            "profile-name": "OR-W-100G-oFEC-31.6Gbd"
+        },
+        "description": "Open ROADM 100G 31.6Gbd",
+        "line-rate": "100g",
+        "modulation-format": "dp-qpsk",
+        "fec-type": "ofec"
+    },
+    {
+        "openroadm": {
+            "profile-name": "OR-W-200G-oFEC-31.6Gbd"
+        },
+        "description": "Open ROADM 200G 31.6Gbd",
+        "line-rate": "200g",
+        "modulation-format": "dp-16-qam",
+        "fec-type": "ofec"
+    },
+    {
+        "openroadm": {
             "profile-name": "ORBKD-W-400G-1000X"
         },
         "description": "Open ROADM 400G bookend",

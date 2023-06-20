@@ -34,3 +34,4 @@
       timeout: 1200
       with_items:
         - gs-south-gearbox.service
+        - gs-xlate-or.service
