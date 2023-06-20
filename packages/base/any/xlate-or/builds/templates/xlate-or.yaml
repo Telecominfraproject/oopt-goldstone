@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: xlate-or
+    labels:
+        app: gs-mgmt
+        gs-mgmt: xlate-or
+spec:
+    selector:
+        matchLabels:
+            app: xlate-or
+    template:
+        metadata:
+            labels:
+                app: xlate-or
+        spec:
+            containers:
+            - name: xlate-or
+              image: MGMT_IMAGE_REPO/xlate-or:IMAGE_TAG
+              imagePullPolicy: IfNotPresent
+              command: ['gsxlated-openroadm']
+              args: ['--verbose', '$(OPERATIONAL_MODES_FILE)', '$(PLATFORM_FILE)']
+              env:
+              - name: OPERATIONAL_MODES_FILE
+                value: /current/operational-modes.json
+              - name: PLATFORM_FILE
+                value: /current/platform.json
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              - name: current
+                mountPath: /current
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo
+            - name: current
+              hostPath:
+                  path: /var/lib/goldstone/device/current

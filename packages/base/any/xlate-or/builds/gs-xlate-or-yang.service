@@ -1,0 +1,12 @@
+[Unit]
+Description=Goldstone Management Translate OpenROADM Daemon YANG model setup
+Before=gs-yang.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/gs-yang.py --install xlate-or
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target
