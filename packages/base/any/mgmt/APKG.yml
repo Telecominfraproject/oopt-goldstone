@@ -118,5 +118,7 @@ packages:
         $X1/packages/base/any/mgmt/builds/units/gs-south-onlp.service: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-south-onlp-yang.service: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-north-notif.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-ocnos.service: /etc/systemd/system/
+        $X1/packages/base/any/mgmt/builds/units/gs-south-ocnos-yang.service: /etc/systemd/system/
     after-install: $X1/packages/base/any/mgmt/gsmgmt-after-install.sh
     before-remove: $X1/packages/base/any/mgmt/gsmgmt-before-remove.sh

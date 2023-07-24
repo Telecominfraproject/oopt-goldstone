@@ -12,6 +12,7 @@ APPS = [
     "north-snmp",
     "north-gnmi",
     "south-sonic",
+    "south-ocnos",
     "south-gearbox",
     "south-dpll",
     "south-tai",

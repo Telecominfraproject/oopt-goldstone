@@ -5,3 +5,4 @@ resources:
 - south-onlp.yaml
 - south-sonic.yaml
 - south-tai.yaml
+- south-ocnos.yaml

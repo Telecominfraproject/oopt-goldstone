@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-ocnos
+spec:
+    template:
+        spec:
+            containers:
+            - name: ocnos
+              image: MGMT_IMAGE_REPO/south-ocnos:IMAGE_TAG
