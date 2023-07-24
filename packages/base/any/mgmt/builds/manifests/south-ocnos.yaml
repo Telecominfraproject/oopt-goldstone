@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ocnos-config
+  labels:
+      gs-mgmt: south-ocnos
+data:
+  conf.user: "ocnos"
+  conf.pass: "ocnos"
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: south-ocnos
+    labels:
+        app: gs-mgmt
+        gs-mgmt: south-ocnos
+spec:
+    selector:
+        matchLabels:
+            app: south-ocnos
+    template:
+        metadata:
+            labels:
+                app: south-ocnos
+        spec:
+            containers:
+            - name: ocnos
+              image: ghcr.io/oopt-goldstone/mgmt/south-ocnos:latest
+              imagePullPolicy: Never
+              command: ['gssouthd-ocnos']
+              args: ['--verbose', '--host', '$(OCNOS_CLUSTER_IP_SERVICE_HOST)', '--port', '$(OCNOS_CLUSTER_IP_SERVICE_PORT)', '--username', '$(USERNAME)', '--password', '$(PASSWORD)']
+              env:
+              - name: USERNAME
+                valueFrom:
+                  configMapKeyRef:
+                    name: ocnos-config
+                    key: conf.user
+              - name: PASSWORD
+                valueFrom:
+                  configMapKeyRef:
+                    name: ocnos-config
+                    key: conf.pass
+              volumeMounts:
+              - name: shm
+                mountPath: /dev/shm
+              - name: sysrepo
+                mountPath: /var/lib/sysrepo
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 2
+                periodSeconds: 10
+              startupProbe:
+                httpGet:
+                  path: /healthz
+                  port: liveness-port
+                failureThreshold: 120
+                periodSeconds: 1
+              ports:
+              - name: liveness-port
+                containerPort: 8080
+            volumes:
+            - name: shm
+              hostPath:
+                  path: /dev/shm
+            - name: sysrepo
+              hostPath:
+                  path: /var/lib/sysrepo

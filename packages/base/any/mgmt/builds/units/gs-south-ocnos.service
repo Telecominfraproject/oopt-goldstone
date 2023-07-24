@@ -1,0 +1,17 @@
+[Unit]
+Description=Goldstone Management South OcNOS daemon
+After=gs-yang.service ocnos.service
+Requires=gs-yang.service ocnos.service
+PartOf=gs-mgmt-south.target gs-mgmt.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sh -c 'while [ true ]; do ( kubectl get nodes | grep " Ready" ) && exit 0; sleep 1; done'
+ExecStart=/usr/bin/gs-mgmt.py start south-ocnos
+ExecStop=-/usr/bin/gs-mgmt.py stop south-ocnos
+RemainAfterExit=true
+StandardOutput=journal
+
+[Install]
+WantedBy=gs-mgmt-south.target
+Also=gs-south-ocnos-yang.service

@@ -13,7 +13,7 @@ KUBECTL_IMAGE ?= lachlanevenson/k8s-kubectl:latest # multi-arch image
 ifeq ($(ARCH), arm64)
     IMAGES += south-gearbox south-dpll
 else ifeq ($(ARCH), amd64)
-    IMAGES += south-sonic
+    IMAGES += south-sonic south-ocnos
 endif
 
 MGMT_IMAGES ?= $(addsuffix :$(IMAGE_TAG),$(addprefix $(GS_MGMT_IMAGE_REPO)/,$(IMAGES)))
