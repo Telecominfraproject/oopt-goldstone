@@ -9,3 +9,4 @@ systemctl enable gs-mgmt-south.target
 systemctl disable gs-north-gnmi
 systemctl enable ocnos
 systemctl enable gs-south-onlp
+systemctl enable gs-south-ocnos
