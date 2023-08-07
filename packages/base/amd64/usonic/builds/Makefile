@@ -1,4 +1,4 @@
-USONIC_IMAGES ?= docker.io/nlpldev/usonic-cli:latest ghcr.io/microsonic/usonic-debug:201904 docker.io/bitnami/kubectl:latest
+USONIC_IMAGES ?= ghcr.io/oopt-goldstone/usonic-cli:201904 ghcr.io/oopt-goldstone/usonic-debug:201904 docker.io/bitnami/kubectl:latest
 BCMD_IMAGE ?= bcmd:latest
 
 SAI_VERSION := 20220524

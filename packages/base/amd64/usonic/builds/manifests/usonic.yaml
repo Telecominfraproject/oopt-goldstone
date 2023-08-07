@@ -46,7 +46,7 @@ spec:
             dnsPolicy: ClusterFirstWithHostNet
             initContainers:
             - name: init-loglevel
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['/var/run/start/start.sh']
               volumeMounts:
@@ -56,9 +56,9 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: init-configdb
-              image: docker.io/nlpldev/usonic-cli:latest
+              image: ghcr.io/oopt-goldstone/usonic-cli:201904
               imagePullPolicy: IfNotPresent
-              command: ['sonic-cfggen', '-k', 'dummy', '-p', '/etc/usonic/port_config.ini', '-j', '/etc/sonic/config_db.json', '--write-to-db']
+              command: ['sonic-cfggen', '-s', '/var/run/redis/redis.sock', '-k', 'dummy', '-p', '/etc/usonic/port_config.ini', '-j', '/etc/sonic/config_db.json', '--write-to-db']
               volumeMounts:
               - name: sonic-db-config
                 mountPath: /var/run/redis/sonic-db/
@@ -66,13 +66,15 @@ spec:
                 mountPath: /etc/sonic/
               - name: usonic-config
                 mountPath: /etc/usonic/
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
             - name: complete-init
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['redis-cli', '-h', 'redis.default.svc.cluster.local', '-n', '4', 'SET', 'CONFIG_DB_INITIALIZED', '1']
             containers:
             - name: syncd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'service syslog-ng start && dsserve /usr/bin/syncd -p /etc/sonic/sai.profile -d']
               env:
@@ -100,7 +102,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: orchagent
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['orchagent']
               args: ['-m', '$(GLOBAL_MAC_ADDRESS)']
@@ -263,7 +265,7 @@ spec:
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-bcm', '--timeout=5m']
             containers:
             - name: portsyncd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['portsyncd']
               volumeMounts:
@@ -336,7 +338,7 @@ spec:
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
             containers:
             - name: neighsyncd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['neighsyncd']
               volumeMounts:
@@ -388,7 +390,7 @@ spec:
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-core', '--timeout=5m']
             containers:
             - name: fpmsyncd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['fpmsyncd']
               volumeMounts:
@@ -403,7 +405,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: zebra
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['/usr/lib/frr/zebra', '-A', '127.0.0.1', '-s', '90000000', '-M', 'fpm']
               volumeMounts:
@@ -414,7 +416,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: staticd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['/usr/lib/frr/staticd', '-A', '127.0.0.1']
               volumeMounts:
@@ -425,7 +427,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: bgpd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['/usr/lib/frr/bgpd', '-A', '127.0.0.1']
               volumeMounts:
@@ -477,7 +479,7 @@ spec:
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
             containers:
             - name: teamsyncd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['teamsyncd']
               volumeMounts:
@@ -492,7 +494,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: teammgrd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['teammgrd']
               volumeMounts:
@@ -548,7 +550,7 @@ spec:
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-core', '--timeout=5m']
             containers:
             - name: lldpd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['/usr/sbin/lldpd', '-d', '-I', 'Ethernet*,eth0', '-C', 'eth0']
               volumeMounts:
@@ -563,7 +565,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
                     #            - name: lldpsyncd
-                    #              image: ghcr.io/microsonic/usonic-debug:201904
+                    #              image: ghcr.io/oopt-goldstone/usonic-debug:201904
                     #              imagePullPolicy: IfNotPresent
                     #              command: ['/usr/bin/env', 'python2', '-m', 'lldp_syncd']
                     #              volumeMounts:
@@ -578,7 +580,7 @@ spec:
                     #                capabilities:
                     #                    add: ["NET_ADMIN"]
                     #            - name: lldpmgrd
-                    #              image: ghcr.io/microsonic/usonic-debug:201904
+                    #              image: ghcr.io/oopt-goldstone/usonic-debug:201904
                     #              imagePullPolicy: IfNotPresent
                     #              command: ['/usr/bin/lldpmgrd']
                     #              volumeMounts:
@@ -635,7 +637,7 @@ spec:
               imagePullPolicy: IfNotPresent
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
             - name: swssconfig
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['swssconfig']
               volumeMounts:
@@ -643,7 +645,7 @@ spec:
                 mountPath: /var/run/redis/redis.sock
             containers:
             - name: vlanmgrd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['sh', '-c', 'mount -o remount,rw /sys && vlanmgrd']
               volumeMounts:
@@ -654,7 +656,7 @@ spec:
               securityContext:
                 privileged: true
             - name: intfmgrd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['intfmgrd']
               volumeMounts:
@@ -666,7 +668,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: portmgrd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['portmgrd']
               volumeMounts:
@@ -678,7 +680,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: nbrmgrd
-              image: ghcr.io/microsonic/usonic-debug:201904
+              image: ghcr.io/oopt-goldstone/usonic-debug:201904
               imagePullPolicy: IfNotPresent
               command: ['nbrmgrd']
               volumeMounts:
