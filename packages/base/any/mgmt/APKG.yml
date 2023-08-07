@@ -100,7 +100,6 @@ packages:
         builds/mgmt-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
         builds/k8s-$ARCH.tar: /var/lib/rancher/k3s/agent/images/
         builds/manifests:  /var/lib/goldstone/k8s
-        $X1/packages/base/any/mgmt/builds/manifests:  /var/lib/goldstone/k8s/base
         $X1/packages/base/any/mgmt/builds/gs-mgmt.py: /usr/bin/
         $X1/packages/base/any/mgmt/builds/units/gs-mgmt.target: /etc/systemd/system/
         $X1/packages/base/any/mgmt/builds/units/gs-mgmt-south.target: /etc/systemd/system/
