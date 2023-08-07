@@ -5,9 +5,12 @@ metadata:
 spec:
     containers:
     - name: cli
-      image: docker.io/nlpldev/usonic-cli:latest
+      image: ghcr.io/oopt-goldstone/usonic-cli:201904
       imagePullPolicy: IfNotPresent
-      command: ['sh', '-c', 'sleep 100000']
+      command: ['bash', '-c', 'trap : TERM INT; sleep infinity & wait']
+      env:
+      - name: DEFAULT_DB_HOST
+        value: "redis.default.svc.cluster.local"
       volumeMounts:
       - name: sonic-db-config
         mountPath: /var/run/redis/sonic-db/
