@@ -29,7 +29,7 @@ You can download pre-built Goldstone ONIE installer from the [release](https://g
 - make
 - Docker ( version >= 18.09, enable [buildkit](https://docs.docker.com/develop/develop-images/build_enhancements/) )
   - Enable an execution of different multi-architecture containers by QEMU and binfmt_misc
-    - You can do this by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p`
+    - You can do this by running `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes` with administrative privilege
     - See https://github.com/multiarch/qemu-user-static for details
 - Python
 

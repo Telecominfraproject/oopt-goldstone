@@ -1,0 +1,6 @@
+{
+    "LDC040-DO"    : "libtai-ldc.so",
+    "LDC041-EO"    : "libtai-ldc.so",
+    "TRB100DAA-01" : "libtai-lumentum.so",
+    "TRB200DAA-01" : "libtai-lumentum.so"
+}
