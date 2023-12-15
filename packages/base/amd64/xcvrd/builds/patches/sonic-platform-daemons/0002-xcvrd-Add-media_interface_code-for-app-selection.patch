@@ -1,0 +1,181 @@
+From 50c931649b58a854a3e1c72d16fc89e02b0989aa Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 15 Dec 2023 17:28:25 +0900
+Subject: [PATCH 2/6] [xcvrd] Add media_interface_code for app selection
+
+This change supports the media_interfaces_code field in the CONFIG_DB PORT
+table. Users can select the application more precisely by specifying it.
+---
+ sonic-xcvrd/tests/test_xcvrd.py | 52 +++++++++++++++++++++++++++++++--
+ sonic-xcvrd/xcvrd/xcvrd.py      | 29 ++++++++++++++++--
+ 2 files changed, 77 insertions(+), 4 deletions(-)
+
+diff --git a/sonic-xcvrd/tests/test_xcvrd.py b/sonic-xcvrd/tests/test_xcvrd.py
+index 82a05b4..0ddf1b8 100644
+--- a/sonic-xcvrd/tests/test_xcvrd.py
++++ b/sonic-xcvrd/tests/test_xcvrd.py
+@@ -685,6 +685,46 @@ class TestXcvrdScript(object):
+         task.xcvr_table_helper.get_cfg_port_tbl = mock_table_helper.get_cfg_port_tbl
+         assert task.get_configured_tx_power_from_db('Ethernet0') == -10
+ 
++    @patch('xcvrd.xcvrd.XcvrTableHelper')
++    def test_CmisManagerTask_get_configured_media_if_from_db(self, mock_table_helper):
++        port_mapping = PortMapping()
++        stop_event = threading.Event()
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        cfg_port_tbl = MagicMock()
++        cfg_port_tbl.get = MagicMock(return_value=(True, ()))
++        mock_table_helper.get_cfg_port_tbl = MagicMock(return_value=cfg_port_tbl)
++        task.xcvr_table_helper.get_cfg_port_tbl = mock_table_helper.get_cfg_port_tbl
++        assert task.get_configured_media_if_from_db('Ethernet0') == None
++
++        cfg_port_tbl.get = MagicMock(return_value=(True, (('media_interface_code', 'ZR100-OFEC-QPSK'),)))
++        assert task.get_configured_media_if_from_db('Ethernet0') == 'ZR100-OFEC-QPSK'
++
++    def test_CmisManagerTask_get_cmis_application_desired(self):
++        port_mapping = PortMapping()
++        stop_event = threading.Event()
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        mock_xcvr_api = MagicMock()
++        mock_xcvr_api.get_application_advertisement = MagicMock(return_value={1: {'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
++                                                                                  'module_media_interface_id': '400ZR, DWDM, amplified',
++                                                                                  'media_lane_count': 1,
++                                                                                  'host_lane_count': 8,
++                                                                                  'host_lane_assignment_options': 1,
++                                                                                  'media_lane_assignment_options':1
++                                                                                  },
++                                                                              10: { 'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
++                                                                                    'module_media_interface_id': 'ZR400-OFEC-16QAM',
++                                                                                    'media_lane_count': 1,
++                                                                                    'host_lane_count': 8,
++                                                                                    'host_lane_assignment_options': 1,
++                                                                                    'media_lane_assignment_options': 1
++                                                                                    }})
++
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, '400ZR, DWDM, amplified') == 1
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, 'ZR400-OFEC-16QAM') == 10
++        assert task.get_cmis_application_desired(mock_xcvr_api, 0, 400000, '400ZR, DWDM, amplified') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8,      0, '400ZR, DWDM, amplified') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, None) == 1
++
+     @patch('xcvrd.xcvrd.platform_chassis')
+     @patch('xcvrd.xcvrd_utilities.port_mapping.subscribe_port_update_event', MagicMock(return_value=(None, None)))
+     @patch('xcvrd.xcvrd_utilities.port_mapping.handle_port_update_event', MagicMock())
+@@ -803,7 +843,7 @@ class TestXcvrdScript(object):
+         stop_event = threading.Event()
+         task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
+ 
+-        appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed)
++        appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed, None)
+         assert task.get_cmis_host_lanes_mask(mock_xcvr_api, appl, host_lane_count, subport) == expected
+ 
+     def test_CmisManagerTask_post_port_active_apsel_to_db(self):
+@@ -936,6 +976,14 @@ class TestXcvrdScript(object):
+                 'host_lane_count': 2,
+                 'host_lane_assignment_options': 85,
+                 'media_lane_assignment_options': 15
++            },
++            10: {
++                'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
++                'module_media_interface_id': 'ZR400-OFEC-16QAM',
++                'media_lane_count': 1,
++                'host_lane_count': 8,
++                'host_lane_assignment_options': 1,
++                'media_lane_assignment_options': 1
+             }
+         })
+         mock_xcvr_api.get_module_state = MagicMock(return_value='ModuleReady')
+@@ -1003,6 +1051,7 @@ class TestXcvrdScript(object):
+ 
+         task.get_host_tx_status = MagicMock(return_value='true')
+         task.get_port_admin_status = MagicMock(return_value='up')
++        task.get_configured_media_if_from_db = MagicMock(return_value='ZR400-OFEC-16QAM')
+         task.get_configured_tx_power_from_db = MagicMock(return_value=-13)
+         task.get_configured_laser_freq_from_db = MagicMock(return_value=193100)
+         task.configure_tx_output_power = MagicMock(return_value=1)
+@@ -1472,7 +1521,6 @@ class TestXcvrdScript(object):
+         assert not _wrapper_get_transceiver_info(1)
+ 
+         mock_chassis.get_sfp = MagicMock(side_effect=NotImplementedError)
+-        mock_sfputil.get_transceiver_info_dict = MagicMock(return_value=True)
+ 
+         assert _wrapper_get_transceiver_info(1)
+ 
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index 253f03c..d685890 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -947,6 +947,8 @@ class CmisManagerTask(threading.Thread):
+                 self.port_dict[lport]['host_tx_ready'] = port_change_event.port_dict['host_tx_ready']
+             if 'admin_status' in port_change_event.port_dict:
+                 self.port_dict[lport]['admin_status'] = port_change_event.port_dict['admin_status']
++            if 'media_interface_code' in port_change_event.port_dict:
++                self.port_dict[lport]['media_interface_code'] = port_change_event.port_dict['media_interface_code']
+             if 'laser_freq' in port_change_event.port_dict:
+                 self.port_dict[lport]['laser_freq'] = int(port_change_event.port_dict['laser_freq'])
+             if 'tx_power' in port_change_event.port_dict:
+@@ -988,7 +990,20 @@ class CmisManagerTask(threading.Thread):
+             speed = 1000
+         return speed
+ 
+-    def get_cmis_application_desired(self, api, host_lane_count, speed):
++    def get_configured_media_if_from_db(self, lport):
++        """
++        Return the media interface code configured by user in CONFIG_DB's PORT table
++        """
++        media_if = None
++        asic_index = self.port_mapping.get_asic_id_for_logical_port(lport)
++        port_tbl = self.xcvr_table_helper.get_cfg_port_tbl(asic_index)
++
++        found, port_info = port_tbl.get(lport)
++        if found and 'media_interface_code' in dict(port_info):
++            media_if = dict(port_info)['media_interface_code']
++        return media_if
++
++    def get_cmis_application_desired(self, api, host_lane_count, speed, media_if):
+         """
+         Get the CMIS application code that matches the specified host side configurations
+ 
+@@ -999,6 +1014,8 @@ class CmisManagerTask(threading.Thread):
+                 Number of lanes on the host side
+             speed:
+                 Integer, the port speed of the host interface
++            media_if:
++                String, the media interface code ID of SFF8024
+ 
+         Returns:
+             Integer, the transceiver-specific application code
+@@ -1014,6 +1031,9 @@ class CmisManagerTask(threading.Thread):
+                 continue
+             if self.get_interface_speed(d.get('host_electrical_interface_id')) != speed:
+                 continue
++            # when media_if is None, select appl_code only by host_lane_count and speed.
++            if media_if != None and d.get('module_media_interface_id') != media_if:
++                continue
+             appl_code = c
+             break
+ 
+@@ -1436,6 +1456,11 @@ class CmisManagerTask(threading.Thread):
+                 if pport < 0 or speed == 0 or len(lanes) < 1 or subport < 0:
+                     continue
+ 
++                # Always get configured media_if from CONFIG_DB,
++                # to enable user to select appl_code also when the user sets only speed and lanes.
++                self.port_dict[lport]['media_interface_code'] = self.get_configured_media_if_from_db(lport)
++                media_if = self.port_dict[lport]['media_interface_code']
++
+                 # Desired port speed on the host side
+                 host_speed = speed
+                 host_lane_count = len(lanes.split(','))
+@@ -1504,7 +1529,7 @@ class CmisManagerTask(threading.Thread):
+                     # CMIS state transitions
+                     if state == self.CMIS_STATE_INSERTED:
+                         self.port_dict[lport]['appl'] = self.get_cmis_application_desired(api,
+-                                                                host_lane_count, host_speed)
++                                                                host_lane_count, host_speed, media_if)
+                         if self.port_dict[lport]['appl'] < 1:
+                             self.log_error("{}: no suitable app for the port appl {} host_lane_count {} "
+                                             "host_speed {}".format(lport, appl, host_lane_count, host_speed))
+-- 
+2.20.1
+

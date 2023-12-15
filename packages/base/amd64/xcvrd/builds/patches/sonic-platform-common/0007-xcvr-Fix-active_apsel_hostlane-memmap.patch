@@ -1,0 +1,25 @@
+From d6f8caadc2f4255ec041b4ee95b6046df41e0e02 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Thu, 18 Jan 2024 13:25:22 +0900
+Subject: [PATCH 7/7] [xcvr] Fix active_apsel_hostlane memmap
+
+---
+ sonic_platform_base/sonic_xcvr/mem_maps/public/cmis.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sonic_platform_base/sonic_xcvr/mem_maps/public/cmis.py b/sonic_platform_base/sonic_xcvr/mem_maps/public/cmis.py
+index 140faea..b0d8b85 100644
+--- a/sonic_platform_base/sonic_xcvr/mem_maps/public/cmis.py
++++ b/sonic_platform_base/sonic_xcvr/mem_maps/public/cmis.py
+@@ -137,7 +137,7 @@ class CmisMemMap(XcvrMemMap):
+ 
+             RegGroupField(consts.ACTIVE_APSEL_CODE,
+                 *(NumberRegField("%s%d" % (consts.ACTIVE_APSEL_HOSTLANE, lane) , self.getaddr(0x11, offset),
+-                    *(RegBitField("Bit%d" % bit, bit) for bit in range(4, 7)))
++                    *(RegBitField("Bit%d" % bit, bit) for bit in range(4, 8)))
+                  for lane, offset in zip(range(1, 9), range(206, 214)))
+             ),
+ 
+-- 
+2.20.1
+

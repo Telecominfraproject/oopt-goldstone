@@ -1,84 +1,23 @@
-diff --git a/setup.py b/setup.py
-index 9edd230..6665633 100644
---- a/setup.py
-+++ b/setup.py
-@@ -22,7 +22,7 @@ for package in sonic_dependencies:
- 
- setup(
-     name='sonic-platform-common',
--    version='1.0',
-+    version='1.0.1',
-     description='Platform-specific peripheral hardware interface APIs for SONiC',
-     license='Apache 2.0',
-     author='SONiC Team',
-diff --git a/sonic_platform_base/sonic_sfp/sff8024.py b/sonic_platform_base/sonic_sfp/sff8024.py
-index 19f81a3..7a6bdfa 100644
---- a/sonic_platform_base/sonic_sfp/sff8024.py
-+++ b/sonic_platform_base/sonic_sfp/sff8024.py
-@@ -274,6 +274,10 @@ sm_media_interface = {
-     '3d': '25G-LR-BiDi',
-     '3e': '400ZR, DWDM, amplified',
-     '3f': '400ZR, Single Wavelength, Unamplified',
-+    '46': 'ZR400-OFEC-16QAM',
-+    '47': 'ZR300-OFEC-8QAM',
-+    '48': 'ZR200-OFEC-QPSK',
-+    '49': 'ZR100-OFEC-QPSK',
-     }
- 
- passive_copper_media_interface = {
-diff --git a/sonic_platform_base/sonic_xcvr/api/credo/__init__.py b/sonic_platform_base/sonic_xcvr/api/credo/__init__.py
-new file mode 100644
-index 0000000..e69de29
-diff --git a/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py b/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py
-index bb7e3a7..03f76bd 100644
---- a/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py
-+++ b/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py
-@@ -487,6 +487,11 @@ class CCmisApi(CmisApi):
-         ========================================================================
-         """
-         trans_dom_th = super(CCmisApi,self).get_transceiver_threshold_info()
-+
-+        # TODO: Xcvrd doesn't use the vdm alarms.
-+        #       When xcvrd implements these alarms, restore here.
-+        return trans_dom_th
-+
-         try:
-             trans_dom_th['biasxihighalarm'] = self.vdm_dict['Modulator Bias X/I [%]'][1][1]
-             trans_dom_th['biasxilowalarm'] = self.vdm_dict['Modulator Bias X/I [%]'][1][2]
-diff --git a/sonic_platform_base/sonic_xcvr/api/public/cmis.py b/sonic_platform_base/sonic_xcvr/api/public/cmis.py
-index a677f32..3c32297 100644
---- a/sonic_platform_base/sonic_xcvr/api/public/cmis.py
-+++ b/sonic_platform_base/sonic_xcvr/api/public/cmis.py
-@@ -282,6 +282,11 @@ class CmisApi(XcvrApi):
-             "txbiaslowwarning": float("{:.3f}".format(thresh[consts.TX_BIAS_LOW_WARNING_FIELD]*tx_bias_scale))
-             if tx_bias_scale is not None else 'N/A'
-         }
-+
-+        # TODO: Xcvrd doesn't use the alarms of laser_temp, post_fec_ber, pre_fec_ber and vdm info.
-+        #       When xcvrd implements these alarms, restore here.
-+        return threshold_info_dict
-+
-         laser_temp_dict = self.get_laser_temperature()
-         try:
-             threshold_info_dict['lasertemphighalarm'] = laser_temp_dict['high alarm']
-@@ -2019,7 +2024,7 @@ class CmisApi(XcvrApi):
-             key = "{}_{}".format(consts.HOST_ELECTRICAL_INTERFACE, app)
-             val = dic.get(key)
-             if val in [None, 'Unknown', 'Undefined']:
--                break
-+                continue
-             buf['host_electrical_interface_id'] = val
- 
-             prefix = map.get(self.xcvr_eeprom.read(consts.MEDIA_TYPE_FIELD))
-diff --git a/sonic_platform_base/sonic_xcvr/codes/credo/__init__.py b/sonic_platform_base/sonic_xcvr/codes/credo/__init__.py
-new file mode 100644
-index 0000000..e69de29
+From f398c7cbca15cdd264e72e2f024248089ee3574b Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Tue, 16 Jan 2024 17:34:35 +0900
+Subject: [PATCH 6/7] [xcvr] Limit the VDM items for performance
+
+This change limits the VDM items. This reduces processing time to get the
+VDM items and improve performance.
+---
+ .../sonic_xcvr/codes/public/cmis.py           | 85 ++++++++++---------
+ 1 file changed, 43 insertions(+), 42 deletions(-)
+
 diff --git a/sonic_platform_base/sonic_xcvr/codes/public/cmis.py b/sonic_platform_base/sonic_xcvr/codes/public/cmis.py
-index b757635..108fdca 100644
+index b757635..c05f59f 100644
 --- a/sonic_platform_base/sonic_xcvr/codes/public/cmis.py
 +++ b/sonic_platform_base/sonic_xcvr/codes/public/cmis.py
-@@ -72,50 +72,50 @@ class CmisCodes(Sff8024):
+@@ -70,52 +70,53 @@ class CmisCodes(Sff8024):
+         12: 'ConfigInProgress',
+     }
  
++    # Limit the VDM items to reduce the delay in state retrieval.
      VDM_TYPE = {
          # VDM_ID: [VDM_NAME, DATA_TYPE, SCALE]
 -        1: ['Laser Age [%]', 'U16', 1],
@@ -170,6 +109,6 @@ index b757635..108fdca 100644
      }
  
      CDB_FAIL_STATUS = {
-diff --git a/sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py b/sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py
-new file mode 100644
-index 0000000..e69de29
+-- 
+2.20.1
+

@@ -1,0 +1,59 @@
+From a2808d00e6dff25b1312a2847e31261c1cf19bc3 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 15 Dec 2023 16:30:43 +0900
+Subject: [PATCH 2/7] [xcvr] Allow non sequential appl code
+
+This change allows non sequential application codes. This supports
+transceivers that advertise non sequential application codes that do not
+follow the CMIS specification.
+---
+ sonic_platform_base/sonic_xcvr/api/public/cmis.py | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/sonic_platform_base/sonic_xcvr/api/public/cmis.py b/sonic_platform_base/sonic_xcvr/api/public/cmis.py
+index a677f32..b42f607 100644
+--- a/sonic_platform_base/sonic_xcvr/api/public/cmis.py
++++ b/sonic_platform_base/sonic_xcvr/api/public/cmis.py
+@@ -768,7 +768,8 @@ class CmisApi(XcvrApi):
+             return 0
+         
+         appl_advt = self.get_application_advertisement()
+-        return appl_advt[appl]['media_lane_count'] if len(appl_advt) >= appl else 0
++        # TODO: If following the CMIS specification, this should deny non-sequential appl.
++        return appl_advt[appl]['media_lane_count']
+ 
+     def get_media_interface_technology(self):
+         '''
+@@ -787,7 +788,8 @@ class CmisApi(XcvrApi):
+             return 0
+ 
+         appl_advt = self.get_application_advertisement()
+-        return appl_advt[appl]['host_lane_assignment_options'] if len(appl_advt) >= appl else 0
++        # TODO: If following the CMIS specification, this should deny non-sequential appl.
++        return appl_advt[appl]['host_lane_assignment_options']
+ 
+     def get_media_lane_assignment_option(self, appl=1):
+         '''
+@@ -800,7 +802,8 @@ class CmisApi(XcvrApi):
+             return 0
+         
+         appl_advt = self.get_application_advertisement()
+-        return appl_advt[appl]['media_lane_assignment_options'] if len(appl_advt) >= appl else 0
++        # TODO: If following the CMIS specification, this should deny non-sequential appl.
++        return appl_advt[appl]['media_lane_assignment_options']
+ 
+     def get_active_apsel_hostlane(self):
+         '''
+@@ -2019,7 +2022,8 @@ class CmisApi(XcvrApi):
+             key = "{}_{}".format(consts.HOST_ELECTRICAL_INTERFACE, app)
+             val = dic.get(key)
+             if val in [None, 'Unknown', 'Undefined']:
+-                break
++                # TODO: If following the CMIS specification, this should deny non-sequential appl.
++                continue
+             buf['host_electrical_interface_id'] = val
+ 
+             prefix = map.get(self.xcvr_eeprom.read(consts.MEDIA_TYPE_FIELD))
+-- 
+2.20.1
+

@@ -1,0 +1,27 @@
+From dc34ecc73591e440de45dc30f82e282abb22c588 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Tue, 26 Dec 2023 09:29:44 +0900
+Subject: [PATCH 4/6] [xcvrd] Use TCP to connect with STATE_DB
+
+This change makes xcvrd to use TCP connections in order to access external
+databases.
+---
+ sonic-xcvrd/xcvrd/xcvrd.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index ec3c14a..69e92d6 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -1923,7 +1923,7 @@ class SfpStateUpdateTask(threading.Thread):
+         retry_eeprom_set = set()
+ 
+         warmstart = swsscommon.WarmStart()
+-        warmstart.initialize("xcvrd", "pmon")
++        warmstart.initialize("xcvrd", "pmon", isTcpConn=True)
+         warmstart.checkWarmStart("xcvrd", "pmon", False)
+         is_warm_start = warmstart.isWarmStart()
+ 
+-- 
+2.20.1
+

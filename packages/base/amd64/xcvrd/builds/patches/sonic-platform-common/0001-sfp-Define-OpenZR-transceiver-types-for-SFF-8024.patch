@@ -1,0 +1,27 @@
+From 08bfd14fa217fdc4ec7a7c6b8354b117eda4a9d6 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 15 Dec 2023 16:27:14 +0900
+Subject: [PATCH 1/7] [sfp] Define OpenZR+ transceiver types for SFF-8024
+
+---
+ sonic_platform_base/sonic_sfp/sff8024.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/sonic_platform_base/sonic_sfp/sff8024.py b/sonic_platform_base/sonic_sfp/sff8024.py
+index 19f81a3..7a6bdfa 100644
+--- a/sonic_platform_base/sonic_sfp/sff8024.py
++++ b/sonic_platform_base/sonic_sfp/sff8024.py
+@@ -274,6 +274,10 @@ sm_media_interface = {
+     '3d': '25G-LR-BiDi',
+     '3e': '400ZR, DWDM, amplified',
+     '3f': '400ZR, Single Wavelength, Unamplified',
++    '46': 'ZR400-OFEC-16QAM',
++    '47': 'ZR300-OFEC-8QAM',
++    '48': 'ZR200-OFEC-QPSK',
++    '49': 'ZR100-OFEC-QPSK',
+     }
+ 
+ passive_copper_media_interface = {
+-- 
+2.20.1
+
