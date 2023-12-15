@@ -1,0 +1,231 @@
+From e3170f717ee23522eb7a82a57f0841f6a32a313f Mon Sep 17 00:00:00 2001
+From: Kazuya Anazawa <48557913+KazuyaAnazawa@users.noreply.github.com>
+Date: Wed, 20 Dec 2023 11:10:31 +0900
+Subject: [PATCH 3/3] [as7946-30xb] Use onlp_shlock API
+
+This introduces onlp_shlock API for accessing transceivers in order to avoid
+conflicts with other services that share the I2C bus.
+---
+ .../sonic_platform/helper.py                  | 10 +--
+ .../sonic_platform/sfp.py                     | 62 +++++++++----------
+ 2 files changed, 36 insertions(+), 36 deletions(-)
+
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py
+index da9045417..cf236f5f5 100644
+--- a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py
+@@ -3,21 +3,21 @@ import struct
+ import subprocess
+ from mmap import *
+ from sonic_py_common import device_info
+-
++import onlp.onlp
+ HOST_CHK_CMD = "docker > /dev/null 2>&1"
+ EMPTY_STRING = ""
+-
+-
++libonlp = onlp.onlp.libonlp
+ class APIHelper():
+-
+     def __init__(self):
+         (self.platform, self.hwsku) = device_info.get_platform_and_hwsku()
+-
+     def read_txt_file(self, file_path):
+         try:
++            libonlp.onlp_shlock_global_take()
+             with open(file_path, 'r') as fd:
+                 data = fd.read()
+                 return data.strip()
+         except IOError:
+             pass
++        finally:
++            libonlp.onlp_shlock_global_give()
+         return None
+diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
+index b7f47c09f..690697e39 100644
+--- a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
++++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
+@@ -11,20 +11,21 @@ import sys
+ import time
+ import struct
+ import fcntl
++import onlp.onlp
+ 
+ from ctypes import create_string_buffer
+ 
+ from sonic_platform_base.sonic_xcvr.sfp_optoe_base import SfpOptoeBase
+ from .helper import APIHelper
+ 
++libonlp = onlp.onlp.libonlp
++
+ #Edge-core definitions
+ CPLD2_I2C_PATH = "/sys/bus/i2c/devices/12-0061/"
+ CPLD3_I2C_PATH = "/sys/bus/i2c/devices/13-0062/"
+-
+ # definitions of the offset and width for values in XCVR info eeprom
+ XCVR_TYPE_OFFSET = 0
+ XCVR_TYPE_WIDTH = 1
+-
+ SFP_TYPE_CODE_LIST = [
+     '03'  # SFP/SFP+/SFP28
+ ]
+@@ -35,12 +36,10 @@ QSFP_TYPE_CODE_LIST = [
+ QSFP_DD_TYPE_CODE_LIST = [
+     '18'  # QSFP-DD Double Density 8X Pluggable Transceiver
+ ]
+-
+ SFP_TYPE = "SFP"
+ QSFP_TYPE = "QSFP"
+ OSFP_TYPE = "OSFP"
+ QSFP_DD_TYPE = "QSFP_DD"
+-
+ SFP_I2C_START = 25
+ I2C_EEPROM_PATH = '/sys/bus/i2c/devices/{0}-0050/eeprom'
+ 
+@@ -72,25 +71,25 @@ class Sfp(SfpOptoeBase):
+     def _read_eeprom_specific_bytes(self, offset, num_bytes):
+         sysfs_sfp_i2c_client_eeprom_path = self._get_eeprom_path()
+         eeprom_raw = []
++
+         try:
++            libonlp.onlp_shlock_global_take()
+             eeprom = open(
+                 sysfs_sfp_i2c_client_eeprom_path,
+                 mode="rb", buffering=0)
+-        except IOError:
+-            return None
+-
+-        for i in range(0, num_bytes):
+-            eeprom_raw.append("0x00")
+-
+-        try:
++            for i in range(0, num_bytes):
++                eeprom_raw.append("0x00")
+             eeprom.seek(offset)
+             raw = eeprom.read(num_bytes)
+             for n in range(0, num_bytes):
+                 eeprom_raw[n] = hex(raw[n])[2:].zfill(2)
++
+         except (IOError, BaseException):
+             eeprom_raw = None
++
+         finally:
+             eeprom.close()
++            libonlp.onlp_shlock_global_give()
+ 
+         return eeprom_raw
+ 
+@@ -155,10 +154,6 @@ class Sfp(SfpOptoeBase):
+         return True
+ 
+     def read_eeprom(self, offset, num_bytes):
+-        """
+-        Overrides read_eeprom() method.
+-        Calls
+-        """
+         port_to_i2c_mapping = SFP_I2C_START + self._index
+         port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
+         if offset > 255:
+@@ -167,8 +162,8 @@ class Sfp(SfpOptoeBase):
+             buffer = create_string_buffer(1)
+             buffer[0] = result[0] - 1
+             try:
++                libonlp.onlp_shlock_global_take()
+                 with open(port_eeprom_path, "r+b", buffering=0) as fd:
+-                    fcntl.flock(fd, fcntl.LOCK_EX)
+                     fd.seek(127)
+                     fd.write(buffer[0])
+                     time.sleep(0.02)
+@@ -181,33 +176,34 @@ class Sfp(SfpOptoeBase):
+                     fd.seek(127)
+                     fd.write(buffer[0])
+                     time.sleep(0.02)
+-                    fcntl.flock(fd, fcntl.LOCK_UN)
++
+             except IOError as e:
+                 print("Error: unable to open file: %s" % str(e))
+-                raise Exception 
++                return
+             except Exception as e:
+                 print ('Error: unable to open file: ', str(e))
+-                raise Exception
++                return
++            finally:
++                libonlp.onlp_shlock_global_give()
+         else:
+             try:
++                libonlp.onlp_shlock_global_take()
+                 with open(port_eeprom_path, "r+b", buffering=0) as fd:
+-                    fcntl.flock(fd, fcntl.LOCK_EX)
++
+                     fd.seek(offset)
+                     raw = fd.read(num_bytes)
+-                    fcntl.flock(fd, fcntl.LOCK_UN)
++
+             except IOError as e:
+                 print("Error: unable to open file: %s" % str(e))
+-                raise Exception 
++                return
+             except Exception as e:
+                 print("Error: Unexpected Error: {}".format(e))
+-                raise Exception 
+-
++                return
++            finally:
++                libonlp.onlp_shlock_global_give()
+         return bytearray(raw)
+ 
+     def write_eeprom(self, offset, num_bytes, value):
+-        """
+-        Overrides write_eeprom() method.
+-        """
+         port_to_i2c_mapping = SFP_I2C_START + self._index
+         port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
+         if offset > 255:
+@@ -216,8 +212,8 @@ class Sfp(SfpOptoeBase):
+             buffer = create_string_buffer(1)
+             buffer[0] = result[0] - 1
+             try:
++                libonlp.onlp_shlock_global_take()
+                 with open(port_eeprom_path, "r+b", buffering=0) as fd:
+-                    fcntl.flock(fd, fcntl.LOCK_EX)
+                     fd.seek(127)
+                     fd.write(buffer[0])
+                     time.sleep(0.02)
+@@ -231,7 +227,6 @@ class Sfp(SfpOptoeBase):
+                     fd.seek(127)
+                     fd.write(buffer[0])
+                     time.sleep(0.02)
+-                    fcntl.flock(fd, fcntl.LOCK_UN)
+                     return True
+             except IOError as e:
+                 print("Error: unable to open file: %s" % str(e))
+@@ -239,14 +234,17 @@ class Sfp(SfpOptoeBase):
+             except Exception as e:
+                 print("Error: Unexpected Error: {}".format(e))
+                 return False
++            finally:
++                libonlp.onlp_shlock_global_give()
+         else:
+             try:
++                libonlp.onlp_shlock_global_take()
+                 with open(port_eeprom_path, "r+b", buffering=0) as fd:
+-                    fcntl.flock(fd, fcntl.LOCK_EX)
++
+                     fd.seek(offset)
+                     fd.write(value)
+                     time.sleep(0.09)
+-                    fcntl.flock(fd, fcntl.LOCK_UN)
++
+                 return True
+             except IOError as e:
+                 print("Error: unable to open file: %s" % str(e))
+@@ -254,3 +252,5 @@ class Sfp(SfpOptoeBase):
+             except Exception as e:
+                 print("Error: Unexpected Error: {}".format(e))
+                 return False
++            finally:
++                libonlp.onlp_shlock_global_give()
+-- 
+2.20.1
+

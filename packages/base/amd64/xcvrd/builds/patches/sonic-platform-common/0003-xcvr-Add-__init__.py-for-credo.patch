@@ -1,0 +1,27 @@
+From 399ad1beadf7a3482f9fb7aa23bb7dc61f0973f1 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 15 Dec 2023 16:33:58 +0900
+Subject: [PATCH 3/7] [xcvr] Add __init__.py for credo
+
+This change adds __init__.py to fix import error.
+---
+ sonic_platform_base/sonic_xcvr/api/credo/__init__.py      | 0
+ sonic_platform_base/sonic_xcvr/codes/credo/__init__.py    | 0
+ sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py | 0
+ 3 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 sonic_platform_base/sonic_xcvr/api/credo/__init__.py
+ create mode 100644 sonic_platform_base/sonic_xcvr/codes/credo/__init__.py
+ create mode 100644 sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py
+
+diff --git a/sonic_platform_base/sonic_xcvr/api/credo/__init__.py b/sonic_platform_base/sonic_xcvr/api/credo/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/sonic_platform_base/sonic_xcvr/codes/credo/__init__.py b/sonic_platform_base/sonic_xcvr/codes/credo/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py b/sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py
+new file mode 100644
+index 0000000..e69de29
+-- 
+2.20.1
+
