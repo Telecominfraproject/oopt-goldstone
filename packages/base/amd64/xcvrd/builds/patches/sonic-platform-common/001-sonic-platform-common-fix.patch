@@ -1,8 +1,8 @@
 diff --git a/setup.py b/setup.py
-index 9d8a669..d2c6905 100644
+index 9edd230..6665633 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -2,7 +2,7 @@ from setuptools import setup
+@@ -22,7 +22,7 @@ for package in sonic_dependencies:
  
  setup(
      name='sonic-platform-common',
@@ -26,90 +26,14 @@ index 19f81a3..7a6bdfa 100644
      }
  
  passive_copper_media_interface = {
+diff --git a/sonic_platform_base/sonic_xcvr/api/credo/__init__.py b/sonic_platform_base/sonic_xcvr/api/credo/__init__.py
+new file mode 100644
+index 0000000..e69de29
 diff --git a/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py b/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py
-index 320a50f..a94f2d3 100644
+index bb7e3a7..03f76bd 100644
 --- a/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py
 +++ b/sonic_platform_base/sonic_xcvr/api/public/c_cmis.py
-@@ -132,8 +132,8 @@ class CCmisApi(CmisApi):
-         '''
-         min_prog_tx_output_power, max_prog_tx_output_power = self.get_supported_power_config()
-         if tx_power > max_prog_tx_output_power or tx_power < min_prog_tx_output_power:
--            raise ValueError('Provisioned TX power out of range. Max: %.1f; Min: %.1f dBm.' 
--                             %(max_prog_tx_output_power, min_prog_tx_output_power))
-+            raise ValueError('Provisioned TX power out of range. Max: %.1f; Min: %.1f dBm.'
-+                            %(max_prog_tx_output_power, min_prog_tx_output_power))
-         status = self.xcvr_eeprom.write(consts.TX_CONFIG_POWER, tx_power)
-         time.sleep(1)
-         return status
-@@ -154,10 +154,10 @@ class CCmisApi(CmisApi):
-         SOPROC: unit in krad/s
-         MER:    unit in dB
-         '''
--        # When raised by the host, causes the module to freeze and hold all 
--        # reported statistics reporting registers (minimum, maximum and 
-+        # When raised by the host, causes the module to freeze and hold all
-+        # reported statistics reporting registers (minimum, maximum and
-         # average values)in Pages 24h-27h.
--        # When ceased by the host, releases the freeze request, allowing the 
-+        # When ceased by the host, releases the freeze request, allowing the
-         # reported minimum, maximum and average values to update again.
-         self.xcvr_eeprom.write(consts.VDM_CONTROL, VDM_FREEZE)
-         time.sleep(1)
-@@ -273,8 +273,8 @@ class CCmisApi(CmisApi):
-         active_apsel_hostlane7       = INTEGER                  ; active application selected code assigned to host lane 7
-         active_apsel_hostlane8       = INTEGER                  ; active application selected code assigned to host lane 8
-         media_interface_technology   = 1*255VCHAR               ; media interface technology
--        hardwarerev                  = 1*255VCHAR               ; module hardware revision 
--        serialnum                    = 1*255VCHAR               ; module serial number 
-+        hardwarerev                  = 1*255VCHAR               ; module hardware revision
-+        serialnum                    = 1*255VCHAR               ; module serial number
-         manufacturename              = 1*255VCHAR               ; module venndor name
-         modelname                    = 1*255VCHAR               ; module model name
-         vendor_rev                   = 1*255VCHAR               ; module vendor revision
-@@ -340,29 +340,26 @@ class CCmisApi(CmisApi):
-         ========================================================================
-         """
-         trans_dom = super(CCmisApi,self).get_transceiver_bulk_status()
--        trans_dom['bias_xi'] = self.vdm_dict['Modulator Bias X/I [%]'][1][0]
--        trans_dom['bias_xq'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][0]
--        trans_dom['bias_xp'] = self.vdm_dict['Modulator Bias X_Phase [%]'][1][0]
--        trans_dom['bias_yi'] = self.vdm_dict['Modulator Bias Y/I [%]'][1][0]
--        trans_dom['bias_yq'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][0]
--        trans_dom['bias_yp'] = self.vdm_dict['Modulator Bias Y_Phase [%]'][1][0]
--        trans_dom['cd_shortlink'] = self.vdm_dict['CD high granularity, short link [ps/nm]'][1][0]
-         try:
-+            trans_dom['bias_xi'] = self.vdm_dict['Modulator Bias X/I [%]'][1][0]
-+            trans_dom['bias_xq'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][0]
-+            trans_dom['bias_xp'] = self.vdm_dict['Modulator Bias X_Phase [%]'][1][0]
-+            trans_dom['bias_yi'] = self.vdm_dict['Modulator Bias Y/I [%]'][1][0]
-+            trans_dom['bias_yq'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][0]
-+            trans_dom['bias_yp'] = self.vdm_dict['Modulator Bias Y_Phase [%]'][1][0]
-+            trans_dom['cd_shortlink'] = self.vdm_dict['CD high granularity, short link [ps/nm]'][1][0]
-             trans_dom['cd_longlink'] = self.vdm_dict['CD low granularity, long link [ps/nm]'][1][0]
--        except KeyError:
--            pass
--        trans_dom['dgd'] = self.vdm_dict['DGD [ps]'][1][0]
--        try:
-+            trans_dom['dgd'] = self.vdm_dict['DGD [ps]'][1][0]
-             trans_dom['sopmd'] = self.vdm_dict['SOPMD [ps^2]'][1][0]
-+            trans_dom['pdl'] = self.vdm_dict['PDL [dB]'][1][0]
-+            trans_dom['osnr'] = self.vdm_dict['OSNR [dB]'][1][0]
-+            trans_dom['esnr'] = self.vdm_dict['eSNR [dB]'][1][0]
-+            trans_dom['cfo'] = self.vdm_dict['CFO [MHz]'][1][0]
-         except KeyError:
-             pass
--        trans_dom['pdl'] = self.vdm_dict['PDL [dB]'][1][0]
--        trans_dom['osnr'] = self.vdm_dict['OSNR [dB]'][1][0]
--        trans_dom['esnr'] = self.vdm_dict['eSNR [dB]'][1][0]
--        trans_dom['cfo'] = self.vdm_dict['CFO [MHz]'][1][0]
-         trans_dom['tx_curr_power'] = self.vdm_dict['Tx Power [dBm]'][1][0]
--        trans_dom['rx_tot_power'] = self.vdm_dict['Rx Total Power [dBm]'][1][0]
-         try:
-+            trans_dom['rx_tot_power'] = self.vdm_dict['Rx Total Power [dBm]'][1][0]
-             trans_dom['rx_sig_power'] = self.vdm_dict['Rx Signal Power [dBm]'][1][0]
-         except KeyError:
-             pass
-@@ -483,6 +480,11 @@ class CCmisApi(CmisApi):
+@@ -487,6 +487,11 @@ class CCmisApi(CmisApi):
          ========================================================================
          """
          trans_dom_th = super(CCmisApi,self).get_transceiver_threshold_info()
@@ -118,97 +42,16 @@ index 320a50f..a94f2d3 100644
 +        #       When xcvrd implements these alarms, restore here.
 +        return trans_dom_th
 +
-         trans_dom_th['biasxihighalarm'] = self.vdm_dict['Modulator Bias X/I [%]'][1][1]
-         trans_dom_th['biasxilowalarm'] = self.vdm_dict['Modulator Bias X/I [%]'][1][2]
-         trans_dom_th['biasxihighwarning'] = self.vdm_dict['Modulator Bias X/I [%]'][1][3]
-@@ -537,10 +539,13 @@ class CCmisApi(CmisApi):
-         trans_dom_th['osnrlowalarm'] = self.vdm_dict['OSNR [dB]'][1][2]
-         trans_dom_th['osnrhighwarning'] = self.vdm_dict['OSNR [dB]'][1][3]
-         trans_dom_th['osnrlowwarning'] = self.vdm_dict['OSNR [dB]'][1][4]
--        trans_dom_th['esnrhighalarm'] = self.vdm_dict['eSNR [dB]'][1][1]
--        trans_dom_th['esnrlowalarm'] = self.vdm_dict['eSNR [dB]'][1][2]
--        trans_dom_th['esnrhighwarning'] = self.vdm_dict['eSNR [dB]'][1][3]
--        trans_dom_th['esnrlowwarning'] = self.vdm_dict['eSNR [dB]'][1][4]
-+        try:
-+            trans_dom_th['esnrhighalarm'] = self.vdm_dict['eSNR [dB]'][1][1]
-+            trans_dom_th['esnrlowalarm'] = self.vdm_dict['eSNR [dB]'][1][2]
-+            trans_dom_th['esnrhighwarning'] = self.vdm_dict['eSNR [dB]'][1][3]
-+            trans_dom_th['esnrlowwarning'] = self.vdm_dict['eSNR [dB]'][1][4]
-+        except KeyError:
-+            pass
-         trans_dom_th['cfohighalarm'] = self.vdm_dict['CFO [MHz]'][1][1]
-         trans_dom_th['cfolowalarm'] = self.vdm_dict['CFO [MHz]'][1][2]
-         trans_dom_th['cfohighwarning'] = self.vdm_dict['CFO [MHz]'][1][3]
-@@ -622,7 +627,7 @@ class CCmisApi(CmisApi):
-         config_state_hostlane6       = 1*255VCHAR                       ; configuration status for the data path of host line 6
-         config_state_hostlane7       = 1*255VCHAR                       ; configuration status for the data path of host line 7
-         config_state_hostlane8       = 1*255VCHAR                       ; configuration status for the data path of host line 8
--        dpinit_pending_hostlane1     = BOOLEAN                          ; data path configuration updated on host lane 1 
-+        dpinit_pending_hostlane1     = BOOLEAN                          ; data path configuration updated on host lane 1
-         dpinit_pending_hostlane2     = BOOLEAN                          ; data path configuration updated on host lane 2
-         dpinit_pending_hostlane3     = BOOLEAN                          ; data path configuration updated on host lane 3
-         dpinit_pending_hostlane4     = BOOLEAN                          ; data path configuration updated on host lane 4
-@@ -637,7 +642,7 @@ class CCmisApi(CmisApi):
-         tuning_not_accepted          = BOOLEAN                          ; tuning not accepted flag
-         invalid_channel_num          = BOOLEAN                          ; invalid channel number flag
-         tuning_complete              = BOOLEAN                          ; tuning complete flag
--        temphighalarm_flag           = BOOLEAN                          ; temperature high alarm flag 
-+        temphighalarm_flag           = BOOLEAN                          ; temperature high alarm flag
-         temphighwarning_flag         = BOOLEAN                          ; temperature high warning flag
-         templowalarm_flag            = BOOLEAN                          ; temperature low alarm flag
-         templowwarning_flag          = BOOLEAN                          ; temperature low warning flag
-@@ -755,7 +760,7 @@ class CCmisApi(CmisApi):
-         trans_status['biasxqhighalarm_flag'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][5]
-         trans_status['biasxqlowalarm_flag'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][6]
-         trans_status['biasxqhighwarning_flag'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][7]
--        trans_status['biasxqlowwarning_flag'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][8]        
-+        trans_status['biasxqlowwarning_flag'] = self.vdm_dict['Modulator Bias X/Q [%]'][1][8]
-         trans_status['biasxphighalarm_flag'] = self.vdm_dict['Modulator Bias X_Phase [%]'][1][5]
-         trans_status['biasxplowalarm_flag'] = self.vdm_dict['Modulator Bias X_Phase [%]'][1][6]
-         trans_status['biasxphighwarning_flag'] = self.vdm_dict['Modulator Bias X_Phase [%]'][1][7]
-@@ -767,7 +772,7 @@ class CCmisApi(CmisApi):
-         trans_status['biasyqhighalarm_flag'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][5]
-         trans_status['biasyqlowalarm_flag'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][6]
-         trans_status['biasyqhighwarning_flag'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][7]
--        trans_status['biasyqlowwarning_flag'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][8]        
-+        trans_status['biasyqlowwarning_flag'] = self.vdm_dict['Modulator Bias Y/Q [%]'][1][8]
-         trans_status['biasyphighalarm_flag'] = self.vdm_dict['Modulator Bias Y_Phase [%]'][1][5]
-         trans_status['biasyplowalarm_flag'] = self.vdm_dict['Modulator Bias Y_Phase [%]'][1][6]
-         trans_status['biasyphighwarning_flag'] = self.vdm_dict['Modulator Bias Y_Phase [%]'][1][7]
-@@ -802,10 +807,13 @@ class CCmisApi(CmisApi):
-         trans_status['osnrlowalarm_flag'] = self.vdm_dict['OSNR [dB]'][1][6]
-         trans_status['osnrhighwarning_flag'] = self.vdm_dict['OSNR [dB]'][1][7]
-         trans_status['osnrlowwarning_flag'] = self.vdm_dict['OSNR [dB]'][1][8]
--        trans_status['esnrhighalarm_flag'] = self.vdm_dict['eSNR [dB]'][1][5]
--        trans_status['esnrlowalarm_flag'] = self.vdm_dict['eSNR [dB]'][1][6]
--        trans_status['esnrhighwarning_flag'] = self.vdm_dict['eSNR [dB]'][1][7]
--        trans_status['esnrlowwarning_flag'] = self.vdm_dict['eSNR [dB]'][1][8]
-+        try:
-+            trans_status['esnrhighalarm_flag'] = self.vdm_dict['eSNR [dB]'][1][5]
-+            trans_status['esnrlowalarm_flag'] = self.vdm_dict['eSNR [dB]'][1][6]
-+            trans_status['esnrhighwarning_flag'] = self.vdm_dict['eSNR [dB]'][1][7]
-+            trans_status['esnrlowwarning_flag'] = self.vdm_dict['eSNR [dB]'][1][8]
-+        except KeyError:
-+            pass
-         trans_status['cfohighalarm_flag'] = self.vdm_dict['CFO [MHz]'][1][5]
-         trans_status['cfolowalarm_flag'] = self.vdm_dict['CFO [MHz]'][1][6]
-         trans_status['cfohighwarning_flag'] = self.vdm_dict['CFO [MHz]'][1][7]
-@@ -832,7 +840,7 @@ class CCmisApi(CmisApi):
-             A dict containing the following keys/values :
-         ========================================================================
-         key                          = TRANSCEIVER_PM|ifname            ; information of PM on port
--        ; field                      = value 
-+        ; field                      = value
-         prefec_ber_avg               = FLOAT                            ; prefec ber avg
-         prefec_ber_min               = FLOAT                            ; prefec ber min
-         prefec_ber_max               = FLOAT                            ; prefec ber max
+         try:
+             trans_dom_th['biasxihighalarm'] = self.vdm_dict['Modulator Bias X/I [%]'][1][1]
+             trans_dom_th['biasxilowalarm'] = self.vdm_dict['Modulator Bias X/I [%]'][1][2]
 diff --git a/sonic_platform_base/sonic_xcvr/api/public/cmis.py b/sonic_platform_base/sonic_xcvr/api/public/cmis.py
-index b7a86dc..dfa88bb 100644
+index a677f32..3c32297 100644
 --- a/sonic_platform_base/sonic_xcvr/api/public/cmis.py
 +++ b/sonic_platform_base/sonic_xcvr/api/public/cmis.py
-@@ -270,6 +270,11 @@ class CmisApi(XcvrApi):
-             "txbiashighwarning": float("{:.3f}".format(thresh[consts.TX_BIAS_HIGH_WARNING_FIELD]*tx_bias_scale)),
+@@ -282,6 +282,11 @@ class CmisApi(XcvrApi):
              "txbiaslowwarning": float("{:.3f}".format(thresh[consts.TX_BIAS_LOW_WARNING_FIELD]*tx_bias_scale))
+             if tx_bias_scale is not None else 'N/A'
          }
 +
 +        # TODO: Xcvrd doesn't use the alarms of laser_temp, post_fec_ber, pre_fec_ber and vdm info.
@@ -216,9 +59,9 @@ index b7a86dc..dfa88bb 100644
 +        return threshold_info_dict
 +
          laser_temp_dict = self.get_laser_temperature()
-         threshold_info_dict['lasertemphighalarm'] = laser_temp_dict['high alarm']
-         threshold_info_dict['lasertemplowalarm'] = laser_temp_dict['low alarm']
-@@ -1884,7 +1889,7 @@ class CmisApi(XcvrApi):
+         try:
+             threshold_info_dict['lasertemphighalarm'] = laser_temp_dict['high alarm']
+@@ -2019,7 +2024,7 @@ class CmisApi(XcvrApi):
              key = "{}_{}".format(consts.HOST_ELECTRICAL_INTERFACE, app)
              val = dic.get(key)
              if val in [None, 'Unknown', 'Undefined']:
@@ -227,15 +70,17 @@ index b7a86dc..dfa88bb 100644
              buf['host_electrical_interface_id'] = val
  
              prefix = map.get(self.xcvr_eeprom.read(consts.MEDIA_TYPE_FIELD))
+diff --git a/sonic_platform_base/sonic_xcvr/codes/credo/__init__.py b/sonic_platform_base/sonic_xcvr/codes/credo/__init__.py
+new file mode 100644
+index 0000000..e69de29
 diff --git a/sonic_platform_base/sonic_xcvr/codes/public/cmis.py b/sonic_platform_base/sonic_xcvr/codes/public/cmis.py
-index 7ad3561..fcbe35b 100644
+index b757635..108fdca 100644
 --- a/sonic_platform_base/sonic_xcvr/codes/public/cmis.py
 +++ b/sonic_platform_base/sonic_xcvr/codes/public/cmis.py
-@@ -71,51 +71,8 @@ class CmisCodes(Sff8024):
-     }
+@@ -72,50 +72,50 @@ class CmisCodes(Sff8024):
  
      VDM_TYPE = {
--        # VDM_ID: [VDM_NAME, DATA_TYPE, SCALE]
+         # VDM_ID: [VDM_NAME, DATA_TYPE, SCALE]
 -        1: ['Laser Age [%]', 'U16', 1],
 -        2: ['TEC Current [%]', 'S16', 100.0/32767],
 -        3: ['Laser Frequency Error [MHz]', 'S16', 10],
@@ -248,6 +93,18 @@ index 7ad3561..fcbe35b 100644
 -        10: ['Pre-FEC BER Minimum Host Input', 'F16', 1],
 -        11: ['Pre-FEC BER Maximum Media Input', 'F16', 1],
 -        12: ['Pre-FEC BER Maximum Host Input', 'F16', 1],
++        # 1: ['Laser Age [%]', 'U16', 1],
++        # 2: ['TEC Current [%]', 'S16', 100.0/32767],
++        # 3: ['Laser Frequency Error [MHz]', 'S16', 10],
++        # 4: ['Laser Temperature [C]', 'S16', 1.0/256],
++        # 5: ['eSNR Media Input [dB]', 'U16', 1.0/256],
++        # 6: ['eSNR Host Input [dB]', 'U16', 1.0/256],
++        # 7: ['PAM4 Level Transition Parameter Media Input [dB]', 'U16', 1.0/256],
++        # 8: ['PAM4 Level Transition Parameter Host Input [dB]', 'U16', 1.0/256],
++        # 9: ['Pre-FEC BER Minimum Media Input', 'F16', 1],
++        # 10: ['Pre-FEC BER Minimum Host Input', 'F16', 1],
++        # 11: ['Pre-FEC BER Maximum Media Input', 'F16', 1],
++        # 12: ['Pre-FEC BER Maximum Host Input', 'F16', 1],
          13: ['Pre-FEC BER Average Media Input', 'F16', 1],
 -        14: ['Pre-FEC BER Average Host Input', 'F16', 1],
 -        15: ['Pre-FEC BER Current Value Media Input', 'F16', 1],
@@ -275,11 +132,44 @@ index 7ad3561..fcbe35b 100644
 -        140: ['eSNR [dB]', 'U16', 0.1],
 -        141: ['CFO [MHz]', 'S16', 1],
 -        142: ['EVM_modem [%]', 'U16', 100.0/65535],
++        # 14: ['Pre-FEC BER Average Host Input', 'F16', 1],
++        # 15: ['Pre-FEC BER Current Value Media Input', 'F16', 1],
++        # 16: ['Pre-FEC BER Current Value Host Input', 'F16', 1],
++        # 17: ['Errored Frames Minimum Media Input', 'F16', 1],
++        # 18: ['Errored Frames Minimum Host Input', 'F16', 1],
++        # 19: ['Errored Frames Maximum Media Input', 'F16', 1],
++        # 20: ['Errored Frames Maximum Host Input', 'F16', 1],
++        # 21: ['Errored Frames Average Media Input', 'F16', 1],
++        # 22: ['Errored Frames Average Host Input', 'F16', 1],
++        # 23: ['Errored Frames Current Value Media Input', 'F16', 1],
++        # 24: ['Errored Frames Current Value Host Input', 'F16', 1],
++        # 128: ['Modulator Bias X/I [%]', 'U16', 100.0/65535],
++        # 129: ['Modulator Bias X/Q [%]', 'U16', 100.0/65535],
++        # 130: ['Modulator Bias Y/I [%]', 'U16', 100.0/65535],
++        # 131: ['Modulator Bias Y/Q [%]', 'U16', 100.0/65535],
++        # 132: ['Modulator Bias X_Phase [%]', 'U16', 100.0/65535],
++        # 133: ['Modulator Bias Y_Phase [%]', 'U16', 100.0/65535],
++        # 134: ['CD high granularity, short link [ps/nm]', 'S16', 1],
++        # 135: ['CD low granularity, long link [ps/nm]', 'S16', 20],
++        # 136: ['DGD [ps]', 'U16', 0.01],
++        # 137: ['SOPMD [ps^2]', 'U16', 0.01],
++        # 138: ['PDL [dB]', 'U16', 0.1],
++        # 139: ['OSNR [dB]', 'U16', 0.1],
++        # 140: ['eSNR [dB]', 'U16', 0.1],
++        # 141: ['CFO [MHz]', 'S16', 1],
++        # 142: ['EVM_modem [%]', 'U16', 100.0/65535],
          143: ['Tx Power [dBm]', 'S16', 0.01],
 -        144: ['Rx Total Power [dBm]', 'S16', 0.01],
 -        145: ['Rx Signal Power [dBm]', 'S16', 0.01],
 -        146: ['SOP ROC [krad/s]', 'U16', 1],
 -        147: ['MER [dB]', 'U16', 0.1]
++        # 144: ['Rx Total Power [dBm]', 'S16', 0.01],
++        # 145: ['Rx Signal Power [dBm]', 'S16', 0.01],
++        # 146: ['SOP ROC [krad/s]', 'U16', 1],
++        # 147: ['MER [dB]', 'U16', 0.1]
      }
  
      CDB_FAIL_STATUS = {
+diff --git a/sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py b/sonic_platform_base/sonic_xcvr/mem_maps/credo/__init__.py
+new file mode 100644
+index 0000000..e69de29

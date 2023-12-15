@@ -1,25 +1,54 @@
 diff --git a/sonic-xcvrd/setup.py b/sonic-xcvrd/setup.py
-index 27a1ab3..cddcc67 100644
+index 7eea188..4076210 100644
 --- a/sonic-xcvrd/setup.py
 +++ b/sonic-xcvrd/setup.py
-@@ -28,6 +28,12 @@ setup(
+@@ -28,6 +28,14 @@ setup(
          'pytest',
          'pytest-cov',
      ],
 +    package_data={
 +        'tests': [
 +            'media_settings.json',
++            'optics_si_settings.json',
 +            't0-sample-port-config.ini'
-+            ]
++        ]
 +    },
++    data_files=[('', ['pytest.ini'])],
      classifiers=[
          'Development Status :: 4 - Beta',
          'Environment :: No Input/Output (Daemon)',
 diff --git a/sonic-xcvrd/tests/test_xcvrd.py b/sonic-xcvrd/tests/test_xcvrd.py
-index b11b499..7d7296d 100644
+index a3adf58..4a3ceef 100644
 --- a/sonic-xcvrd/tests/test_xcvrd.py
 +++ b/sonic-xcvrd/tests/test_xcvrd.py
-@@ -70,7 +70,30 @@ class TestXcvrdScript(object):
+@@ -70,7 +70,7 @@ class TestXcvrdThreadException(object):
+         assert not cmis_manager.is_alive()
+         assert(type(exception_received) == NotImplementedError)
+         assert("NotImplementedError" in str(trace) and "effect" in str(trace))
+-        assert("sonic-xcvrd/xcvrd/xcvrd.py" in str(trace))
++        assert("xcvrd/xcvrd.py" in str(trace))
+         assert("wait_for_port_config_done" in str(trace))
+ 
+     @patch('xcvrd.xcvrd_utilities.port_mapping.subscribe_port_config_change', MagicMock(side_effect = NotImplementedError))
+@@ -90,7 +90,7 @@ class TestXcvrdThreadException(object):
+         assert not dom_info_update.is_alive()
+         assert(type(exception_received) == NotImplementedError)
+         assert("NotImplementedError" in str(trace) and "effect" in str(trace))
+-        assert("sonic-xcvrd/xcvrd/xcvrd.py" in str(trace))
++        assert("xcvrd/xcvrd.py" in str(trace))
+         assert("subscribe_port_config_change" in str(trace))
+ 
+     @patch('xcvrd.xcvrd.SfpStateUpdateTask.init', MagicMock())
+@@ -112,7 +112,7 @@ class TestXcvrdThreadException(object):
+         assert not sfp_state_update.is_alive()
+         assert(type(exception_received) == NotImplementedError)
+         assert("NotImplementedError" in str(trace) and "effect" in str(trace))
+-        assert("sonic-xcvrd/xcvrd/xcvrd.py" in str(trace))
++        assert("xcvrd/xcvrd.py" in str(trace))
+         assert("subscribe_port_config_change" in str(trace))
+ 
+     @patch('xcvrd.xcvrd.SfpStateUpdateTask.is_alive', MagicMock(return_value = False))
+@@ -169,7 +169,30 @@ class TestXcvrdScript(object):
                                                                                      'tx5power': '0.7',
                                                                                      'tx6power': '0.7',
                                                                                      'tx7power': '0.7',
@@ -51,7 +80,7 @@ index b11b499..7d7296d 100644
      def test_post_port_dom_info_to_db(self, mock_get_sfp_type):
          logical_port_name = "Ethernet0"
          port_mapping = PortMapping()
-@@ -238,7 +261,30 @@ class TestXcvrdScript(object):
+@@ -401,7 +424,30 @@ class TestXcvrdScript(object):
                                                                                      'tx5power': '0.7',
                                                                                      'tx6power': '0.7',
                                                                                      'tx7power': '0.7',
@@ -80,10 +109,10 @@ index b11b499..7d7296d 100644
 +                                                                                    'active_appl_code6': 6,
 +                                                                                    'active_appl_code7': 7,
 +                                                                                    'active_appl_code8': 8, }))
-     def test_post_port_sfp_dom_info_to_db(self):
+     @patch('swsscommon.swsscommon.WarmStart', MagicMock())
+     def test_post_port_sfp_info_and_dom_thr_to_db_once(self):
          port_mapping = PortMapping()
-         port_change_event = PortChangeEvent('Ethernet0', 1, 0, PortChangeEvent.PORT_ADD)
-@@ -461,6 +507,18 @@ class TestXcvrdScript(object):
+@@ -662,6 +708,18 @@ class TestXcvrdScript(object):
          task.on_port_update_event(port_change_event)
          assert len(task.port_dict) == 1
  
@@ -102,14 +131,15 @@ index b11b499..7d7296d 100644
  
      @patch('xcvrd.xcvrd.XcvrTableHelper')
      def test_CmisManagerTask_get_configured_freq(self, mock_table_helper):
-@@ -482,6 +540,44 @@ class TestXcvrdScript(object):
+@@ -685,6 +743,46 @@ class TestXcvrdScript(object):
          task.xcvr_table_helper.get_cfg_port_tbl = mock_table_helper.get_cfg_port_tbl
          assert task.get_configured_tx_power_from_db('Ethernet0') == -10
  
 +    @patch('xcvrd.xcvrd.XcvrTableHelper')
 +    def test_CmisManagerTask_get_configured_media_if_from_db(self, mock_table_helper):
 +        port_mapping = PortMapping()
-+        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping)
++        stop_event = threading.Event()
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
 +        cfg_port_tbl = MagicMock()
 +        cfg_port_tbl.get = MagicMock(return_value=(True, ()))
 +        mock_table_helper.get_cfg_port_tbl = MagicMock(return_value=cfg_port_tbl)
@@ -121,49 +151,58 @@ index b11b499..7d7296d 100644
 +
 +    def test_CmisManagerTask_get_cmis_application_desired(self):
 +        port_mapping = PortMapping()
-+        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping)
++        stop_event = threading.Event()
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
 +        mock_xcvr_api = MagicMock()
-+        mock_xcvr_api.get_application_advertisement = MagicMock(return_value={1: {'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)', 
-+                                                                                  'module_media_interface_id': '400ZR, DWDM, amplified', 
-+                                                                                  'media_lane_count': 1, 
-+                                                                                  'host_lane_count': 8, 
-+                                                                                  'host_lane_assignment_options': 1, 
++        mock_xcvr_api.get_application_advertisement = MagicMock(return_value={1: {'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
++                                                                                  'module_media_interface_id': '400ZR, DWDM, amplified',
++                                                                                  'media_lane_count': 1,
++                                                                                  'host_lane_count': 8,
++                                                                                  'host_lane_assignment_options': 1,
 +                                                                                  'media_lane_assignment_options':1
-+                                                                                  }, 
-+                                                                              10: { 'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)', 
-+                                                                                    'module_media_interface_id': 'ZR400-OFEC-16QAM', 
-+                                                                                    'media_lane_count': 1, 
-+                                                                                    'host_lane_count': 8, 
-+                                                                                    'host_lane_assignment_options': 1, 
-+                                                                                    'media_lane_assignment_options': 1 
++                                                                                  },
++                                                                              10: { 'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
++                                                                                    'module_media_interface_id': 'ZR400-OFEC-16QAM',
++                                                                                    'media_lane_count': 1,
++                                                                                    'host_lane_count': 8,
++                                                                                    'host_lane_assignment_options': 1,
++                                                                                    'media_lane_assignment_options': 1
 +                                                                                    }})
 +
-+        assert task.get_cmis_application_desired(mock_xcvr_api, 255, 400000, '400ZR, DWDM, amplified') == 1
-+        assert task.get_cmis_application_desired(mock_xcvr_api, 255, 400000,       'ZR400-OFEC-16QAM') == 10
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, '400ZR, DWDM, amplified') == 1
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, 'ZR400-OFEC-16QAM') == 10
 +        assert task.get_cmis_application_desired(mock_xcvr_api, 0,   400000, '400ZR, DWDM, amplified') == 0
-+        assert task.get_cmis_application_desired(mock_xcvr_api, 255,      0, '400ZR, DWDM, amplified') == 0
-+        assert task.get_cmis_application_desired(mock_xcvr_api, 255, 400000,                     None) == 1
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8,      0, '400ZR, DWDM, amplified') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, None) == 1
 +
      @patch('xcvrd.xcvrd.platform_chassis')
      @patch('xcvrd.xcvrd_utilities.port_mapping.subscribe_port_update_event', MagicMock(return_value=(None, None)))
      @patch('xcvrd.xcvrd_utilities.port_mapping.handle_port_update_event', MagicMock())
-@@ -541,7 +637,14 @@ class TestXcvrdScript(object):
-                 'media_lane_count': 1,
+@@ -803,7 +901,7 @@ class TestXcvrdScript(object):
+         stop_event = threading.Event()
+         task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
+ 
+-        appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed)
++        appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed, None)
+         assert task.get_cmis_host_lanes_mask(mock_xcvr_api, appl, host_lane_count, subport) == expected
+ 
+     def test_CmisManagerTask_post_port_active_apsel_to_db(self):
+@@ -936,6 +1034,14 @@ class TestXcvrdScript(object):
                  'host_lane_count': 2,
-                 'host_lane_assignment_options': 85
--            }
+                 'host_lane_assignment_options': 85,
+                 'media_lane_assignment_options': 15
 +            },
-+            10: { 'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)', 
-+                'module_media_interface_id': 'ZR400-OFEC-16QAM', 
-+                'media_lane_count': 1, 
-+                'host_lane_count': 8, 
-+                'host_lane_assignment_options': 1, 
-+                'media_lane_assignment_options': 1 
-+                }
++            10: {
++                'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
++                'module_media_interface_id': 'ZR400-OFEC-16QAM',
++                'media_lane_count': 1,
++                'host_lane_count': 8,
++                'host_lane_assignment_options': 1,
++                'media_lane_assignment_options': 1
+             }
          })
          mock_xcvr_api.get_module_state = MagicMock(return_value='ModuleReady')
-         mock_xcvr_api.get_config_datapath_hostlane_status = MagicMock(return_value={
-@@ -607,6 +710,7 @@ class TestXcvrdScript(object):
+@@ -1003,6 +1109,7 @@ class TestXcvrdScript(object):
  
          task.get_host_tx_status = MagicMock(return_value='true')
          task.get_port_admin_status = MagicMock(return_value='up')
@@ -171,7 +210,7 @@ index b11b499..7d7296d 100644
          task.get_configured_tx_power_from_db = MagicMock(return_value=-13)
          task.get_configured_laser_freq_from_db = MagicMock(return_value=193100)
          task.configure_tx_output_power = MagicMock(return_value=1)
-@@ -1031,7 +1135,7 @@ class TestXcvrdScript(object):
+@@ -1440,7 +1547,7 @@ class TestXcvrdScript(object):
          mock_chassis.get_sfp = MagicMock(side_effect=NotImplementedError)
          mock_sfputil.get_presence = MagicMock(return_value=True)
  
@@ -180,7 +219,7 @@ index b11b499..7d7296d 100644
  
          mock_sfputil.get_presence = MagicMock(return_value=False)
          assert not _wrapper_get_presence(1)
-@@ -1054,61 +1158,125 @@ class TestXcvrdScript(object):
+@@ -1463,61 +1570,125 @@ class TestXcvrdScript(object):
      @patch('xcvrd.xcvrd.platform_sfputil')
      def test_wrapper_get_transceiver_info(self, mock_sfputil, mock_chassis):
          mock_object = MagicMock()
@@ -322,8 +361,8 @@ index b11b499..7d7296d 100644
 +        assert mock_sfputil.get_transceiver_dom_threshold_info_dict.call_count == 0
  
      @patch('xcvrd.xcvrd.platform_chassis')
-     @patch('xcvrd.xcvrd.platform_sfputil')
-@@ -1120,7 +1288,7 @@ class TestXcvrdScript(object):
+     def test_wrapper_get_transceiver_status(self, mock_chassis):
+@@ -1557,7 +1728,7 @@ class TestXcvrdScript(object):
          mock_chassis.get_change_event = MagicMock(side_effect=NotImplementedError)
          mock_sfputil.get_transceiver_change_event = MagicMock(return_value=(True, 1))
  
