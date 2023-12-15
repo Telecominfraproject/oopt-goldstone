@@ -20,9 +20,6 @@ RUN --mount=type=bind,from=onlp,source=/usr/share/onlp,target=/src ls /src/*.deb
 
 RUN ldconfig
 
-# install swsssdk
-RUN --mount=type=bind,from=sonic_buildimage_xcvrd_dir,source=src/sonic-py-swsssdk,target=/root,rw pip install /root
-
 # install swss-common
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
     apt update && apt install -qy python-all libpython2-dev google-mock libgmock-dev

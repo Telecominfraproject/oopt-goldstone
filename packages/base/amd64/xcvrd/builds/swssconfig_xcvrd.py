@@ -7,14 +7,14 @@
     PORT field/value pairs in CONFIG_DB to PORT_TABLE in APPL_DB.
 """
 
-import swsssdk
+from swsscommon import swsscommon
 
 PORT_TABLE_FIELD_LIST = ["speed", "index", "lanes"]
 
 
 # connect redis db
-config_db = swsssdk.ConfigDBConnector()
-appl_db = swsssdk.SonicV2Connector()
+config_db = swsscommon.ConfigDBConnector()
+appl_db = swsscommon.SonicV2Connector()
 config_db.connect()
 appl_db.connect("APPL_DB")
 

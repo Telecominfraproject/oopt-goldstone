@@ -1,7 +1,6 @@
 prerequisites:
   submodules:
     - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-swss-common }
-    - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-py-swsssdk }
     - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-platform-common }
     - { root : "${X1}/sm/sonic-buildimage-xcvrd/", path : src/sonic-platform-daemons }
 
