@@ -29,6 +29,7 @@ metadata:
     labels:
         app: xcvrd
 spec:
+    hostIPC: true
     serviceAccountName: xcvrd
     initContainers:
     - name: wait-redis
