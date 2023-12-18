@@ -14,6 +14,7 @@ spec:
             labels:
                 app: south-onlp
         spec:
+            hostIPC: true
             containers:
             - name: onlp
               image: ghcr.io/oopt-goldstone/mgmt/south-onlp:latest
