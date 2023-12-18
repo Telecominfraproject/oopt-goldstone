@@ -1,4 +1,13 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: onl-platform
+data:
+    platform: "x86-64-kvm-x86-64-r0"
+
+---
+
+apiVersion: v1
 kind: ServiceAccount
 metadata:
     name: xcvrd
@@ -58,11 +67,13 @@ spec:
         mountPath: /etc/sonic/
       - name: xcvrd-config
         mountPath: /etc/xcvrd/
+      - name: onl-platform
+        mountPath: /etc/onl/
     containers:
     - name: pmon
       image: xcvrd:latest
       imagePullPolicy: Never
-      command: ['xcvrd']
+      command: ['sh', '-c', 'ln -sf /lib/platform-config/x86-64-kvm-x86-64-r0/onl/lib/libonlp-x86-64-kvm-x86-64.so /lib/x86_64-linux-gnu/libonlp-platform.so.1 && xcvrd']
       volumeMounts:
       - name: config-db-json
         mountPath: /etc/sonic/
@@ -70,10 +81,12 @@ spec:
         mountPath: /etc/xcvrd/
       - name: sonic-db-config
         mountPath: /var/run/redis/sonic-db/
-      - name: sys
-        mountPath: /sys
       - name: platform
         mountPath: /usr/share/sonic/platform
+      - name: sys
+        mountPath: /sys
+      - name: onl-platform
+        mountPath: /etc/onl/
       securityContext:
         privileged: true
     volumes:
@@ -94,3 +107,6 @@ spec:
           path: /sys
     - name: platform
       emptyDir: {}
+    - name: onl-platform
+      configMap:
+        name: onl-platform
