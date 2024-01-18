@@ -28,7 +28,7 @@ kernel_version: $(uname -r)
 
 
 start() {
-    mkdir -p /var/lib/xcvrd/redis
+    mkdir -p /run/redis-xcvrd
     create_config_db
     create_sonic_version
     kubectl create configmap xcvrd-config \
@@ -45,7 +45,7 @@ start() {
 stop() {
     kubectl delete -f /var/lib/xcvrd/k8s
     kubectl delete configmap xcvrd-config
-    rm -rf /var/lib/xcvrd/redis
+    rm -rf /run/redis-xcvrd
 }
 
 case "$1" in
