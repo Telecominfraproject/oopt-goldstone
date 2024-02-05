@@ -1,0 +1,25 @@
+From 88c5809331c9247b80f7572f17ff7530c6a537af Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Tue, 9 Jan 2024 17:48:21 +0900
+Subject: [PATCH 4/7] [xcvr] Fix assert warning
+
+---
+ sonic_platform_base/sonic_xcvr/fields/xcvr_field.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sonic_platform_base/sonic_xcvr/fields/xcvr_field.py b/sonic_platform_base/sonic_xcvr/fields/xcvr_field.py
+index 93f5161..dd1df65 100644
+--- a/sonic_platform_base/sonic_xcvr/fields/xcvr_field.py
++++ b/sonic_platform_base/sonic_xcvr/fields/xcvr_field.py
+@@ -115,7 +115,7 @@ class RegBitsField(XcvrField):
+     def __init__(self, name, bitpos, offset=None, **kwargs):
+         super(RegBitsField, self).__init__(name, offset, **kwargs)
+         self.size = self.size = kwargs.get("size", 1) #No of bits
+-        assert (bitpos >= 0 and (bitpos+self.size-1 < 8), "bitpos must be within one byte")
++        assert bitpos >= 0 and (bitpos+self.size-1 < 8), "bitpos must be within one byte"
+         self.bitpos = bitpos
+         self.bitmask = (((1 << self.size) - 1) << self.bitpos) & 0xff
+ 
+-- 
+2.20.1
+

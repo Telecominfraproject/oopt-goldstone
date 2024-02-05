@@ -1,3 +1,37 @@
+From 199fb58cb41faa4ca70af0f1ebad1841687fbe00 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 15 Dec 2023 16:07:53 +0900
+Subject: [PATCH 2/3] [device/accton] Support as7946-30xb
+
+---
+ .../x86_64-accton_as7946_30xb-r0/pytest.ini   |   2 +
+ .../sonic_platform/__init__.py                |   2 +
+ .../sonic_platform/chassis.py                 |  74 ++++
+ .../sonic_platform/event.py                   |  56 ++++
+ .../sonic_platform/helper.py                  |  23 ++
+ .../sonic_platform/platform.py                |  18 +
+ .../sonic_platform/sfp.py                     | 256 ++++++++++++++
+ .../tests/__init__.py                         |   0
+ .../tests/test_chassis.py                     |  89 +++++
+ .../tests/test_event.py                       |  98 ++++++
+ .../tests/test_helper.py                      |  26 ++
+ .../tests/test_sfp.py                         | 316 ++++++++++++++++++
+ .../as7946-30xb/sonic_platform_setup.py       |  41 +++
+ 13 files changed, 1001 insertions(+)
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/pytest.ini
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/__init__.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/chassis.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/event.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/helper.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/platform.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/tests/__init__.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/tests/test_chassis.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/tests/test_event.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/tests/test_helper.py
+ create mode 100644 device/accton/x86_64-accton_as7946_30xb-r0/tests/test_sfp.py
+ create mode 100644 platform/broadcom/sonic-platform-modules-accton/as7946-30xb/sonic_platform_setup.py
+
 diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/pytest.ini b/device/accton/x86_64-accton_as7946_30xb-r0/pytest.ini
 new file mode 100644
 index 000000000..000062fb7
@@ -167,23 +201,23 @@ index 000000000..da9045417
 +import subprocess
 +from mmap import *
 +from sonic_py_common import device_info
-+import onlp.onlp
++
 +HOST_CHK_CMD = "docker > /dev/null 2>&1"
 +EMPTY_STRING = ""
-+libonlp = onlp.onlp.libonlp
++
++
 +class APIHelper():
++
 +    def __init__(self):
 +        (self.platform, self.hwsku) = device_info.get_platform_and_hwsku()
++
 +    def read_txt_file(self, file_path):
 +        try:
-+            libonlp.onlp_shlock_global_take()
 +            with open(file_path, 'r') as fd:
 +                data = fd.read()
 +                return data.strip()
 +        except IOError:
 +            pass
-+        finally:
-+            libonlp.onlp_shlock_global_give()
 +        return None
 diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/platform.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/platform.py
 new file mode 100644
@@ -211,10 +245,10 @@ index 000000000..c38a56e38
 +        self._chassis = Chassis()
 diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
 new file mode 100644
-index 000000000..bb1814f2f
+index 000000000..b7f47c09f
 --- /dev/null
 +++ b/device/accton/x86_64-accton_as7946_30xb-r0/sonic_platform/sfp.py
-@@ -0,0 +1,248 @@
+@@ -0,0 +1,256 @@
 +#############################################################################
 +# Accton
 +#
@@ -228,21 +262,20 @@ index 000000000..bb1814f2f
 +import time
 +import struct
 +import fcntl
-+import onlp.onlp
 +
 +from ctypes import create_string_buffer
 +
-+from sonic_platform_base.sfp_base import SfpBase
++from sonic_platform_base.sonic_xcvr.sfp_optoe_base import SfpOptoeBase
 +from .helper import APIHelper
-+
-+libonlp = onlp.onlp.libonlp
 +
 +#Edge-core definitions
 +CPLD2_I2C_PATH = "/sys/bus/i2c/devices/12-0061/"
 +CPLD3_I2C_PATH = "/sys/bus/i2c/devices/13-0062/"
++
 +# definitions of the offset and width for values in XCVR info eeprom
 +XCVR_TYPE_OFFSET = 0
 +XCVR_TYPE_WIDTH = 1
++
 +SFP_TYPE_CODE_LIST = [
 +    '03'  # SFP/SFP+/SFP28
 +]
@@ -253,15 +286,17 @@ index 000000000..bb1814f2f
 +QSFP_DD_TYPE_CODE_LIST = [
 +    '18'  # QSFP-DD Double Density 8X Pluggable Transceiver
 +]
++
 +SFP_TYPE = "SFP"
 +QSFP_TYPE = "QSFP"
 +OSFP_TYPE = "OSFP"
 +QSFP_DD_TYPE = "QSFP_DD"
++
 +SFP_I2C_START = 25
 +I2C_EEPROM_PATH = '/sys/bus/i2c/devices/{0}-0050/eeprom'
 +
 +
-+class Sfp(SfpBase):
++class Sfp(SfpOptoeBase):
 +    """Platform-specific Sfp class"""
 +    HOST_CHK_CMD = "docker > /dev/null 2>&1"
 +    PLATFORM = "x86_64-accton_as7946_30xb-r0"
@@ -277,38 +312,36 @@ index 000000000..bb1814f2f
 +    CPLD3_PORT_END = 26
 +
 +    def __init__(self, sfp_index=0, sfp_name=None):
-+
++        super().__init__()
 +        self._index = sfp_index
 +        self._port_num = self._index + 1
 +        self._api_helper = APIHelper()
 +        self._name = sfp_name
-+
 +        self._dom_capability_detect()
 +        self._eeprom_path = self._get_eeprom_path()
-+        SfpBase.__init__(self)
 +
 +    def _read_eeprom_specific_bytes(self, offset, num_bytes):
 +        sysfs_sfp_i2c_client_eeprom_path = self._get_eeprom_path()
 +        eeprom_raw = []
-+
 +        try:
-+            libonlp.onlp_shlock_global_take()
 +            eeprom = open(
 +                sysfs_sfp_i2c_client_eeprom_path,
 +                mode="rb", buffering=0)
-+            for i in range(0, num_bytes):
-+                eeprom_raw.append("0x00")
++        except IOError:
++            return None
++
++        for i in range(0, num_bytes):
++            eeprom_raw.append("0x00")
++
++        try:
 +            eeprom.seek(offset)
 +            raw = eeprom.read(num_bytes)
 +            for n in range(0, num_bytes):
 +                eeprom_raw[n] = hex(raw[n])[2:].zfill(2)
-+
 +        except (IOError, BaseException):
 +            eeprom_raw = None
-+
 +        finally:
 +            eeprom.close()
-+            libonlp.onlp_shlock_global_give()
 +
 +        return eeprom_raw
 +
@@ -337,13 +370,23 @@ index 000000000..bb1814f2f
 +    def _dom_capability_detect(self):
 +        self._detect_sfp_type()
 +
++    def get_transceiver_status(self):
++        status = super().get_transceiver_status()
++        if status is None:
++            return status
++        if self.sfp_type == 'QSFP_DD':
++            api = self.get_xcvr_api()
++            for i in range(8):
++                status['active_appl_code{}'.format(i+1)] = api.get_application(i)
++        return status
++
 +    def get_presence(self):
 +        """
 +        Retrieves the presence of the device
 +        Returns:
 +            bool: True if device is present, False if not
 +        """
-+        if self._port_num <= 16: 
++        if self._port_num <= 16:
 +            present_path = "{}{}{}".format(CPLD2_I2C_PATH, '/module_present_', self._port_num)
 +        else:
 +            present_path = "{}{}{}".format(CPLD3_I2C_PATH, '/module_present_', self._port_num)
@@ -351,7 +394,7 @@ index 000000000..bb1814f2f
 +        val=self._api_helper.read_txt_file(present_path)
 +        if val is not None:
 +            return int(val, 10)==1
-+        else:           
++        else:
 +            return False
 +
 +    def is_replaceable(self):
@@ -363,6 +406,10 @@ index 000000000..bb1814f2f
 +        return True
 +
 +    def read_eeprom(self, offset, num_bytes):
++        """
++        Overrides read_eeprom() method.
++        Calls
++        """
 +        port_to_i2c_mapping = SFP_I2C_START + self._index
 +        port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
 +        if offset > 255:
@@ -371,8 +418,8 @@ index 000000000..bb1814f2f
 +            buffer = create_string_buffer(1)
 +            buffer[0] = result[0] - 1
 +            try:
-+                libonlp.onlp_shlock_global_take()
 +                with open(port_eeprom_path, "r+b", buffering=0) as fd:
++                    fcntl.flock(fd, fcntl.LOCK_EX)
 +                    fd.seek(127)
 +                    fd.write(buffer[0])
 +                    time.sleep(0.02)
@@ -385,34 +432,33 @@ index 000000000..bb1814f2f
 +                    fd.seek(127)
 +                    fd.write(buffer[0])
 +                    time.sleep(0.02)
-+
++                    fcntl.flock(fd, fcntl.LOCK_UN)
 +            except IOError as e:
 +                print("Error: unable to open file: %s" % str(e))
-+                return 
++                raise Exception 
 +            except Exception as e:
 +                print ('Error: unable to open file: ', str(e))
-+                return
-+            finally:
-+                libonlp.onlp_shlock_global_give()
++                raise Exception
 +        else:
 +            try:
-+                libonlp.onlp_shlock_global_take()
 +                with open(port_eeprom_path, "r+b", buffering=0) as fd:
-+
++                    fcntl.flock(fd, fcntl.LOCK_EX)
 +                    fd.seek(offset)
 +                    raw = fd.read(num_bytes)
-+
++                    fcntl.flock(fd, fcntl.LOCK_UN)
 +            except IOError as e:
 +                print("Error: unable to open file: %s" % str(e))
-+                return
++                raise Exception 
 +            except Exception as e:
 +                print("Error: Unexpected Error: {}".format(e))
-+                return
-+            finally:
-+                libonlp.onlp_shlock_global_give()
++                raise Exception 
++
 +        return bytearray(raw)
 +
 +    def write_eeprom(self, offset, num_bytes, value):
++        """
++        Overrides write_eeprom() method.
++        """
 +        port_to_i2c_mapping = SFP_I2C_START + self._index
 +        port_eeprom_path = I2C_EEPROM_PATH.format(port_to_i2c_mapping)
 +        if offset > 255:
@@ -421,8 +467,8 @@ index 000000000..bb1814f2f
 +            buffer = create_string_buffer(1)
 +            buffer[0] = result[0] - 1
 +            try:
-+                libonlp.onlp_shlock_global_take()
 +                with open(port_eeprom_path, "r+b", buffering=0) as fd:
++                    fcntl.flock(fd, fcntl.LOCK_EX)
 +                    fd.seek(127)
 +                    fd.write(buffer[0])
 +                    time.sleep(0.02)
@@ -436,6 +482,7 @@ index 000000000..bb1814f2f
 +                    fd.seek(127)
 +                    fd.write(buffer[0])
 +                    time.sleep(0.02)
++                    fcntl.flock(fd, fcntl.LOCK_UN)
 +                    return True
 +            except IOError as e:
 +                print("Error: unable to open file: %s" % str(e))
@@ -443,17 +490,14 @@ index 000000000..bb1814f2f
 +            except Exception as e:
 +                print("Error: Unexpected Error: {}".format(e))
 +                return False
-+            finally:
-+                libonlp.onlp_shlock_global_give()
 +        else:
 +            try:
-+                libonlp.onlp_shlock_global_take()
 +                with open(port_eeprom_path, "r+b", buffering=0) as fd:
-+
++                    fcntl.flock(fd, fcntl.LOCK_EX)
 +                    fd.seek(offset)
 +                    fd.write(value)
 +                    time.sleep(0.09)
-+
++                    fcntl.flock(fd, fcntl.LOCK_UN)
 +                return True
 +            except IOError as e:
 +                print("Error: unable to open file: %s" % str(e))
@@ -461,8 +505,6 @@ index 000000000..bb1814f2f
 +            except Exception as e:
 +                print("Error: Unexpected Error: {}".format(e))
 +                return False
-+            finally:
-+                libonlp.onlp_shlock_global_give()
 diff --git a/device/accton/x86_64-accton_as7946_30xb-r0/tests/__init__.py b/device/accton/x86_64-accton_as7946_30xb-r0/tests/__init__.py
 new file mode 100644
 index 000000000..e69de29bb
@@ -1066,3 +1108,6 @@ index 000000000..0dbab543b
 +    ],
 +    keywords='sonic SONiC platform PLATFORM',
 +)
+-- 
+2.20.1
+

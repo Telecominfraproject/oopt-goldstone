@@ -1,2 +1,3 @@
-001-sonic-cfggen-fix.patch
-002-support-as7946-30xb.patch
+0001-sonic-cfggen-Add-use-unix-sock-option.patch
+0002-device-accton-Support-as7946-30xb.patch
+0003-as7946-30xb-Use-onlp_shlock-API.patch

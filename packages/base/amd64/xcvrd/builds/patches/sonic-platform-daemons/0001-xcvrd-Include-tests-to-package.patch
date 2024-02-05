@@ -1,0 +1,64 @@
+From 5cd6c04491266c0ca847c88f676b1f1579ad7b4e Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 15 Dec 2023 17:16:39 +0900
+Subject: [PATCH 1/6] [xcvrd] Include tests to package
+
+This change includes tests to package and allows run them after deployment.
+---
+ sonic-xcvrd/setup.py            | 8 ++++++++
+ sonic-xcvrd/tests/test_xcvrd.py | 6 +++---
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/sonic-xcvrd/setup.py b/sonic-xcvrd/setup.py
+index 7eea188..cc2c8d0 100644
+--- a/sonic-xcvrd/setup.py
++++ b/sonic-xcvrd/setup.py
+@@ -28,6 +28,14 @@ setup(
+         'pytest',
+         'pytest-cov',
+     ],
++    package_data={
++        'tests': [
++            'media_settings.json',
++            'optics_si_settings.json',
++            't0-sample-port-config.ini'
++        ]
++    },
++    data_files=[('', ['pytest.ini'])],
+     classifiers=[
+         'Development Status :: 4 - Beta',
+         'Environment :: No Input/Output (Daemon)',
+diff --git a/sonic-xcvrd/tests/test_xcvrd.py b/sonic-xcvrd/tests/test_xcvrd.py
+index a3adf58..82a05b4 100644
+--- a/sonic-xcvrd/tests/test_xcvrd.py
++++ b/sonic-xcvrd/tests/test_xcvrd.py
+@@ -70,7 +70,7 @@ class TestXcvrdThreadException(object):
+         assert not cmis_manager.is_alive()
+         assert(type(exception_received) == NotImplementedError)
+         assert("NotImplementedError" in str(trace) and "effect" in str(trace))
+-        assert("sonic-xcvrd/xcvrd/xcvrd.py" in str(trace))
++        assert("xcvrd/xcvrd.py" in str(trace))
+         assert("wait_for_port_config_done" in str(trace))
+ 
+     @patch('xcvrd.xcvrd_utilities.port_mapping.subscribe_port_config_change', MagicMock(side_effect = NotImplementedError))
+@@ -90,7 +90,7 @@ class TestXcvrdThreadException(object):
+         assert not dom_info_update.is_alive()
+         assert(type(exception_received) == NotImplementedError)
+         assert("NotImplementedError" in str(trace) and "effect" in str(trace))
+-        assert("sonic-xcvrd/xcvrd/xcvrd.py" in str(trace))
++        assert("xcvrd/xcvrd.py" in str(trace))
+         assert("subscribe_port_config_change" in str(trace))
+ 
+     @patch('xcvrd.xcvrd.SfpStateUpdateTask.init', MagicMock())
+@@ -112,7 +112,7 @@ class TestXcvrdThreadException(object):
+         assert not sfp_state_update.is_alive()
+         assert(type(exception_received) == NotImplementedError)
+         assert("NotImplementedError" in str(trace) and "effect" in str(trace))
+-        assert("sonic-xcvrd/xcvrd/xcvrd.py" in str(trace))
++        assert("xcvrd/xcvrd.py" in str(trace))
+         assert("subscribe_port_config_change" in str(trace))
+ 
+     @patch('xcvrd.xcvrd.SfpStateUpdateTask.is_alive', MagicMock(return_value = False))
+-- 
+2.20.1
+

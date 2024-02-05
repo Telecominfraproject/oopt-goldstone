@@ -1,1 +1,7 @@
-001-sonic-platform-common-fix.patch
+0001-sfp-Define-OpenZR-transceiver-types-for-SFF-8024.patch
+0002-xcvr-Allow-non-sequential-appl-code.patch
+0003-xcvr-Add-__init__.py-for-credo.patch
+0004-xcvr-Fix-assert-warning.patch
+0005-xcvr-Modify-exception-handling-of-getting-VDM.patch
+0006-xcvr-Limit-the-VDM-items-for-performance.patch
+0007-xcvr-Fix-active_apsel_hostlane-memmap.patch

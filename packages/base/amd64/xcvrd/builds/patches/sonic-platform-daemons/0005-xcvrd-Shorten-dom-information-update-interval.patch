@@ -1,0 +1,27 @@
+From 22dcb9c58ee57bb55d50fca204291c63d3aa56a8 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Wed, 10 Jan 2024 09:43:11 +0900
+Subject: [PATCH 5/6] [xcvrd] Shorten dom information update interval
+
+This change shortens dom information update interval from 60s to 1s. Users
+can observe those updates sooner.
+---
+ sonic-xcvrd/xcvrd/xcvrd.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index 69e92d6..17bae9b 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -54,7 +54,7 @@ MGMT_INIT_TIME_DELAY_SECS = 2
+ # SFP insert event poll duration
+ SFP_INSERT_EVENT_POLL_PERIOD_MSECS = 1000
+ 
+-DOM_INFO_UPDATE_PERIOD_SECS = 60
++DOM_INFO_UPDATE_PERIOD_SECS = 1
+ STATE_MACHINE_UPDATE_PERIOD_MSECS = 60000
+ TIME_FOR_SFP_READY_SECS = 1
+ 
+-- 
+2.20.1
+

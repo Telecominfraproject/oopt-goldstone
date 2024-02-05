@@ -1,2 +1,6 @@
-001-xcvrd-fix.patch
-002-fix-unit-test.patch
+0001-xcvrd-Include-tests-to-package.patch
+0002-xcvrd-Add-media_interface_code-for-app-selection.patch
+0003-xcvrd-Set-host_tx_ready-default-to-true.patch
+0004-xcvrd-Use-TCP-to-connect-with-STATE_DB.patch
+0005-xcvrd-Shorten-dom-information-update-interval.patch
+0006-xcvrd-Output-CMIS-manager-log.patch
