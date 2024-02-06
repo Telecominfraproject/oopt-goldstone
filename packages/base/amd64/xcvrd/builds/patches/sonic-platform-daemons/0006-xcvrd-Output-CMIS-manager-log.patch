@@ -1,7 +1,7 @@
 From dd4283e908fcc740005c0f87cf9244eda3b6ba33 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Wed, 17 Jan 2024 09:41:33 +0900
-Subject: [PATCH 6/6] [xcvrd] Output CMIS manager log
+Subject: [PATCH 6/7] [xcvrd] Output CMIS manager log
 
 This change outputs CMIS manager log to console. Users can get these as
 container logs when starting xcvrd as a container from the system.

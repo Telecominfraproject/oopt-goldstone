@@ -1,0 +1,81 @@
+From 60d01cac68938f2b29396bb37f6bd616a302836e Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Fri, 12 Jan 2024 13:31:09 +0900
+Subject: [PATCH 7/7] [xcvrd] Add "--cmis_max_retries" option
+
+---
+ sonic-xcvrd/xcvrd/xcvrd.py | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index b8d6450..56efc3c 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -885,7 +885,7 @@ class CmisManagerTask(threading.Thread):
+     CMIS_STATE_REMOVED   = 'REMOVED'
+     CMIS_STATE_FAILED    = 'FAILED'
+ 
+-    def __init__(self, namespaces, port_mapping, main_thread_stop_event, skip_cmis_mgr=False):
++    def __init__(self, namespaces, port_mapping, main_thread_stop_event, cmis_max_retries, skip_cmis_mgr=False):
+         threading.Thread.__init__(self)
+         self.name = "CmisManagerTask"
+         self.exc = None
+@@ -896,6 +896,7 @@ class CmisManagerTask(threading.Thread):
+         self.xcvr_table_helper = XcvrTableHelper(namespaces)
+         self.isPortInitDone = False
+         self.isPortConfigDone = False
++        self.cmis_max_retries = cmis_max_retries
+         self.skip_cmis_mgr = skip_cmis_mgr
+         self.namespaces = namespaces
+ 
+@@ -1520,7 +1521,7 @@ class CmisManagerTask(threading.Thread):
+                 self.log_notice("{}: {}G, lanemask=0x{:x}, state={}, appl {} host_lane_count {} "
+                                 "retries={}".format(lport, int(speed/1000), host_lanes_mask,
+                                 state, appl, host_lane_count, retries))
+-                if retries > self.CMIS_MAX_RETRIES:
++                if self.cmis_max_retries >= 0 and retries > self.cmis_max_retries:
+                     self.log_error("{}: FAILED".format(lport))
+                     self.port_dict[lport]['cmis_state'] = self.CMIS_STATE_FAILED
+                     continue
+@@ -2404,10 +2405,11 @@ class SfpStateUpdateTask(threading.Thread):
+ 
+ 
+ class DaemonXcvrd(daemon_base.DaemonBase):
+-    def __init__(self, log_identifier, skip_cmis_mgr=False):
++    def __init__(self, log_identifier, cmis_max_retries, skip_cmis_mgr=False):
+         super(DaemonXcvrd, self).__init__(log_identifier)
+         self.stop_event = threading.Event()
+         self.sfp_error_event = threading.Event()
++        self.cmis_max_retries = cmis_max_retries
+         self.skip_cmis_mgr = skip_cmis_mgr
+         self.namespaces = ['']
+         self.threads = []
+@@ -2547,7 +2549,8 @@ class DaemonXcvrd(daemon_base.DaemonBase):
+         port_mapping_data = self.init()
+ 
+         # Start the CMIS manager
+-        cmis_manager = CmisManagerTask(self.namespaces, port_mapping_data, self.stop_event, self.skip_cmis_mgr)
++        cmis_manager = CmisManagerTask(self.namespaces, port_mapping_data, self.stop_event, self.cmis_max_retries,
++                                       self.skip_cmis_mgr)
+         if not self.skip_cmis_mgr:
+             cmis_manager.start()
+             self.threads.append(cmis_manager)
+@@ -2663,11 +2666,13 @@ class XcvrTableHelper:
+ 
+ 
+ def main():
+-    parser = argparse.ArgumentParser()
++    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
++    parser.add_argument('--cmis_max_retries', type=int, default=CmisManagerTask.CMIS_MAX_RETRIES,
++                        help='Retry limit for CMIS datapath state machine. "-1" means unlimited.')
+     parser.add_argument('--skip_cmis_mgr', action='store_true')
+ 
+     args = parser.parse_args()
+-    xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER, args.skip_cmis_mgr)
++    xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER, args.cmis_max_retries, args.skip_cmis_mgr)
+     xcvrd.run()
+ 
+ 
+-- 
+2.20.1
+

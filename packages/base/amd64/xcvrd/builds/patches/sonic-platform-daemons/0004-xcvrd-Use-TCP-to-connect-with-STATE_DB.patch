@@ -1,7 +1,7 @@
 From dc34ecc73591e440de45dc30f82e282abb22c588 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Tue, 26 Dec 2023 09:29:44 +0900
-Subject: [PATCH 4/6] [xcvrd] Use TCP to connect with STATE_DB
+Subject: [PATCH 4/7] [xcvrd] Use TCP to connect with STATE_DB
 
 This change makes xcvrd to use TCP connections in order to access external
 databases.
