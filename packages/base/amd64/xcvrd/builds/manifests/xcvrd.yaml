@@ -73,7 +73,7 @@ spec:
     - name: pmon
       image: xcvrd:latest
       imagePullPolicy: Never
-      command: ['sh', '-c', 'ln -sf /lib/platform-config/x86-64-kvm-x86-64-r0/onl/lib/libonlp-x86-64-kvm-x86-64.so /lib/x86_64-linux-gnu/libonlp-platform.so.1 && xcvrd']
+      command: ['sh', '-c', 'ln -sf /lib/platform-config/x86-64-kvm-x86-64-r0/onl/lib/libonlp-x86-64-kvm-x86-64.so /lib/x86_64-linux-gnu/libonlp-platform.so.1 && xcvrd --cmis_max_retries -1']
       volumeMounts:
       - name: config-db-json
         mountPath: /etc/sonic/
