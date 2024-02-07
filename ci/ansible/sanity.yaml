@@ -35,3 +35,17 @@
       with_items:
         - gs-south-gearbox.service
         - gs-xlate-or.service
+
+- hosts: agr400_1
+  vars_files:
+    - vars/common.yaml
+    - vars/root.yaml
+  gather_facts: no
+  tasks:
+    - name: Check the AGR400 specific daemon is running
+      systemd:
+        name: "{{ item }}"
+        state: started
+      timeout: 1200
+      with_items:
+        - xcvrd.service
