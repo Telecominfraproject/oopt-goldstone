@@ -6,7 +6,7 @@ galileo:
 edgecore_as:
   children:
     csg:
-    as7946:
+    agr400:
 
 galileo_flex_t:
   hosts:
@@ -23,7 +23,7 @@ csg:
     csg1:
       ansible_host: 192.168.201.203
 
-as7946:
+agr400:
   hosts:
-    as7946_1:
+    agr400_1:
       ansible_host: 192.168.201.204
