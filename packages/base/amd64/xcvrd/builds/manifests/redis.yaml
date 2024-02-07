@@ -20,7 +20,7 @@ spec:
     volumes:
     - name: redis-sock
       hostPath:
-          path: /var/lib/xcvrd/redis
+          path: /run/redis-xcvrd
           type: Directory
     - name: redis-server-config
       configMap:
