@@ -1,7 +1,7 @@
 From 5cd6c04491266c0ca847c88f676b1f1579ad7b4e Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Fri, 15 Dec 2023 17:16:39 +0900
-Subject: [PATCH 1/7] [xcvrd] Include tests to package
+Subject: [PATCH 01/11] [xcvrd] Include tests to package
 
 This change includes tests to package and allows run them after deployment.
 ---

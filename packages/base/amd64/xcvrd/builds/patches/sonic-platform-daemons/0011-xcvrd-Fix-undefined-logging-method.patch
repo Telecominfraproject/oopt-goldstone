@@ -1,0 +1,26 @@
+From 94e79bb41481f3bfd945188ca6998b8e5aa01cd1 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Wed, 21 Feb 2024 16:16:29 +0900
+Subject: [PATCH 11/11] [xcvrd] Fix undefined logging method
+
+---
+ sonic-xcvrd/xcvrd/xcvrd.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index c5fe011..b2bfe47 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -908,6 +908,9 @@ class CmisManagerTask(threading.Thread):
+     def log_error(self, message):
+         helper_logger.log_error("CMIS: {}".format(message), also_print_to_console=True)
+ 
++    def log_warning(self, message):
++        helper_logger.log_warning("CMIS: {}".format(message), also_print_to_console=True)
++
+     def on_port_update_event(self, port_change_event):
+         if port_change_event.event_type not in [port_change_event.PORT_SET, port_change_event.PORT_DEL]:
+             return
+-- 
+2.20.1
+

@@ -5,3 +5,7 @@
 0005-xcvrd-Shorten-dom-information-update-interval.patch
 0006-xcvrd-Output-CMIS-manager-log.patch
 0007-xcvrd-Add-cmis_max_retries-option.patch
+0008-xcvrd-Fix-the-hostlanes-to-set-datapath-init-fields.patch
+0009-xcvrd-Support-appl-that-use-multiple-host-interfaces.patch
+0010-xcvrd-Add-check-CMIS-configuration-log.patch
+0011-xcvrd-Fix-undefined-logging-method.patch
