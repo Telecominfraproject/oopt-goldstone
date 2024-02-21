@@ -1,12 +1,160 @@
-From 60d01cac68938f2b29396bb37f6bd616a302836e Mon Sep 17 00:00:00 2001
+From 57337c53e11a278db1ec9c0b592711212a47e82b Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Fri, 12 Jan 2024 13:31:09 +0900
-Subject: [PATCH 7/7] [xcvrd] Add "--cmis_max_retries" option
+Subject: [PATCH 07/11] [xcvrd] Add "--cmis_max_retries" option
 
 ---
- sonic-xcvrd/xcvrd/xcvrd.py | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ sonic-xcvrd/tests/test_xcvrd.py | 31 ++++++++++++++++---------------
+ sonic-xcvrd/xcvrd/xcvrd.py      | 17 +++++++++++------
+ 2 files changed, 27 insertions(+), 21 deletions(-)
 
+diff --git a/sonic-xcvrd/tests/test_xcvrd.py b/sonic-xcvrd/tests/test_xcvrd.py
+index 0ddf1b8..9faa283 100644
+--- a/sonic-xcvrd/tests/test_xcvrd.py
++++ b/sonic-xcvrd/tests/test_xcvrd.py
+@@ -32,6 +32,7 @@ modules_path = os.path.dirname(test_path)
+ scripts_path = os.path.join(modules_path, "xcvrd")
+ sys.path.insert(0, modules_path)
+ DEFAULT_NAMESPACE = ['']
++DEFAULT_CMIS_MAX_RETRIES = 3
+ 
+ os.environ["XCVRD_UNIT_TESTING"] = "1"
+ 
+@@ -56,7 +57,7 @@ class TestXcvrdThreadException(object):
+     def test_CmisManagerTask_task_run_with_exception(self):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        cmis_manager = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        cmis_manager = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         cmis_manager.wait_for_port_config_done = MagicMock(side_effect = NotImplementedError)
+         exception_received = None
+         trace = None
+@@ -129,7 +130,7 @@ class TestXcvrdThreadException(object):
+     @patch('xcvrd.xcvrd.SfpStateUpdateTask.join')
+     def test_DaemonXcvrd_run_with_exception(self, mock_task_join1, mock_task_join2, mock_init, mock_os_kill):
+         mock_init.return_value = (PortMapping(), set())
+-        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER)
++        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER, DEFAULT_CMIS_MAX_RETRIES)
+         xcvrd.stop_event.wait = MagicMock()
+         xcvrd.run()
+ 
+@@ -613,7 +614,7 @@ class TestXcvrdScript(object):
+             side_effect=[('Ethernet0', swsscommon.SET_COMMAND, (('index', '1'), )), ('PortConfigDone', None, None)])
+         mock_select.return_value = (swsscommon.Select.OBJECT, mock_selectable)
+         mock_sub_table.return_value = mock_selectable
+-        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER)
++        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER, DEFAULT_CMIS_MAX_RETRIES)
+         xcvrd.wait_for_port_config_done('')
+         assert swsscommon.Select.select.call_count == 2
+ 
+@@ -625,7 +626,7 @@ class TestXcvrdScript(object):
+     @patch('xcvrd.xcvrd.SfpStateUpdateTask.join')
+     def test_DaemonXcvrd_run(self, mock_task_stop1, mock_task_stop2, mock_task_run1, mock_task_run2, mock_deinit, mock_init):
+         mock_init.return_value = (PortMapping(), set())
+-        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER)
++        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER, DEFAULT_CMIS_MAX_RETRIES)
+         xcvrd.stop_event.wait = MagicMock()
+         xcvrd.run()
+         assert mock_task_stop1.call_count == 1
+@@ -639,7 +640,7 @@ class TestXcvrdScript(object):
+     def test_CmisManagerTask_handle_port_change_event(self):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+ 
+         assert not task.isPortConfigDone
+         port_change_event = PortChangeEvent('PortConfigDone', -1, 0, PortChangeEvent.PORT_SET)
+@@ -667,7 +668,7 @@ class TestXcvrdScript(object):
+     def test_CmisManagerTask_get_configured_freq(self, mock_table_helper):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         cfg_port_tbl = MagicMock()
+         cfg_port_tbl.get = MagicMock(return_value=(True, (('laser_freq', 193100),)))
+         mock_table_helper.get_cfg_port_tbl = MagicMock(return_value=cfg_port_tbl)
+@@ -678,7 +679,7 @@ class TestXcvrdScript(object):
+     def test_CmisManagerTask_get_configured_tx_power_from_db(self, mock_table_helper):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         cfg_port_tbl = MagicMock()
+         cfg_port_tbl.get = MagicMock(return_value=(True, (('tx_power', -10),)))
+         mock_table_helper.get_cfg_port_tbl = MagicMock(return_value=cfg_port_tbl)
+@@ -689,7 +690,7 @@ class TestXcvrdScript(object):
+     def test_CmisManagerTask_get_configured_media_if_from_db(self, mock_table_helper):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         cfg_port_tbl = MagicMock()
+         cfg_port_tbl.get = MagicMock(return_value=(True, ()))
+         mock_table_helper.get_cfg_port_tbl = MagicMock(return_value=cfg_port_tbl)
+@@ -702,7 +703,7 @@ class TestXcvrdScript(object):
+     def test_CmisManagerTask_get_cmis_application_desired(self):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         mock_xcvr_api = MagicMock()
+         mock_xcvr_api.get_application_advertisement = MagicMock(return_value={1: {'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
+                                                                                   'module_media_interface_id': '400ZR, DWDM, amplified',
+@@ -735,7 +736,7 @@ class TestXcvrdScript(object):
+ 
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        cmis_manager = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        cmis_manager = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         cmis_manager.wait_for_port_config_done = MagicMock()
+         cmis_manager.start()
+         cmis_manager.join()
+@@ -796,7 +797,7 @@ class TestXcvrdScript(object):
+ 
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+ 
+         assert task.is_cmis_application_update_required(mock_xcvr_api, app_new, host_lanes_mask) == expected
+ 
+@@ -841,7 +842,7 @@ class TestXcvrdScript(object):
+         mock_xcvr_api.get_host_lane_assignment_option = MagicMock(side_effect=get_host_lane_assignment_option_side_effect)
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+ 
+         appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed, None)
+         assert task.get_cmis_host_lanes_mask(mock_xcvr_api, appl, host_lane_count, subport) == expected
+@@ -890,7 +891,7 @@ class TestXcvrdScript(object):
+ 
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+         task.xcvr_table_helper.get_intf_tbl = MagicMock(return_value=int_tbl)
+ 
+         # case: partial lanes update
+@@ -1038,7 +1039,7 @@ class TestXcvrdScript(object):
+ 
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+-        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event)
++        task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, DEFAULT_CMIS_MAX_RETRIES)
+ 
+         port_change_event = PortChangeEvent('PortConfigDone', -1, 0, PortChangeEvent.PORT_SET)
+         task.on_port_update_event(port_change_event)
+@@ -1664,7 +1665,7 @@ class TestXcvrdScript(object):
+     @patch('swsscommon.swsscommon.WarmStart', MagicMock())
+     @patch('xcvrd.xcvrd.DaemonXcvrd.wait_for_port_config_done', MagicMock())
+     def test_DaemonXcvrd_init_deinit_fastboot_enabled(self):
+-        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER)
++        xcvrd = DaemonXcvrd(SYSLOG_IDENTIFIER, DEFAULT_CMIS_MAX_RETRIES)
+         with patch("subprocess.check_output") as mock_run:
+             mock_run.return_value = "true"
+ 
 diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
 index b8d6450..56efc3c 100644
 --- a/sonic-xcvrd/xcvrd/xcvrd.py

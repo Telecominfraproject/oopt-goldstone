@@ -1,7 +1,7 @@
 From 50c931649b58a854a3e1c72d16fc89e02b0989aa Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Fri, 15 Dec 2023 17:28:25 +0900
-Subject: [PATCH 2/7] [xcvrd] Add media_interface_code for app selection
+Subject: [PATCH 02/11] [xcvrd] Add media_interface_code for app selection
 
 This change supports the media_interfaces_code field in the CONFIG_DB PORT
 table. Users can select the application more precisely by specifying it.

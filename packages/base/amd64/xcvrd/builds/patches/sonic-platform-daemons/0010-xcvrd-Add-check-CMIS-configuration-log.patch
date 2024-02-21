@@ -1,0 +1,43 @@
+From 6fc6c4e3313ae1d23118d6de6f71fa3ba3a57195 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Wed, 21 Feb 2024 16:10:31 +0900
+Subject: [PATCH 10/11] [xcvrd] Add check CMIS configuration log
+
+---
+ sonic-xcvrd/xcvrd/xcvrd.py | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index 3080a78..c5fe011 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -1237,7 +1237,7 @@ class CmisManagerTask(threading.Thread):
+         """
+         return api.get_module_state() in states
+ 
+-    def check_config_error(self, api, host_lanes_mask, states):
++    def check_config_error(self, api, lport, host_lanes_mask, states):
+         """
+         Check if the CMIS configuration states are in the specified state
+ 
+@@ -1260,6 +1260,8 @@ class CmisManagerTask(threading.Thread):
+                 continue
+             key = "ConfigStatusLane{}".format(lane + 1)
+             if cerr[key] not in states:
++                self.log_notice("{}: {} value '{}' is not included in {}.".format(lport, key, cerr[key], states))
++                self.log_notice("{}: ConfigStatusLane fields {}".format(lport, cerr))
+                 done = False
+                 break
+ 
+@@ -1730,7 +1732,7 @@ class CmisManagerTask(threading.Thread):
+ 
+                         self.port_dict[lport]['cmis_state'] = self.CMIS_STATE_DP_INIT
+                     elif state == self.CMIS_STATE_DP_INIT:
+-                        if not self.check_config_error(api, host_lanes_mask, ['ConfigSuccess']):
++                        if not self.check_config_error(api, lport, host_lanes_mask, ['ConfigSuccess']):
+                             if (expired is not None) and (expired <= now):
+                                 self.log_notice("{}: timeout for 'ConfigSuccess'".format(lport))
+                                 self.force_cmis_reinit(lport, retries + 1)
+-- 
+2.20.1
+

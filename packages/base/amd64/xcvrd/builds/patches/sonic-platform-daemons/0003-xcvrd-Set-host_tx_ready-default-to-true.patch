@@ -1,7 +1,7 @@
 From 07d3ceabd39d70496cd2f22f9800948ec73098c7 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Fri, 15 Dec 2023 17:33:58 +0900
-Subject: [PATCH 3/7] [xcvrd] Set host_tx_ready default to true
+Subject: [PATCH 03/11] [xcvrd] Set host_tx_ready default to true
 
 This change sets host_tx_ready default to true. This is for environments
 that do not support the CONFIG_DB PORT table host_tx_ready field
