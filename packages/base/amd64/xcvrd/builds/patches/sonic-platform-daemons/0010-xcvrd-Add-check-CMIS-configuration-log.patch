@@ -1,7 +1,7 @@
 From 6fc6c4e3313ae1d23118d6de6f71fa3ba3a57195 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Wed, 21 Feb 2024 16:10:31 +0900
-Subject: [PATCH 10/11] [xcvrd] Add check CMIS configuration log
+Subject: [PATCH 10/13] [xcvrd] Add check CMIS configuration log
 
 ---
  sonic-xcvrd/xcvrd/xcvrd.py | 6 ++++--

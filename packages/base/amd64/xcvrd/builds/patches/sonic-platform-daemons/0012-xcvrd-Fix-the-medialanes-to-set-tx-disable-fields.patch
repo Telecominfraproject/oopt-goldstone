@@ -1,0 +1,156 @@
+From 1e6e12f22aa317065f3ff613b341a829ee30150d Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Tue, 27 Feb 2024 09:18:14 +0900
+Subject: [PATCH 12/13] [xcvrd] Fix the medialanes to set tx disable fields
+
+This change always sets OutputDisableTx fields for all medialanes. This
+allows for consistent datapath state machine between the medialanes. Also,
+This change includes a fix to increase the number of medialanes to match the
+number of host interfaces.
+---
+ sonic-xcvrd/tests/test_xcvrd.py | 24 +++++++++++++-----------
+ sonic-xcvrd/xcvrd/xcvrd.py      | 17 +++++++++++------
+ 2 files changed, 24 insertions(+), 17 deletions(-)
+
+diff --git a/sonic-xcvrd/tests/test_xcvrd.py b/sonic-xcvrd/tests/test_xcvrd.py
+index 9958932..1be4eb5 100644
+--- a/sonic-xcvrd/tests/test_xcvrd.py
++++ b/sonic-xcvrd/tests/test_xcvrd.py
+@@ -704,6 +704,8 @@ class TestXcvrdScript(object):
+         port_mapping = PortMapping()
+         stop_event = threading.Event()
+         task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, None, DEFAULT_CMIS_MAX_RETRIES)
++        task.port_dict = {"Ethernet0": {}}
++        lport = "Ethernet0"
+         mock_xcvr_api = MagicMock()
+         mock_xcvr_api.get_application_advertisement = MagicMock(return_value={1: {'host_electrical_interface_id': '400GAUI-8 C2M (Annex 120E)',
+                                                                                   'module_media_interface_id': '400ZR, DWDM, amplified',
+@@ -727,15 +729,15 @@ class TestXcvrdScript(object):
+                                                                                   'media_lane_assignment_options': 1
+                                                                                   }})
+ 
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, '400ZR, DWDM, amplified') == 1
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, 'ZR400-OFEC-16QAM') == 2
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 0, 400000, '400ZR, DWDM, amplified') == 0
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 8,      0, '400ZR, DWDM, amplified') == 0
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 400000, None) == 1
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 0, 100000, 'ZR200-OFEC-QPSK') == 0
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 2, 100000, 'ZR200-OFEC-QPSK') == 0
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 4, 100000, 'ZR200-OFEC-QPSK') == 3
+-        assert task.get_cmis_application_desired(mock_xcvr_api, 8, 100000, 'ZR200-OFEC-QPSK') == 3
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 8, 400000, '400ZR, DWDM, amplified') == 1
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 8, 400000, 'ZR400-OFEC-16QAM') == 2
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 0, 400000, '400ZR, DWDM, amplified') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 8,      0, '400ZR, DWDM, amplified') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 8, 400000, None) == 1
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 0, 100000, 'ZR200-OFEC-QPSK') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 2, 100000, 'ZR200-OFEC-QPSK') == 0
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 4, 100000, 'ZR200-OFEC-QPSK') == 3
++        assert task.get_cmis_application_desired(mock_xcvr_api, lport, 8, 100000, 'ZR200-OFEC-QPSK') == 3
+ 
+     @patch('xcvrd.xcvrd.platform_chassis')
+     @patch('xcvrd.xcvrd_utilities.port_mapping.subscribe_port_update_event', MagicMock(return_value=(None, None)))
+@@ -858,7 +860,7 @@ class TestXcvrdScript(object):
+         task = CmisManagerTask(DEFAULT_NAMESPACE, port_mapping, stop_event, None, DEFAULT_CMIS_MAX_RETRIES)
+         task.port_dict = {"Ethernet0": {}}
+ 
+-        appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed, None)
++        appl = task.get_cmis_application_desired(mock_xcvr_api, lport, host_lane_count, speed, None)
+         assert task.get_cmis_host_lanes_mask(mock_xcvr_api, appl, lport, lanes, host_lane_count, subport) == expected
+ 
+     @pytest.mark.parametrize("lport, lanes, host_lane_count, speed, subport, expected", [
+@@ -917,7 +919,7 @@ class TestXcvrdScript(object):
+         task.port_dict = {"Ethernet0": {"preset_lanes": "0,1,2,3,4,5,6,7"},
+                           "Ethernet1": {"preset_lanes": "8,9,10,11,12,13,14,15"}}
+ 
+-        appl = task.get_cmis_application_desired(mock_xcvr_api, host_lane_count, speed, None)
++        appl = task.get_cmis_application_desired(mock_xcvr_api, lport, host_lane_count, speed, None)
+         assert task.get_cmis_host_lanes_mask(mock_xcvr_api, appl, lport, lanes, host_lane_count, subport) == expected
+ 
+     def test_CmisManagerTask_post_port_active_apsel_to_db(self):
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index b2bfe47..4ec43b6 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -874,6 +874,7 @@ class CmisManagerTask(threading.Thread):
+     CMIS_MODULE_TYPES    = ['QSFP-DD', 'QSFP_DD', 'OSFP', 'QSFP+C']
+     CMIS_MAX_HOST_LANES    = 8
+     CMIS_ALL_HOST_LANES_MASK = 0xff
++    CMIS_ALL_MEDIA_LANES_MASK = 0xff
+ 
+     CMIS_STATE_UNKNOWN   = 'UNKNOWN'
+     CMIS_STATE_INSERTED  = 'INSERTED'
+@@ -1009,13 +1010,15 @@ class CmisManagerTask(threading.Thread):
+             media_if = dict(port_info)['media_interface_code']
+         return media_if
+ 
+-    def get_cmis_application_desired(self, api, host_lane_count, speed, media_if):
++    def get_cmis_application_desired(self, api, lport, host_lane_count, speed, media_if):
+         """
+         Get the CMIS application code that matches the specified host side configurations
+ 
+         Args:
+             api:
+                 XcvrApi object
++            lport:
++                String, logical port name
+             host_lane_count:
+                 Number of lanes on the host side
+             speed:
+@@ -1042,6 +1045,7 @@ class CmisManagerTask(threading.Thread):
+             if media_if != None and d.get('module_media_interface_id') != media_if:
+                 continue
+             appl_code = c
++            self.port_dict[lport]['host_interfaces_num'] = host_lane_count // d.get('host_lane_count')
+             break
+ 
+         return (appl_code & 0xf)
+@@ -1138,7 +1142,8 @@ class CmisManagerTask(threading.Thread):
+             e.g. 0xf for lane 0, lane 1, lane 2 and lane 3.
+         """
+         media_lanes_mask = 0
+-        media_lane_count = self.port_dict[lport]['media_lane_count']
++        host_interfaces_num = self.port_dict[lport].get('host_interfaces_num', 1)
++        media_lane_count = self.port_dict[lport]['media_lane_count'] * host_interfaces_num
+         media_lane_assignment_option = self.port_dict[lport]['media_lane_assignment_options']
+ 
+         if appl < 1 or media_lane_count <= 0 or subport < 0:
+@@ -1581,7 +1586,7 @@ class CmisManagerTask(threading.Thread):
+                 try:
+                     # CMIS state transitions
+                     if state == self.CMIS_STATE_INSERTED:
+-                        self.port_dict[lport]['appl'] = self.get_cmis_application_desired(api,
++                        self.port_dict[lport]['appl'] = self.get_cmis_application_desired(api, lport,
+                                                                 host_lane_count, host_speed, media_if)
+                         if self.port_dict[lport]['appl'] < 1:
+                             self.log_error("{}: no suitable app for the port appl {} host_lane_count {} "
+@@ -1620,7 +1625,7 @@ class CmisManagerTask(threading.Thread):
+                                 self.port_dict[lport]['admin_status'] != 'up':
+                            self.log_notice("{} Forcing Tx laser OFF".format(lport))
+                            # Force DataPath re-init
+-                           api.tx_disable_channel(media_lanes_mask, True)
++                           api.tx_disable_channel(self.CMIS_ALL_MEDIA_LANES_MASK, True)
+                            self.port_dict[lport]['cmis_state'] = self.CMIS_STATE_READY
+                            continue
+                     # Configure the target output power if ZR module
+@@ -1656,7 +1661,7 @@ class CmisManagerTask(threading.Thread):
+ 
+                         # D.1.3 Software Configuration and Initialization
+                         media_lanes_mask = self.port_dict[lport]['media_lanes_mask']
+-                        if not api.tx_disable_channel(media_lanes_mask, True):
++                        if not api.tx_disable_channel(self.CMIS_ALL_MEDIA_LANES_MASK, True):
+                             self.log_notice("{}: unable to turn off tx power with host_lanes_mask 0x{:02x}".format(lport, host_lanes_mask))
+                             self.port_dict[lport]['cmis_retries'] = retries + 1
+                             continue
+@@ -1773,7 +1778,7 @@ class CmisManagerTask(threading.Thread):
+ 
+                         # Turn ON the laser
+                         media_lanes_mask = self.port_dict[lport]['media_lanes_mask']
+-                        api.tx_disable_channel(media_lanes_mask, False)
++                        api.tx_disable_channel(self.CMIS_ALL_MEDIA_LANES_MASK, False)
+                         self.log_notice("{}: Turning ON tx power".format(lport))
+                         self.port_dict[lport]['cmis_state'] = self.CMIS_STATE_DP_ACTIVATE
+                     elif state == self.CMIS_STATE_DP_ACTIVATE:
+-- 
+2.20.1
+

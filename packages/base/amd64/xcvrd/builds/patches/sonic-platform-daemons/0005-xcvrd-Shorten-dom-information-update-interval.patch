@@ -1,7 +1,7 @@
 From 22dcb9c58ee57bb55d50fca204291c63d3aa56a8 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Wed, 10 Jan 2024 09:43:11 +0900
-Subject: [PATCH 05/11] [xcvrd] Shorten dom information update interval
+Subject: [PATCH 05/13] [xcvrd] Shorten dom information update interval
 
 This change shortens dom information update interval from 60s to 1s. Users
 can observe those updates sooner.
