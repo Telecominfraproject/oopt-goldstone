@@ -1,0 +1,108 @@
+From e79b13fd47fa46779f62da40989b3b00f2596ad4 Mon Sep 17 00:00:00 2001
+From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
+Date: Tue, 27 Feb 2024 11:19:53 +0900
+Subject: [PATCH 13/13] [xcvrd] Fix TRANSCEIVER_INFO update when cmis ready
+
+---
+ sonic-xcvrd/tests/test_xcvrd.py | 15 +++++++++------
+ sonic-xcvrd/xcvrd/xcvrd.py      | 11 +++++------
+ 2 files changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/sonic-xcvrd/tests/test_xcvrd.py b/sonic-xcvrd/tests/test_xcvrd.py
+index 1be4eb5..38e895a 100644
+--- a/sonic-xcvrd/tests/test_xcvrd.py
++++ b/sonic-xcvrd/tests/test_xcvrd.py
+@@ -972,20 +972,22 @@ class TestXcvrdScript(object):
+         # case: partial lanes update
+         lport = "Ethernet0"
+         host_lanes_mask = 0xc
+-        ret = task.post_port_active_apsel_to_db(mock_xcvr_api, lport, host_lanes_mask)
++        media_lanes_mask = 0xf
++        task.post_port_active_apsel_to_db(mock_xcvr_api, lport, host_lanes_mask, media_lanes_mask)
+         assert int_tbl.getKeys() == ["Ethernet0"]
+         assert dict(int_tbl.mock_dict["Ethernet0"]) == {'active_apsel_hostlane3': '1',
+                                                         'active_apsel_hostlane4': '1',
+-                                                        'host_lane_count': '8',
++                                                        'host_lane_count': '2',
+                                                         'media_lane_count': '4'}
+         # case: full lanes update
+         lport = "Ethernet8"
+         host_lanes_mask = 0xff
+-        task.post_port_active_apsel_to_db(mock_xcvr_api, lport, host_lanes_mask)
++        media_lanes_mask = 0x1
++        task.post_port_active_apsel_to_db(mock_xcvr_api, lport, host_lanes_mask, media_lanes_mask)
+         assert int_tbl.getKeys() == ["Ethernet0", "Ethernet8"]
+         assert dict(int_tbl.mock_dict["Ethernet0"]) == {'active_apsel_hostlane3': '1',
+                                                         'active_apsel_hostlane4': '1',
+-                                                        'host_lane_count': '8',
++                                                        'host_lane_count': '2',
+                                                         'media_lane_count': '4'}
+         assert dict(int_tbl.mock_dict["Ethernet8"]) == {'active_apsel_hostlane1': '2',
+                                                         'active_apsel_hostlane2': '2',
+@@ -995,14 +997,15 @@ class TestXcvrdScript(object):
+                                                         'active_apsel_hostlane6': '2',
+                                                         'active_apsel_hostlane7': '2',
+                                                         'active_apsel_hostlane8': '2',
+-                                                        'host_lane_count': '2',
++                                                        'host_lane_count': '8',
+                                                         'media_lane_count': '1'}
+ 
+         # case: NotImplementedError
+         int_tbl = Table("STATE_DB", TRANSCEIVER_INFO_TABLE)     # a new empty table
+         lport = "Ethernet0"
+         host_lanes_mask = 0xf
+-        ret = task.post_port_active_apsel_to_db(mock_xcvr_api, lport, host_lanes_mask)
++        media_lanes_mask = 0x1
++        task.post_port_active_apsel_to_db(mock_xcvr_api, lport, host_lanes_mask, media_lanes_mask)
+         assert int_tbl.getKeys() == []
+ 
+     @patch('xcvrd.xcvrd.platform_chassis')
+diff --git a/sonic-xcvrd/xcvrd/xcvrd.py b/sonic-xcvrd/xcvrd/xcvrd.py
+index 4ec43b6..69b0fa6 100644
+--- a/sonic-xcvrd/xcvrd/xcvrd.py
++++ b/sonic-xcvrd/xcvrd/xcvrd.py
+@@ -1399,10 +1399,9 @@ class CmisManagerTask(threading.Thread):
+             self.log_error("{} Tuning in progress, subport selection may fail!".format(lport))
+         return api.set_laser_freq(freq, grid)
+ 
+-    def post_port_active_apsel_to_db(self, api, lport, host_lanes_mask):
++    def post_port_active_apsel_to_db(self, api, lport, host_lanes_mask, media_lanes_mask):
+         try:
+             act_apsel = api.get_active_apsel_hostlane()
+-            appl_advt = api.get_application_advertisement()
+         except NotImplementedError:
+             helper_logger.log_error("Required feature is not implemented")
+             return
+@@ -1417,10 +1416,9 @@ class CmisManagerTask(threading.Thread):
+ 
+         # also update host_lane_count and media_lane_count
+         if len(tuple_list) > 0:
+-            appl_advt_act = appl_advt.get(act_apsel_lane)
+-            host_lane_count = appl_advt_act.get('host_lane_count', 'N/A') if appl_advt_act else 'N/A'
++            host_lane_count = bin(host_lanes_mask).count("1")
+             tuple_list.append(('host_lane_count', str(host_lane_count)))
+-            media_lane_count = appl_advt_act.get('media_lane_count', 'N/A') if appl_advt_act else 'N/A'
++            media_lane_count = bin(media_lanes_mask).count("1")
+             tuple_list.append(('media_lane_count', str(media_lane_count)))
+ 
+         asic_index = self.port_mapping.get_asic_id_for_logical_port(lport)
+@@ -1568,6 +1566,7 @@ class CmisManagerTask(threading.Thread):
+                 expired = self.port_dict[lport].get('cmis_expired')
+                 retries = self.port_dict[lport].get('cmis_retries', 0)
+                 host_lanes_mask = self.port_dict[lport].get('host_lanes_mask', 0)
++                media_lanes_mask = self.port_dict[lport].get('media_lanes_mask', 0)
+                 appl = self.port_dict[lport].get('appl', 0)
+                 if state != self.CMIS_STATE_INSERTED and (host_lanes_mask <= 0 or appl < 1):
+                     self.log_error("{}: Unexpected value for host_lanes_mask 0x{:02x} or appl {} in "
+@@ -1790,7 +1789,7 @@ class CmisManagerTask(threading.Thread):
+ 
+                         self.log_notice("{}: READY".format(lport))
+                         self.port_dict[lport]['cmis_state'] = self.CMIS_STATE_READY
+-                        self.post_port_active_apsel_to_db(api, lport, host_lanes_mask)
++                        self.post_port_active_apsel_to_db(api, lport, host_lanes_mask, media_lanes_mask)
+ 
+                 except (NotImplementedError, AttributeError) as e:
+                     self.log_error("{}: internal errors due to {}".format(lport, e))
+-- 
+2.20.1
+

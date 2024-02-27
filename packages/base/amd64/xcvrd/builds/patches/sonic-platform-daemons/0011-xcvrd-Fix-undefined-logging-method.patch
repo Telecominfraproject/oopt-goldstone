@@ -1,7 +1,7 @@
 From 94e79bb41481f3bfd945188ca6998b8e5aa01cd1 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Wed, 21 Feb 2024 16:16:29 +0900
-Subject: [PATCH 11/11] [xcvrd] Fix undefined logging method
+Subject: [PATCH 11/13] [xcvrd] Fix undefined logging method
 
 ---
  sonic-xcvrd/xcvrd/xcvrd.py | 3 +++
