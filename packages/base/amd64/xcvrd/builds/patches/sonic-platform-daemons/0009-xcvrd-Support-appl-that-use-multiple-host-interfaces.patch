@@ -1,7 +1,7 @@
 From a555226713b309331a747c675be878c6e3b94de6 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Wed, 21 Feb 2024 15:52:15 +0900
-Subject: [PATCH 09/11] [xcvrd] Support appl that use multiple host interfaces
+Subject: [PATCH 09/13] [xcvrd] Support appl that use multiple host interfaces
 
 This change supports application that use multiple host interfaces. This
 sets each hostlane with a different DataPathID for each host interface.

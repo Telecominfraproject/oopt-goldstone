@@ -1,7 +1,7 @@
 From 756743e035b5244cbcea8b2117f11d8934aa1a98 Mon Sep 17 00:00:00 2001
 From: Tatsuya Matsuo <96454784+matsuo-tat@users.noreply.github.com>
 Date: Tue, 20 Feb 2024 13:31:55 +0900
-Subject: [PATCH 08/11] [xcvrd] Fix the hostlanes to set datapath init fields
+Subject: [PATCH 08/13] [xcvrd] Fix the hostlanes to set datapath init fields
 
 This change always sets DPDeinitLane and ApplyDPInitLane fields for all
 hostlanes. This allows for consistent datapath state machine and

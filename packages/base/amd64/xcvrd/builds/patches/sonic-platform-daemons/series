@@ -9,3 +9,5 @@
 0009-xcvrd-Support-appl-that-use-multiple-host-interfaces.patch
 0010-xcvrd-Add-check-CMIS-configuration-log.patch
 0011-xcvrd-Fix-undefined-logging-method.patch
+0012-xcvrd-Fix-the-medialanes-to-set-tx-disable-fields.patch
+0013-xcvrd-Fix-TRANSCEIVER_INFO-update-when-cmis-ready.patch
